@@ -76,27 +76,26 @@ const ellipse = (p0: Point, p1: Point, plot: (pt: Point) => void) => {
     let { x: x0, y: y0 } = p0
     let { x: x1, y: y1 } = p1
 
-    // values of diameter
+    // Values of diameter
     const a = Math.abs(x1 - x0)
     const b = Math.abs(y1 - y0)
     const b1 = b & 1
     const aSqr8 = 8 * a * a
     const bSqr8 = 8 * b * b
 
-    // error increment
+    // Error increment
     let dx = 4 * (1 - a) * b * b
     let dy = 4 * (1 + b1) * a * a
     let err = dx + dy + b1 * a * a
 
-    //    if (x0 > x1) { x0 = x1 x1 += a } /* if called with swapped points
-    // if called with swapped points exchange them
+    // If called with swapped points exchange them
     if (x0 > x1) {
         x0 = x1
         x1 += a
     }
     if (y0 > y1) y0 = y1
 
-    // starting pixel
+    // Starting pixel
     y0 += div(b + 1, 2)
     y1 = y0 - b1
 

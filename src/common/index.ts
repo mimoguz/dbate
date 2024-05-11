@@ -1,1 +1,1 @@
-export { type Point, point } from "./point";
+export { type Point, point } from "./point"

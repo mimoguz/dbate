@@ -1,5 +1,5 @@
 import { Center, Stack, Title } from "@mantine/core"
-import React from "react"
+import React, { useMemo } from "react"
 import { HeroDocument } from "../../schema"
 import * as DB from "../../database/database"
 import { Subscription } from "rxjs"
@@ -9,6 +9,7 @@ import { NoopTool } from "../../tools/noop-tool"
 export const Editor = () => {
     const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
     const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
+    const tool = useMemo(() => new NoopTool(), [])
 
     React.useEffect(
         () => {
@@ -40,9 +41,9 @@ export const Editor = () => {
                         <Stack p={0} bg="white">
                             <ToolPreview
                                 bmp={hero.logo}
-                                tool={NoopTool}
+                                tool={tool}
                                 color="black"
-                                brushSize={3}
+                                brushSize={2}
                                 zoom={16}
                             />
                         </Stack>

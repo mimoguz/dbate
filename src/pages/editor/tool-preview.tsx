@@ -1,17 +1,11 @@
 import React from "react"
 import { Point } from "../../common"
 import { Bitmap } from "../../schema"
-import {
-    createTool,
-    Tool,
-    ToolFactory,
-    ToolOptions,
-    ToolResult,
-} from "../../tools"
+import { Tool, ToolOptions, ToolResult } from "../../tools"
 
 interface ViewProps {
     bmp: Bitmap
-    tool: ToolFactory
+    tool: Tool
     zoom?: number
 }
 
@@ -37,61 +31,35 @@ export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.E
     const { bmp, tool, zoom, onDone, onCancel, ...options } = props
     const scale = zoom ?? 1
     const view = React.useRef<HTMLCanvasElement>(null)
-    const [context, setContext] = React.useState<CanvasRenderingContext2D | undefined>(undefined)
-    const [currentTool, setTool] = React.useState<Tool | undefined>(undefined)
 
     console.log(view.current?.getContext("2d"))
 
-    const getContext = React.useCallback(
-        (): CanvasRenderingContext2D | undefined => {
-            if (context) {
-                context.setTransform(scale, 0, 0, scale, 0, 0)
-                return context
-            }
-
+    React.useEffect(
+        () => {
             const ctx = view.current?.getContext("2d") ?? undefined
             if (ctx) {
                 ctx.setTransform(scale, 0, 0, scale, 0, 0)
                 ctx.fillStyle = FILL
                 ctx.imageSmoothingEnabled = false
             }
-            setContext(ctx)
-            return ctx
+            tool.context = ctx
+            tool.options = options
+            return (() => { tool.context = undefined })
         },
-        [context, scale]
+        [options, scale, tool]
     )
 
-    React.useEffect(
-        () => {
-            const ctx = getContext()
-            if (tool.toolTag === currentTool?.tag) {
-                currentTool.context = ctx
-                currentTool.options = options
-                return
-            }
-            const newTool = createTool(tool)
-            newTool.context = ctx
-            newTool.options = options
-            setTool(newTool)
+    const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = e => tool.start(mousePos(e, scale), bmp,)
 
-            return (() => {
-                if (currentTool) currentTool.context = undefined
-            })
-        },
-        [currentTool, getContext, tool, options]
-    )
-
-    const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = e => currentTool?.start(mousePos(e, scale), bmp,)
-
-    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = e => currentTool?.moveTo(mousePos(e, scale))
+    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = e => tool.moveTo(mousePos(e, scale))
 
     const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = e => {
-        const result = currentTool?.end(mousePos(e, scale))
+        const result = tool.end(mousePos(e, scale))
         if (onDone) onDone(result)
     }
 
     const handleMouseLeave: React.MouseEventHandler<HTMLCanvasElement> = () => {
-        currentTool?.cancel()
+        tool.cancel()
         if (onCancel) onCancel()
     }
 
@@ -100,7 +68,7 @@ export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.E
             ref={view}
             width={props.bmp.width * scale}
             height={props.bmp.height * scale}
-            style={{ imageRendering: "pixelated", cursor: "cell" }}
+            style={{ imageRendering: "pixelated", cursor: "none" }}
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseMove}
             onMouseMove={handleMouseMove}

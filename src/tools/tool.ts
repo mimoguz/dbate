@@ -9,12 +9,11 @@ export interface Tool {
     cancel(): void
     options: ToolOptions
     context: CanvasRenderingContext2D | undefined
-    get tag(): string
+    readonly tag: string
 }
 
 export interface ToolFactory {
     new(): Tool
-    readonly toolTag: string
 }
 
 export const createTool = (factory: ToolFactory): Tool => new factory()

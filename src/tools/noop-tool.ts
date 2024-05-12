@@ -3,7 +3,18 @@ import { Tool } from "./tool"
 import { ToolOptions, ToolResult } from "./tool-result"
 
 export class NoopTool implements Tool {
-    static readonly toolTag: string = "noop"
+    readonly tag: string = "noop"
+
+    private ctx: CanvasRenderingContext2D | undefined
+
+    private opt: ToolOptions = {
+        color: "black",
+        brushSize: 0
+    }
+
+    private shift: number = 0
+
+    private pt: Point = point.outside()
 
     get context(): CanvasRenderingContext2D | undefined {
         return this.ctx
@@ -19,19 +30,7 @@ export class NoopTool implements Tool {
 
     set options(value: ToolOptions) {
         this.opt = value
-    }
-
-    private ctx: CanvasRenderingContext2D | undefined
-
-    private opt: ToolOptions = {
-        color: "black",
-        brushSize: 0
-    }
-
-    private pt: Point = point.outside()
-
-    get tag(): string {
-        return NoopTool.toolTag
+        this.shift = Math.floor((value.brushSize - (value.brushSize % 2 === 0 ? 1 : 0)) / 2)
     }
 
     start(pt: Point): void {
@@ -64,6 +63,6 @@ export class NoopTool implements Tool {
     private drawCursor(pt: Point) {
         if (!this.context) return
         this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight)
-        this.context.fillRect(pt.x, pt.y, 1, 1)
+        this.context.fillRect(pt.x - this.shift, pt.y - this.shift, this.opt.brushSize, this.opt.brushSize)
     }
 }

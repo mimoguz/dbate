@@ -8,7 +8,7 @@ export const bitmapSchema = {
             items: { type: "integer" }
         }
     },
-    required: ["id", "width", "height", "colorBuffer"],
+    required: ["width", "height", "colorBuffer"],
 } as const
 
 export type Bitmap = {

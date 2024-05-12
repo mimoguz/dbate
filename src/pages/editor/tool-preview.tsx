@@ -24,15 +24,12 @@ const mousePos = (
     return { x, y }
 }
 
-
-const FILL = "#80808080";
+const FILL = "#808080FF";
 
 export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.Element => {
     const { bmp, tool, zoom, onDone, onCancel, ...options } = props
     const scale = zoom ?? 1
     const view = React.useRef<HTMLCanvasElement>(null)
-
-    console.log(view.current?.getContext("2d"))
 
     React.useEffect(
         () => {

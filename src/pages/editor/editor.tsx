@@ -4,12 +4,12 @@ import { HeroDocument } from "../../schema"
 import * as DB from "../../database/database"
 import { Subscription } from "rxjs"
 import { ToolPreview } from "./tool-preview"
-import { NoopTool } from "../../tools/noop-tool"
+import { boundedTools } from "../../tools"
 
 export const Editor = () => {
     const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
     const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
-    const tool = useMemo(() => new NoopTool(), [])
+    const tool = useMemo(() => boundedTools.ellipse(), [])
 
     React.useEffect(
         () => {

@@ -30,29 +30,33 @@ const mousePos = (
     return { x, y }
 }
 
+
 const FILL = "#80808080";
 
 export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.Element => {
-    const scale = props.zoom ?? 1
+    const { bmp, tool, zoom, onDone, onCancel, ...options } = props
+    const scale = zoom ?? 1
     const view = React.useRef<HTMLCanvasElement>(null)
     const [context, setContext] = React.useState<CanvasRenderingContext2D | undefined>(undefined)
-    const [tool, setTool] = React.useState<Tool | undefined>(undefined)
+    const [currentTool, setTool] = React.useState<Tool | undefined>(undefined)
+
+    console.log(view.current?.getContext("2d"))
 
     const getContext = React.useCallback(
         (): CanvasRenderingContext2D | undefined => {
             if (context) {
-                if (context.getTransform().m11 !== scale) context.setTransform(scale, 0, 0, scale, 0, 0)
+                context.setTransform(scale, 0, 0, scale, 0, 0)
                 return context
             }
-            const ctx = view.current?.getContext("2d")
+
+            const ctx = view.current?.getContext("2d") ?? undefined
             if (ctx) {
                 ctx.setTransform(scale, 0, 0, scale, 0, 0)
                 ctx.fillStyle = FILL
                 ctx.imageSmoothingEnabled = false
-                setContext(ctx)
-                return ctx
             }
-            return undefined
+            setContext(ctx)
+            return ctx
         },
         [context, scale]
     )
@@ -60,32 +64,35 @@ export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.E
     React.useEffect(
         () => {
             const ctx = getContext()
-            if (tool && tool.tag === props.tool.toolTag && tool.context === ctx) return
-            setTool(ctx
-                ? createTool(props.tool, ctx, { color: props.color, brushSize: props.brushSize })
-                : undefined
-            )
+            if (tool.toolTag === currentTool?.tag) {
+                currentTool.context = ctx
+                currentTool.options = options
+                return
+            }
+            const newTool = createTool(tool)
+            newTool.context = ctx
+            newTool.options = options
+            setTool(newTool)
+
+            return (() => {
+                if (currentTool) currentTool.context = undefined
+            })
         },
-        [getContext, props.brushSize, props.color, props.tool, tool]
+        [currentTool, getContext, tool, options]
     )
 
-    React.useEffect(
-        () => { getContext() },
-        [getContext]
-    )
+    const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = e => currentTool?.start(mousePos(e, scale), bmp,)
 
-    const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = e => tool?.start(mousePos(e, scale), props.bmp,)
-
-    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = e => tool?.moveTo(mousePos(e, scale))
+    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = e => currentTool?.moveTo(mousePos(e, scale))
 
     const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = e => {
-        const result = tool?.end(mousePos(e, scale))
-        if (tool && props.onDone) props.onDone(result)
+        const result = currentTool?.end(mousePos(e, scale))
+        if (onDone) onDone(result)
     }
 
     const handleMouseLeave: React.MouseEventHandler<HTMLCanvasElement> = () => {
-        tool?.cancel()
-        if (props.onCancel) props.onCancel()
+        currentTool?.cancel()
+        if (onCancel) onCancel()
     }
 
     return (

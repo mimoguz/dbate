@@ -5,11 +5,12 @@ import * as DB from "../../database/database"
 import { HeroDocument } from "../../schema"
 import { freehandTools } from "../../tools"
 import { ToolPreview } from "./tool-preview"
+import { Toolbar } from "./toolbar"
 
 export const Editor = () => {
     const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
     const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
-    const tool = useMemo(() => freehandTools.markerPenVertical(), [])
+    const tool = useMemo(() => freehandTools.markerPenHorizontal(), [])
 
     React.useEffect(
         () => {
@@ -35,6 +36,7 @@ export const Editor = () => {
     return (
         <div>
             <header><Title order={2}>{hero?.name}</Title></header>
+            <div><Toolbar /></div>
             {hero
                 ? (
                     <Center p="xl" bg="gray">

@@ -1,15 +1,16 @@
 import { Point, point } from "../common";
 import { bitmap, drawShape, putShape, rgba8 } from "../drawing";
 import { Bitmap } from "../schema";
-import { Tool } from "./tool";
-import { ToolOptions, ToolResult, resultBitmap } from "./tool-result";
+import { ToolBase } from "./tool-base";
+import { ToolResult, resultBitmap } from "./tool-result";
 
-export class BoundedTool implements Tool {
+export class BoundedTool extends ToolBase {
     constructor(
+        tag: string,
         draw: (context: CanvasRenderingContext2D, p0: Point, p1: Point) => void,
         put: (target: Bitmap, color: number, p0: Point, p1: Point) => void,
-        tag: string
     ) {
+        super()
         this.draw = draw
         this.put = put
         this.tag = tag
@@ -19,40 +20,15 @@ export class BoundedTool implements Tool {
 
     private readonly put: (target: Bitmap, color: number, p0: Point, p1: Point) => void
 
-    readonly tag: string
-
-    private ctx: CanvasRenderingContext2D | undefined
-
-    private opt: ToolOptions = {
-        color: "black",
-        brushSize: 1
-    }
+    override readonly tag: string
 
     private pt: Point = point.outside()
 
     private startPt: Point = point.outside()
 
-    private bmp: Bitmap | undefined = undefined
-
     private isDrawing: boolean = false
 
-    get context(): CanvasRenderingContext2D | undefined {
-        return this.ctx
-    }
-
-    set context(value: CanvasRenderingContext2D | undefined) {
-        this.ctx = value
-    }
-
-    get options(): ToolOptions {
-        return this.opt
-    }
-
-    set options(value: ToolOptions) {
-        this.opt = value
-    }
-
-    start(pt: Point, bmp: Bitmap): void {
+    override start(pt: Point, bmp: Bitmap): void {
         this.startPt = pt
         this.pt = pt
         this.bmp = bmp
@@ -61,7 +37,7 @@ export class BoundedTool implements Tool {
         if (this.context) this.draw(this.context, this.startPt, this.pt)
     }
 
-    moveTo(pt: Point): void {
+    override moveTo(pt: Point): void {
         if (!point.equals(pt, this.pt)) {
             this.pt = pt
             this.clear()
@@ -73,7 +49,7 @@ export class BoundedTool implements Tool {
         }
     }
 
-    end(pt: Point): ToolResult | undefined {
+    override end(pt: Point): ToolResult | undefined {
         this.pt = pt
         if (this.bmp) {
             const clone = bitmap.clone(this.bmp)
@@ -88,31 +64,20 @@ export class BoundedTool implements Tool {
         return undefined
     }
 
-    cancel(): void {
-        this.reset()
+    protected override reset() {
+        super.reset()
+        this.pt = point.outside()
+        this.startPt = point.outside()
+        this.isDrawing = false
     }
 
     private drawCursor(pt: Point) {
         this.context?.fillRect(pt.x, pt.y, 1, 1)
     }
-
-    private clear() {
-        if (this.context) {
-            this.context.clearRect(0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight)
-        }
-    }
-
-    private reset() {
-        this.clear()
-        this.pt = point.outside()
-        this.startPt = point.outside()
-        this.isDrawing = false
-        this.bmp = undefined
-    }
 }
 
 export const boundedTools = {
-    line: () => new BoundedTool(drawShape.line, putShape.line, "line"),
-    rectangle: () => new BoundedTool(drawShape.rectangle, putShape.rectangle, "rectangle"),
-    ellipse: () => new BoundedTool(drawShape.ellipse, putShape.ellipse, "ellipse"),
+    line: () => new BoundedTool("line", drawShape.line, putShape.line),
+    rectangle: () => new BoundedTool("rectangle", drawShape.rectangle, putShape.rectangle),
+    ellipse: () => new BoundedTool("ellipse", drawShape.ellipse, putShape.ellipse),
 }

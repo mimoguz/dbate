@@ -1,5 +1,7 @@
-export { type BoundedTool, boundedTools } from "./bounded-tool";
-export { type Tool, type ToolFactory, createTool } from "./tool";
+export { type BoundedTool, boundedTools } from "./bounded-tool"
+export { type FreehandTool, freehandTools } from "./freehand-tool"
+export { type Tool } from "./tool"
+export { type ToolBase } from "./tool-base"
 export {
     type ToolAffectsBitmap,
     type ToolAffectsOptions as ToolAffectsTools,
@@ -7,4 +9,4 @@ export {
     type ToolResult,
     resultBitmap,
     resultOptions,
-} from "./tool-result";
+} from "./tool-result"

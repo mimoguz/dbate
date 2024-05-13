@@ -11,9 +11,3 @@ export interface Tool {
     context: CanvasRenderingContext2D | undefined
     readonly tag: string
 }
-
-export interface ToolFactory {
-    new(): Tool
-}
-
-export const createTool = (factory: ToolFactory): Tool => new factory()

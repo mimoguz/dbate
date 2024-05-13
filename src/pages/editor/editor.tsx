@@ -1,15 +1,15 @@
 import { Center, Stack, Title } from "@mantine/core"
 import React, { useMemo } from "react"
-import { HeroDocument } from "../../schema"
-import * as DB from "../../database/database"
 import { Subscription } from "rxjs"
+import * as DB from "../../database/database"
+import { HeroDocument } from "../../schema"
+import { freehandTools } from "../../tools"
 import { ToolPreview } from "./tool-preview"
-import { boundedTools } from "../../tools"
 
 export const Editor = () => {
     const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
     const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
-    const tool = useMemo(() => boundedTools.ellipse(), [])
+    const tool = useMemo(() => freehandTools.markerPenVertical(), [])
 
     React.useEffect(
         () => {
@@ -43,7 +43,7 @@ export const Editor = () => {
                                 bmp={hero.logo}
                                 tool={tool}
                                 color="black"
-                                brushSize={2}
+                                brushSize={4}
                                 zoom={16}
                             />
                         </Stack>

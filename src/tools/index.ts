@@ -1,4 +1,5 @@
 export { type BoundedTool, boundedTools } from "./bounded-tool"
+export { FloodTool, floodTools } from "./flood-tool"
 export { type FreehandTool, freehandTools } from "./freehand-tool"
 export { type Tool } from "./tool"
 export { type ToolBase } from "./tool-base"

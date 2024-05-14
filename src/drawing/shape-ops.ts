@@ -13,7 +13,7 @@ const putLine = (
     color: number,
     start: Point,
     end: Point
-) => line(start, end, (pt) => bitmap.putPixel(bmp, pt, color))
+) => line(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
 
 const drawEllipse = (
     ctx: CanvasRenderingContext2D,
@@ -26,7 +26,7 @@ const putEllipse = (
     color: number,
     start: Point,
     end: Point
-) => ellipse(start, end, (pt) => bitmap.putPixel(bmp, pt, color))
+) => ellipse(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
 
 const drawRectangle = (
     ctx: CanvasRenderingContext2D,
@@ -39,7 +39,7 @@ const putRectangle = (
     color: number,
     start: Point,
     end: Point
-) => rectangle(start, end, (pt) => bitmap.putPixel(bmp, pt, color))
+) => rectangle(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
 
 const div = (a: number, b: number): number => Math.floor(a / b)
 

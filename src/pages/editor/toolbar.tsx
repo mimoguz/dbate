@@ -1,31 +1,84 @@
-import { ActionIcon, Center, Group } from "@mantine/core"
+import { Center, Text } from "@mantine/core"
+import React from "react"
+import { ToggleGroup, ToggleGroupItem } from "../../common/components"
 import * as i from "../../icons"
 
+const tools: Array<ToggleGroupItem<number>> = [
+    {
+        icon: <i.LineMd />,
+        accessibleLabel: "Draw line",
+        tooltip: <Text>Draw line</Text>,
+        key: "line",
+        value: 0
+    },
+    {
+        icon: <i.RectangleMd />,
+        accessibleLabel: "Draw rectangle",
+        tooltip: <Text>Draw rectangle</Text>,
+        key: "rectangle",
+        value: 1
+    },
+    {
+        icon: <i.EllipseMd />,
+        accessibleLabel: "Draw ellipse",
+        tooltip: <Text>Draw ellipse</Text>,
+        key: "ellipse",
+        value: 2
+    },
+    {
+        icon: <i.PencilMd />,
+        accessibleLabel: "Pencil",
+        tooltip: <Text>Pencil</Text>,
+        key: "pencil",
+        value: 3
+    },
+    {
+        icon: <i.MarkerHorizontalMd />,
+        accessibleLabel: "Horizontal marker",
+        tooltip: <Text>Horizontal marker</Text>,
+        key: "marker-horizontal",
+        value: 4
+    },
+    {
+        icon: <i.MarkerVerticalMd />,
+        accessibleLabel: "Vertical marker",
+        tooltip: <Text>Vertical marker</Text>,
+        key: "marker-vertical",
+        value: 5
+    },
+    {
+        icon: <i.EraserMd />,
+        accessibleLabel: "Eraser",
+        tooltip: <Text>Eraser</Text>,
+        key: "eraser",
+        value: 6
+    },
+    {
+        icon: <i.AreaEraserMd />,
+        accessibleLabel: "Area eraser",
+        tooltip: <Text>Area eraser</Text>,
+        key: "area-eraser",
+        value: 7
+    },
+    {
+        icon: <i.MoveMd />,
+        accessibleLabel: "Move",
+        tooltip: <Text>Move</Text>,
+        key: "move",
+        value: 8
+    },
+]
+
 export const Toolbar = (): JSX.Element => {
+    const [toolIndex, setToolIndex] = React.useState(0)
+
     return (
-        <Center>
-            <Group p="md" gap="xs">
-                <ActionIcon variant="subtle"><i.AreaEraserMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.BucketMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.CheckerboardMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.ColorSchemeMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.EditMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.EllipseMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.EraserMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.EyeDropperMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.GearMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.InvertMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.LineMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.MarkerHorizontalMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.MarkerVerticalMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.MoveMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.PencilMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.PlusMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.RectangleMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.SwatchesMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.TrashMd /></ActionIcon>
-                <ActionIcon variant="subtle"><i.UndoMd /></ActionIcon>
-            </Group>
+        <Center p="sm">
+            <ToggleGroup
+                items={tools}
+                value={toolIndex}
+                onChange={setToolIndex}
+            />
         </Center>
     )
 }

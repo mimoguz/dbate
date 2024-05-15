@@ -1,14 +1,15 @@
-import { Center, Stack, Title, Text } from "@mantine/core"
-import React, { useMemo } from "react"
+import { Center, Group, Text, Title } from "@mantine/core"
+import React, { useCallback, useMemo } from "react"
 import { Subscription } from "rxjs"
+import { ToggleGroupItem } from "../../common/components"
 import * as DB from "../../database/database"
+import * as i from "../../icons"
 import { HeroDocument } from "../../schema"
-import { Tool, boundedTools, floodTools, freehandTools } from "../../tools"
+import { Tool, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
+import { NoopTool } from "../../tools/noop-tool"
+import { BitmapView } from "./bitmap-view"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-import * as i from "../../icons"
-import { ToggleGroupItem } from "../../common/components"
-import { NoopTool } from "../../tools/noop-tool"
 
 const tools: Array<ToggleGroupItem<number>> = [
     {
@@ -91,31 +92,43 @@ const createTool = (index: number): Tool => {
     }
 }
 
-export const Editor = () => {
+const useHero = (name: string) => {
     const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
     const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
-    const [toolIndex, setToolIndex] = React.useState(0)
-    const tool = useMemo(() => createTool(toolIndex), [toolIndex])
 
     React.useEffect(
         () => {
-            if (!subscription) {
+            if (!subscription || hero?.name !== name) {
+                subscription?.unsubscribe()
+
                 const fetch = async () => {
                     const db = await DB.get()
                     const sub = db.heroes
-                        .findOne()
+                        .findOne({ selector: { name: name } })
                         .$.subscribe(doc => setHero(doc ?? undefined))
                     setSubscription(sub)
                 }
 
                 fetch()
-                console.log("Hero loaded")
             }
-
             return () => { subscription?.unsubscribe() }
         },
-        [subscription]
+        [hero, name, subscription]
     )
+
+    return hero
+}
+
+export const Editor = () => {
+    const hero = useHero("Bob")
+    const [toolIndex, setToolIndex] = React.useState(0)
+    const tool = useMemo(() => createTool(toolIndex), [toolIndex])
+    const handlePaint = useCallback((result: ToolResult | undefined) => {
+        if (result && result.tag === "affects-bitmap") {
+            const bmp = result.value
+            hero?.incrementalPatch({ logo: bmp })
+        }
+    }, [hero])
 
     return (
         <div>
@@ -128,15 +141,21 @@ export const Editor = () => {
             {hero
                 ? (
                     <Center p="xl" bg="gray">
-                        <Stack p={0} bg="white">
+                        <Group p={0} bg="white" gap="0">
                             <ToolPreview
                                 bmp={hero.logo}
                                 tool={tool}
                                 color="black"
                                 brushSize={4}
                                 zoom={16}
+                                onDone={handlePaint}
                             />
-                        </Stack>
+                            <div style={{ height: "200px", width: "2px", backgroundColor: "gray" }} />
+                            <BitmapView
+                                bmp={hero.logo}
+                                zoom={16}
+                            />
+                        </Group>
                     </Center>
                 )
                 : null}

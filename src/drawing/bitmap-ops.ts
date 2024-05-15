@@ -25,10 +25,19 @@ const putPixel = (bmp: Bitmap, point: Point, rgba: number): Bitmap => {
     return cloned;
 };
 
+const toIndex = (bmp: Bitmap, x: number, y: number): number => x + y * bmp.width
+
+const toPoint = (bmp: Bitmap, flatIndex: number): Point => ({
+    x: flatIndex % bmp.width,
+    y: Math.floor(flatIndex / bmp.height)
+})
+
 export const bitmap = {
     clone,
     empty,
     getPixel,
     putPixel,
     putPixelMut,
+    toIndex,
+    toPoint
 } as const;

@@ -7,9 +7,7 @@ interface ViewProps {
     bmp: Bitmap
     tool: Tool
     zoom?: number
-}
-
-interface ActionProps {
+    style?: React.CSSProperties
     onDone?: (result: ToolResult | undefined) => void
     onCancel?: () => void
 }
@@ -26,8 +24,8 @@ const mousePos = (
 
 const FILL = "#808080FF";
 
-export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.Element => {
-    const { bmp, tool, zoom, onDone, onCancel, ...options } = props
+export const ToolPreview = (props: ViewProps & ToolOptions): JSX.Element => {
+    const { bmp, tool, zoom, style, onDone, onCancel, ...options } = props
     const scale = zoom ?? 1
     const view = React.useRef<HTMLCanvasElement>(null)
 
@@ -65,7 +63,7 @@ export const ToolPreview = (props: ViewProps & ActionProps & ToolOptions): JSX.E
             ref={view}
             width={props.bmp.width * scale}
             height={props.bmp.height * scale}
-            style={{ imageRendering: "pixelated" }}
+            style={{ imageRendering: "pixelated", ...style }}
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseMove}
             onMouseMove={handleMouseMove}

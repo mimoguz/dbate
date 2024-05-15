@@ -5,6 +5,7 @@ import { bitmap, rgba8 } from "../../drawing";
 interface Props {
     bmp?: Bitmap
     zoom?: number
+    style?: React.CSSProperties
 }
 
 const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap) => {
@@ -27,7 +28,7 @@ const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap) => {
     ctx.restore()
 }
 
-export const BitmapView = ({ bmp, zoom }: Props): JSX.Element => {
+export const BitmapView = ({ bmp, zoom, style }: Props): JSX.Element => {
     const view = React.useRef<HTMLCanvasElement>(null)
     const scale = zoom ?? 1
 
@@ -47,6 +48,7 @@ export const BitmapView = ({ bmp, zoom }: Props): JSX.Element => {
             ref={view}
             width={scale * (bmp?.width ?? 1)}
             height={scale * (bmp?.height ?? 1)}
+            style={style}
         />
     )
 }

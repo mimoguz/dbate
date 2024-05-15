@@ -1,10 +1,8 @@
-import { Center, Group, Text, Title } from "@mantine/core"
+import { Center, Text, Title } from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
-import { Subscription } from "rxjs"
 import { ToggleGroupItem } from "../../common/components"
-import * as DB from "../../database/database"
+import * as DB from "../../database"
 import * as i from "../../icons"
-import { HeroDocument } from "../../schema"
 import { Tool, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
 import { NoopTool } from "../../tools/noop-tool"
 import { BitmapView } from "./bitmap-view"
@@ -92,35 +90,8 @@ const createTool = (index: number): Tool => {
     }
 }
 
-const useHero = (name: string) => {
-    const [hero, setHero] = React.useState<HeroDocument | undefined>(undefined)
-    const [subscription, setSubscription] = React.useState<Subscription | undefined>(undefined)
-
-    React.useEffect(
-        () => {
-            if (!subscription || hero?.name !== name) {
-                subscription?.unsubscribe()
-
-                const fetch = async () => {
-                    const db = await DB.get()
-                    const sub = db.heroes
-                        .findOne({ selector: { name: name } })
-                        .$.subscribe(doc => setHero(doc ?? undefined))
-                    setSubscription(sub)
-                }
-
-                fetch()
-            }
-            return () => { subscription?.unsubscribe() }
-        },
-        [hero, name, subscription]
-    )
-
-    return hero
-}
-
 export const Editor = () => {
-    const hero = useHero("Bob")
+    const hero = DB.useHero("Bob")
     const [toolIndex, setToolIndex] = React.useState(0)
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
     const handlePaint = useCallback((result: ToolResult | undefined) => {
@@ -141,21 +112,31 @@ export const Editor = () => {
             {hero
                 ? (
                     <Center p="xl" bg="gray">
-                        <Group p={0} bg="white" gap="0">
-                            <ToolPreview
-                                bmp={hero.logo}
-                                tool={tool}
-                                color="black"
-                                brushSize={4}
-                                zoom={16}
-                                onDone={handlePaint}
-                            />
-                            <div style={{ height: "200px", width: "2px", backgroundColor: "gray" }} />
+                        <div style={{ display: "grid" }}>
                             <BitmapView
                                 bmp={hero.logo}
                                 zoom={16}
+                                style={{
+                                    gridArea: "1 / 1",
+                                    zIndex: 1,
+                                    backgroundColor: "white"
+                                }}
                             />
-                        </Group>
+                            <ToolPreview
+                                bmp={hero.logo}
+                                tool={tool}
+                                color="yellowgreen"
+                                brushSize={4}
+                                zoom={16}
+                                onDone={handlePaint}
+                                style={{
+                                    gridArea: "1 / 1",
+                                    zIndex: 2,
+                                    mixBlendMode: "difference",
+                                    opacity: 0.9
+                                }}
+                            />
+                        </div>
                     </Center>
                 )
                 : null}

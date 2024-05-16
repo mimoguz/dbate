@@ -6,23 +6,19 @@ import { ToolResult, resultBitmap } from "./tool-result";
 
 export class BoundedTool extends ToolBase {
     constructor(
-        tag: string,
         draw: (context: CanvasRenderingContext2D, p0: Point, p1: Point) => void,
         put: (target: Bitmap, color: number, p0: Point, p1: Point) => void,
     ) {
         super()
         this.draw = draw
         this.put = put
-        this.tag = tag
     }
 
     private readonly draw: (context: CanvasRenderingContext2D, p0: Point, p1: Point) => void
 
     private readonly put: (target: Bitmap, color: number, p0: Point, p1: Point) => void
 
-    override readonly tag: string
-
-    private pt: Point = point.outside()
+    private endPt: Point = point.outside()
 
     private startPt: Point = point.outside()
 
@@ -30,19 +26,19 @@ export class BoundedTool extends ToolBase {
 
     override start(pt: Point, bmp: Bitmap): void {
         this.startPt = pt
-        this.pt = pt
+        this.endPt = pt
         this.bmp = bmp
         this.isDrawing = true
         this.clear()
-        if (this.context) this.draw(this.context, this.startPt, this.pt)
+        if (this.context) this.draw(this.context, this.startPt, this.endPt)
     }
 
     override moveTo(pt: Point): void {
-        if (!point.equals(pt, this.pt)) {
-            this.pt = pt
+        if (!point.equals(pt, this.endPt)) {
+            this.endPt = pt
             this.clear()
             if (this.isDrawing) {
-                if (this.context) this.draw(this.context, this.startPt, this.pt)
+                if (this.context) this.draw(this.context, this.startPt, this.endPt)
             } else {
                 this.drawCursor(pt)
             }
@@ -50,11 +46,11 @@ export class BoundedTool extends ToolBase {
     }
 
     override end(pt: Point): ToolResult | undefined {
-        this.pt = pt
+        this.endPt = pt
         if (this.bmp) {
             const clone = bitmap.clone(this.bmp)
             const color = rgba8.fromString(this.opt.color)
-            this.put(clone, color, this.startPt, this.pt)
+            this.put(clone, color, this.startPt, this.endPt)
             const result = resultBitmap(clone)
             this.reset()
             return result
@@ -66,7 +62,7 @@ export class BoundedTool extends ToolBase {
 
     protected override reset() {
         super.reset()
-        this.pt = point.outside()
+        this.endPt = point.outside()
         this.startPt = point.outside()
         this.isDrawing = false
     }
@@ -77,7 +73,7 @@ export class BoundedTool extends ToolBase {
 }
 
 export const boundedTools = {
-    line: () => new BoundedTool("line", drawShape.line, putShape.line),
-    rectangle: () => new BoundedTool("rectangle", drawShape.rectangle, putShape.rectangle),
-    ellipse: () => new BoundedTool("ellipse", drawShape.ellipse, putShape.ellipse),
+    line: () => new BoundedTool(drawShape.line, putShape.line),
+    rectangle: () => new BoundedTool(drawShape.rectangle, putShape.rectangle),
+    ellipse: () => new BoundedTool(drawShape.ellipse, putShape.ellipse),
 }

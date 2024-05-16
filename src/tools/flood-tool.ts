@@ -5,17 +5,14 @@ import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
 
 export class FloodTool extends ToolBase {
-    constructor(tag: string, fill: (bmp: Bitmap, start: Point, fillColor: number) => void) {
+    constructor(fill: (bmp: Bitmap, start: Point, fillColor: number) => void) {
         super()
-        this.tag = tag
         this.fill = fill
     }
 
     private fill: (bmp: Bitmap, start: Point, fillColor: number) => void
 
     private pt: Point = point.outside()
-
-    readonly tag: string;
 
     start(pt: Point, bmp: Bitmap): void {
         this.bmp = bmp
@@ -56,6 +53,6 @@ export class FloodTool extends ToolBase {
 }
 
 export const floodTools = {
-    bucket: () => new FloodTool("flood-fill", flood.fill),
-    eraser: () => new FloodTool("flood-erase", flood.erase)
+    bucket: () => new FloodTool(flood.fill),
+    eraser: () => new FloodTool(flood.erase)
 } as const

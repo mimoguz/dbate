@@ -4,7 +4,7 @@ import { clamp } from "../../common"
 import { ToggleGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
-import { Tool, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
+import { ColorPickerTool, Tool, ToolOptions, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
 import { NoopTool } from "../../tools/noop-tool"
 import { BitmapView } from "./bitmap-view"
 import { ToolPreview } from "./tool-preview"
@@ -86,6 +86,14 @@ const tools: Array<{
             },
             factory: floodTools.eraser,
         },
+        {
+            item: {
+                icon: <i.EyeDropperMd />,
+                accessibleLabel: "Color picker",
+                key: "color-picker",
+            },
+            factory: () => new ColorPickerTool(),
+        },
     ]
 
 const toolItems: Array<ToggleGroupItem<number>> = tools.map((tool, index) => ({
@@ -101,16 +109,20 @@ export const Editor = () => {
     const [toolIndex, setToolIndex] = React.useState(0)
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
     const [zoom, setZoom] = React.useState(16)
-
-    const toolOptions = {
+    const [toolOptions, setToolOptions] = React.useState<ToolOptions>({
         color: "blue",
         brushSize: 3,
-    }
+    })
 
     const handlePaint = useCallback((result: ToolResult | undefined) => {
-        if (result && result.tag === "affects-bitmap") {
-            const bmp = result.value
-            hero?.incrementalPatch({ logo: bmp })
+        if (!result) return
+        switch (result.tag) {
+            case "affects-bitmap":
+                hero?.incrementalPatch({ logo: result.value })
+                break
+            case "affects-options":
+                setToolOptions(() => result.value)
+                break
         }
     }, [hero])
 
@@ -143,6 +155,7 @@ export const Editor = () => {
                                 }}
                             />
                             <ToolPreview
+                                {...toolOptions}
                                 bmp={hero.logo}
                                 tool={tool}
                                 zoom={Math.floor(zoom)}
@@ -153,7 +166,6 @@ export const Editor = () => {
                                     mixBlendMode: "difference",
                                     opacity: 0.9
                                 }}
-                                {...toolOptions}
                             />
                         </div>
                     </Center>

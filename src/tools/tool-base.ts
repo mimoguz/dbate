@@ -4,8 +4,6 @@ import { Tool } from "./tool";
 import { ToolOptions, ToolResult } from "./tool-result";
 
 export abstract class ToolBase implements Tool {
-    abstract readonly tag: string
-
     abstract start(pt: Point, bmp: Bitmap): void
 
     abstract moveTo(pt: Point): void

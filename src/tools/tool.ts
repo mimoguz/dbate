@@ -9,5 +9,4 @@ export interface Tool {
     cancel(): void
     options: ToolOptions
     context: CanvasRenderingContext2D | undefined
-    readonly tag: string
 }

@@ -13,7 +13,6 @@ interface Rect {
 
 export class FreehandTool extends ToolBase {
     constructor(
-        tag: string,
         draw: (context: CanvasRenderingContext2D, rect: Rect) => void,
         put: (target: Bitmap, stroke: Array<Rect>, color: number) => void,
         rectFactory?: (brushSize: number) => (pt: Point, brushSize: number) => Rect
@@ -21,7 +20,6 @@ export class FreehandTool extends ToolBase {
         super()
         this.draw = draw
         this.put = put
-        this.tag = tag
         if (rectFactory) this.rectFactory = rectFactory
         this.getRect = this.rectFactory(this.options.brushSize)
     }
@@ -37,8 +35,6 @@ export class FreehandTool extends ToolBase {
     private isDrawing: boolean = false
 
     private color: number = 0
-
-    override readonly tag: string;
 
     private getRect: (pt: Point, brushSize: number) => Rect
 
@@ -128,12 +124,10 @@ const fillStroke = (target: Bitmap, stroke: Array<Rect>, color: number) => {
 
 export const freehandTools = {
     pencil: () => new FreehandTool(
-        "pencil",
         (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
     ),
     markerPenHorizontal: () => new FreehandTool(
-        "marker-pen-horizontal",
         (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
         (brushSize: number) => {
@@ -147,7 +141,6 @@ export const freehandTools = {
         }
     ),
     markerPenVertical: () => new FreehandTool(
-        "marker-pen-vertical",
         (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
         (brushSize: number) => {
@@ -161,7 +154,6 @@ export const freehandTools = {
         }
     ),
     eraser: () => new FreehandTool(
-        "eraser",
         (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         (target: Bitmap, stroke: Array<Rect>) => fillStroke(target, stroke, 0),
     )

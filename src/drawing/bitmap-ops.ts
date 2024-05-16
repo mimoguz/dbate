@@ -46,8 +46,14 @@ const toPoint = (bmp: Bitmap, flatIndex: number): Point => ({
     y: Math.floor(flatIndex / bmp.height)
 })
 
+const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
+    x >= 0 && x < bmp.width &&
+    y >= 0 && y < bmp.height
+)
+
 export const bitmap = {
     clone,
+    contains,
     empty,
     getPixel,
     map,

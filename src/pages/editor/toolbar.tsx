@@ -9,6 +9,8 @@ interface Props {
     onInvert?: () => void
     onFlipHorizontal?: () => void
     onFlipVertical?: () => void
+    onRotateClockwise?: () => void
+    onRotateCounterClockwise?: () => void
 }
 
 export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element => {
@@ -31,6 +33,12 @@ export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element =>
                     </ActionIcon>
                     <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
                         <i.InvertMd />
+                    </ActionIcon>
+                    <ActionIcon onClick={actions.onRotateClockwise} variant="subtle" size="lg">
+                        <i.RotateClockwiseMd />
+                    </ActionIcon>
+                    <ActionIcon onClick={actions.onRotateCounterClockwise} variant="subtle" size="lg">
+                        <i.RotateCounterClockwiseMd />
                     </ActionIcon>
                 </Group>
             </Group>

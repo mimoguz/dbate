@@ -1,3 +1,4 @@
+import { Point } from "../common";
 import { bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { Filter } from "./filter";
@@ -31,7 +32,7 @@ const flipHorizontal: Filter = (bmp: Bitmap): Bitmap => {
     return cloned
 }
 
-const flipVertical: Filter = (bmp: Bitmap): Bitmap => {
+const flipVertical: Filter = (bmp) => {
     const cloned = bitmap.clone(bmp)
     const halfHeight = Math.floor(cloned.height / 2)
     for (let y = 0; y < halfHeight; y++) {
@@ -44,8 +45,35 @@ const flipVertical: Filter = (bmp: Bitmap): Bitmap => {
     return cloned
 }
 
+const rotate = (getTarget: (bmp: Bitmap, source: Point) => Point) => (bmp: Bitmap): Bitmap => {
+    const result = bitmap.empty(bmp.width, bmp.height)
+    const pixels = bmp.width * bmp.height
+    for (let index = 0; index < pixels; index++) {
+        const source = bitmap.toPoint(bmp, index)
+        const target = getTarget(bmp, source)
+        if (bitmap.contains(bmp, target)) bitmap.putPixelMut(
+            result,
+            target,
+            bitmap.getPixel(bmp, source)
+        )
+    }
+    return result
+}
+
+const rotateClockwise: Filter = rotate((bmp, source) => ({
+    x: bmp.width - source.y - 1,
+    y: source.x
+}))
+
+const rotateCounterClockwise: Filter = rotate((bmp, source) => ({
+    x: source.y,
+    y: bmp.height - source.x - 1,
+}))
+
 export const filters = {
     invert,
     flipHorizontal,
     flipVertical,
+    rotateClockwise,
+    rotateCounterClockwise
 } as const

@@ -156,6 +156,20 @@ export const Editor = () => {
         })
     }
 
+    const handleRotateCW = () => {
+        hero?.incrementalModify(doc => {
+            doc.logo = filters.rotateClockwise(doc.logo as Bitmap)
+            return doc
+        })
+    }
+
+    const handleRotateCCW = () => {
+        hero?.incrementalModify(doc => {
+            doc.logo = filters.rotateCounterClockwise(doc.logo as Bitmap)
+            return doc
+        })
+    }
+
     return (
         <div onWheel={handleWheel} style={{ height: "100vh" }}>
             <header><Title order={2}>{hero?.name}</Title></header>
@@ -166,6 +180,8 @@ export const Editor = () => {
                 onFlipHorizontal={handleFlipHorizontal}
                 onFlipVertical={handleFlipVertical}
                 onInvert={handleInvert}
+                onRotateClockwise={handleRotateCW}
+                onRotateCounterClockwise={handleRotateCCW}
             />
             {hero
                 ? (

@@ -1,6 +1,6 @@
 import React from "react";
 import { Bitmap } from "../../schema";
-import { bitmap, rgba8 } from "../../drawing";
+import { bitmap, rgba } from "../../drawing";
 
 interface Props {
     bmp?: Bitmap
@@ -11,18 +11,18 @@ interface Props {
 const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap) => {
     const lastColor = {
         style: "#00000000",
-        value: 0,
+        value: rgba.transparent,
     }
     ctx.save()
     ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight)
     ctx.fillStyle = lastColor.style
     bmp.colorBuffer.forEach((color, index) => {
-        const { x, y } = bitmap.toPoint(bmp, index)
         if (color !== lastColor.value) {
-            lastColor.style = rgba8.toString(color)
+            lastColor.style = rgba.toString(color)
             lastColor.value = color
             ctx.fillStyle = lastColor.style
         }
+        const { x, y } = bitmap.toPoint(bmp, index)
         ctx.fillRect(x, y, 1, 1)
     })
     ctx.restore()

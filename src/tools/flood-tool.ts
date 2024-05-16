@@ -1,16 +1,16 @@
 import { Point, point } from "../common";
-import { bitmap, flood, rgba8 } from "../drawing";
+import { RGBA, bitmap, flood, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
 
 export class FloodTool extends ToolBase {
-    constructor(fill: (bmp: Bitmap, start: Point, fillColor: number) => void) {
+    constructor(fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void) {
         super()
         this.fill = fill
     }
 
-    private fill: (bmp: Bitmap, start: Point, fillColor: number) => void
+    private fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void
 
     private pt: Point = point.outside()
 
@@ -30,7 +30,7 @@ export class FloodTool extends ToolBase {
     end(pt: Point): ToolResult | undefined {
         if (this.bmp) {
             const clone = bitmap.clone(this.bmp)
-            this.fill(clone, pt, rgba8.fromString(this.opt.color))
+            this.fill(clone, pt, rgba.fromString(this.opt.color))
             const result = resultBitmap(clone)
             this.reset()
             this.drawCursor(pt)

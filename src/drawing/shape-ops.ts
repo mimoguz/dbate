@@ -1,6 +1,7 @@
 import { Point } from "../common"
 import { Bitmap } from "../schema"
 import { bitmap } from "./bitmap-ops"
+import { RGBA } from "./rgba-ops"
 
 const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -10,7 +11,7 @@ const drawLine = (
 
 const putLine = (
     bmp: Bitmap,
-    color: number,
+    color: RGBA,
     start: Point,
     end: Point
 ) => line(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
@@ -23,7 +24,7 @@ const drawEllipse = (
 
 const putEllipse = (
     bmp: Bitmap,
-    color: number,
+    color: RGBA,
     start: Point,
     end: Point
 ) => ellipse(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
@@ -36,7 +37,7 @@ const drawRectangle = (
 
 const putRectangle = (
     bmp: Bitmap,
-    color: number,
+    color: RGBA,
     start: Point,
     end: Point
 ) => rectangle(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))

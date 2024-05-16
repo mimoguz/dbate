@@ -1,5 +1,5 @@
 import { Point, point } from "../common";
-import { bitmap, rgba8 } from "../drawing";
+import { RGBA, bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
 import { ToolOptions, ToolResult, resultBitmap } from "./tool-result";
@@ -14,7 +14,7 @@ interface Rect {
 export class FreehandTool extends ToolBase {
     constructor(
         draw: (context: CanvasRenderingContext2D, rect: Rect) => void,
-        put: (target: Bitmap, stroke: Array<Rect>, color: number) => void,
+        put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void,
         rectFactory?: (brushSize: number) => (pt: Point, brushSize: number) => Rect
     ) {
         super()
@@ -26,7 +26,7 @@ export class FreehandTool extends ToolBase {
 
     private readonly draw: (context: CanvasRenderingContext2D, rect: Rect) => void
 
-    private readonly put: (target: Bitmap, stroke: Array<Rect>, color: number) => void
+    private readonly put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void
 
     private readonly stroke: Array<Rect> = []
 
@@ -34,7 +34,7 @@ export class FreehandTool extends ToolBase {
 
     private isDrawing: boolean = false
 
-    private color: number = 0
+    private color: RGBA = rgba.transparent
 
     private getRect: (pt: Point, brushSize: number) => Rect
 
@@ -51,7 +51,7 @@ export class FreehandTool extends ToolBase {
     override set options(value: ToolOptions) {
         super.options = value
         this.getRect = this.rectFactory(value.brushSize)
-        this.color = rgba8.fromString(this.options.color)
+        this.color = rgba.fromString(this.options.color)
         if (!this.isDrawing) this.drawCursor(this.pt)
     }
 
@@ -110,12 +110,12 @@ export class FreehandTool extends ToolBase {
     }
 }
 
-const fillStroke = (target: Bitmap, stroke: Array<Rect>, color: number) => {
+const fillStroke = (target: Bitmap, stroke: Array<Rect>, color: RGBA) => {
     for (const rect of stroke) {
         const right = rect.x + rect.w
         const bottom = rect.y + rect.h
-        for (let x = rect.x; x < right; x++) {
-            for (let y = rect.y; y < bottom; y++) {
+        for (let y = rect.y; y < bottom; y++) {
+            for (let x = rect.x; x < right; x++) {
                 bitmap.putPixelMut(target, { x, y }, color)
             }
         }
@@ -155,6 +155,6 @@ export const freehandTools = {
     ),
     eraser: () => new FreehandTool(
         (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
-        (target: Bitmap, stroke: Array<Rect>) => fillStroke(target, stroke, 0),
+        (target: Bitmap, stroke: Array<Rect>) => fillStroke(target, stroke, rgba.transparent),
     )
 } as const

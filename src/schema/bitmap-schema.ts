@@ -1,3 +1,5 @@
+import { RGBA } from "../drawing"
+
 export const bitmapSchema = {
     type: "object",
     properties: {
@@ -14,5 +16,5 @@ export const bitmapSchema = {
 export type Bitmap = {
     width: number,
     height: number,
-    colorBuffer: Array<number>,
+    colorBuffer: Array<RGBA>,
 }

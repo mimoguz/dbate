@@ -1,5 +1,5 @@
 import { Point, point } from "../common";
-import { bitmap, rgba8 } from "../drawing";
+import { bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultOptions } from "./tool-result";
@@ -25,7 +25,7 @@ export class ColorPickerTool extends ToolBase {
         const sample = bitmap.getPixel(this.bmp, pt)
         return resultOptions({
             ...this.opt,
-            color: rgba8.toString(sample) ?? this.opt.color,
+            color: rgba.toString(sample) ?? this.opt.color,
         })
     }
 

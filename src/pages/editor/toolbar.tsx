@@ -1,21 +1,40 @@
-import { Center } from "@mantine/core"
+import { ActionIcon, Center, Divider, Group } from "@mantine/core"
 import { ToggleGroup, ToggleGroupItem } from "../../common/components"
+import * as i from "../../icons"
 
 interface Props {
     tools: Array<ToggleGroupItem<number>>
     toolIndex: number,
     onChange: (index: number) => void
+    onInvert?: () => void
+    onFlipHorizontal?: () => void
+    onFlipVertical?: () => void
 }
 
-export const Toolbar = ({ tools, toolIndex, onChange }: Props): JSX.Element => {
+export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element => {
 
     return (
         <Center p="sm">
-            <ToggleGroup
-                items={tools}
-                value={toolIndex}
-                onChange={onChange}
-            />
+            <Group gap="md" p={0}>
+                <ToggleGroup
+                    items={tools}
+                    value={toolIndex}
+                    onChange={actions.onChange}
+                />
+                <Divider orientation="vertical" />
+                <Group gap="xs" p={0}>
+                    <ActionIcon onClick={actions.onFlipHorizontal} variant="subtle" size="lg">
+                        <i.FlipHorizontalMd />
+                    </ActionIcon>
+                    <ActionIcon onClick={actions.onFlipVertical} variant="subtle" size="lg">
+                        <i.FlipVerticalMd />
+                    </ActionIcon>
+                    <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
+                        <i.InvertMd />
+                    </ActionIcon>
+                </Group>
+            </Group>
+
         </Center>
     )
 }

@@ -1,5 +1,5 @@
 import { Point, point } from "../common";
-import { bitmap, drawShape, putShape, rgba8 } from "../drawing";
+import { RGBA, bitmap, drawShape, putShape, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
@@ -7,7 +7,7 @@ import { ToolResult, resultBitmap } from "./tool-result";
 export class BoundedTool extends ToolBase {
     constructor(
         draw: (context: CanvasRenderingContext2D, p0: Point, p1: Point) => void,
-        put: (target: Bitmap, color: number, p0: Point, p1: Point) => void,
+        put: (target: Bitmap, color: RGBA, p0: Point, p1: Point) => void,
     ) {
         super()
         this.draw = draw
@@ -16,7 +16,7 @@ export class BoundedTool extends ToolBase {
 
     private readonly draw: (context: CanvasRenderingContext2D, p0: Point, p1: Point) => void
 
-    private readonly put: (target: Bitmap, color: number, p0: Point, p1: Point) => void
+    private readonly put: (target: Bitmap, color: RGBA, p0: Point, p1: Point) => void
 
     private endPt: Point = point.outside()
 
@@ -49,7 +49,7 @@ export class BoundedTool extends ToolBase {
         this.endPt = pt
         if (this.bmp) {
             const clone = bitmap.clone(this.bmp)
-            const color = rgba8.fromString(this.opt.color)
+            const color = rgba.fromString(this.opt.color)
             this.put(clone, color, this.startPt, this.endPt)
             const result = resultBitmap(clone)
             this.reset()

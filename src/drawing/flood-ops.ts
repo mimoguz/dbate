@@ -1,8 +1,9 @@
 import { Point } from "../common"
 import { Bitmap } from "../schema"
 import { bitmap } from "./bitmap-ops"
+import { RGBA, rgba } from "./rgba-ops"
 
-const canSpread = (pt: Point, sampleColor: number, bmp: Bitmap): boolean => (
+const canSpread = (pt: Point, sampleColor: RGBA, bmp: Bitmap): boolean => (
     pt.x >= 0 && pt.x < bmp.width &&
     pt.y >= 0 && pt.y < bmp.height &&
     bitmap.getPixel(bmp, pt) === sampleColor
@@ -10,8 +11,8 @@ const canSpread = (pt: Point, sampleColor: number, bmp: Bitmap): boolean => (
 
 const spread = (
     pt: Point,
-    sampleColor: number,
-    fillColor: number,
+    sampleColor: RGBA,
+    fillColor: RGBA,
     bmp: Bitmap,
     stack: Array<Point>
 ) => {
@@ -21,7 +22,7 @@ const spread = (
     }
 }
 
-const fill = (bmp: Bitmap, start: Point, fillColor: number): void => {
+const fill = (bmp: Bitmap, start: Point, fillColor: RGBA): void => {
     const sampleColor = bitmap.getPixel(bmp, start)
     if (sampleColor === fillColor) return
     const stack: Array<Point> = []
@@ -35,7 +36,7 @@ const fill = (bmp: Bitmap, start: Point, fillColor: number): void => {
     }
 }
 
-const erase = (bmp: Bitmap, start: Point): void => fill(bmp, start, 0)
+const erase = (bmp: Bitmap, start: Point): void => fill(bmp, start, rgba.transparent)
 
 export const flood = {
     fill,

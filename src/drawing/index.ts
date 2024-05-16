@@ -1,4 +1,4 @@
 export { bitmap } from "./bitmap-ops"
 export { flood } from "./flood-ops"
-export { rgba8 } from "./rgba8-ops"
+export { type RGBA, rgba } from "./rgba-ops"
 export { drawShape, putShape } from "./shape-ops"

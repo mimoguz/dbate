@@ -9,6 +9,8 @@ import { NoopTool } from "../../tools/noop-tool"
 import { BitmapView } from "./bitmap-view"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
+import { Bitmap } from "../../schema"
+import { filters } from "../../filters"
 
 const tools: Array<{
     item: Pick<ToggleGroupItem<number>, "icon" | "accessibleLabel" | "key">,
@@ -133,6 +135,27 @@ export const Editor = () => {
         }
     }
 
+    const handleFlipHorizontal = () => {
+        hero?.incrementalModify(doc => {
+            doc.logo = filters.flipHorizontal(doc.logo as Bitmap)
+            return doc
+        })
+    }
+
+    const handleFlipVertical = () => {
+        hero?.incrementalModify(doc => {
+            doc.logo = filters.flipVertical(doc.logo as Bitmap)
+            return doc
+        })
+    }
+
+    const handleInvert = () => {
+        hero?.incrementalModify(doc => {
+            doc.logo = filters.invert(doc.logo as Bitmap)
+            return doc
+        })
+    }
+
     return (
         <div onWheel={handleWheel} style={{ height: "100vh" }}>
             <header><Title order={2}>{hero?.name}</Title></header>
@@ -140,13 +163,16 @@ export const Editor = () => {
                 tools={toolItems}
                 toolIndex={toolIndex}
                 onChange={setToolIndex}
+                onFlipHorizontal={handleFlipHorizontal}
+                onFlipVertical={handleFlipVertical}
+                onInvert={handleInvert}
             />
             {hero
                 ? (
                     <Center p="xl" bg="gray">
                         <div style={{ display: "grid" }} >
                             <BitmapView
-                                bmp={hero.logo}
+                                bmp={hero.logo as Bitmap}
                                 zoom={Math.floor(zoom)}
                                 style={{
                                     gridArea: "1 / 1",
@@ -156,7 +182,7 @@ export const Editor = () => {
                             />
                             <ToolPreview
                                 {...toolOptions}
-                                bmp={hero.logo}
+                                bmp={hero.logo as Bitmap}
                                 tool={tool}
                                 zoom={Math.floor(zoom)}
                                 onDone={handlePaint}

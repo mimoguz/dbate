@@ -1,5 +1,6 @@
 import { Center, Text, Title } from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
+import { clamp } from "../../common"
 import { ToggleGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
@@ -9,91 +10,103 @@ import { BitmapView } from "./bitmap-view"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
-const tools: Array<ToggleGroupItem<number>> = [
-    {
-        icon: <i.LineMd />,
-        accessibleLabel: "Draw line",
-        tooltip: <Text>Draw line</Text>,
-        key: "line",
-        value: 0
-    },
-    {
-        icon: <i.RectangleMd />,
-        accessibleLabel: "Draw rectangle",
-        tooltip: <Text>Draw rectangle</Text>,
-        key: "rectangle",
-        value: 1
-    },
-    {
-        icon: <i.EllipseMd />,
-        accessibleLabel: "Draw ellipse",
-        tooltip: <Text>Draw ellipse</Text>,
-        key: "ellipse",
-        value: 2
-    },
-    {
-        icon: <i.PencilMd />,
-        accessibleLabel: "Pencil",
-        tooltip: <Text>Pencil</Text>,
-        key: "pencil",
-        value: 3
-    },
-    {
-        icon: <i.MarkerHorizontalMd />,
-        accessibleLabel: "Horizontal marker",
-        tooltip: <Text>Horizontal marker</Text>,
-        key: "marker-horizontal",
-        value: 4
-    },
-    {
-        icon: <i.MarkerVerticalMd />,
-        accessibleLabel: "Vertical marker",
-        tooltip: <Text>Vertical marker</Text>,
-        key: "marker-vertical",
-        value: 5
-    },
-    {
-        icon: <i.BucketMd />,
-        accessibleLabel: "Flood fill",
-        tooltip: <Text>Flood fill</Text>,
-        key: "flood-fill",
-        value: 6
-    },
-    {
-        icon: <i.EraserMd />,
-        accessibleLabel: "Eraser",
-        tooltip: <Text>Eraser</Text>,
-        key: "eraser",
-        value: 7
-    },
-    {
-        icon: <i.AreaEraserMd />,
-        accessibleLabel: "Area eraser",
-        tooltip: <Text>Area eraser</Text>,
-        key: "flood-erase",
-        value: 8
-    },
-]
+const tools: Array<{
+    item: Pick<ToggleGroupItem<number>, "icon" | "accessibleLabel" | "key">,
+    factory: () => Tool
+}> = [
+        {
+            item: {
+                icon: <i.LineMd />,
+                accessibleLabel: "Draw line",
+                key: "line",
+            },
+            factory: boundedTools.line,
+        },
+        {
+            item: {
+                icon: <i.RectangleMd />,
+                accessibleLabel: "Draw rectangle",
+                key: "rectangle",
+            },
+            factory: boundedTools.rectangle,
+        },
+        {
+            item: {
+                icon: <i.EllipseMd />,
+                accessibleLabel: "Draw ellipse",
+                key: "ellipse",
+            },
+            factory: boundedTools.ellipse,
+        },
+        {
+            item: {
+                icon: <i.PencilMd />,
+                accessibleLabel: "Pencil",
+                key: "pencil",
+            },
+            factory: freehandTools.pencil,
+        },
+        {
+            item: {
+                icon: <i.MarkerHorizontalMd />,
+                accessibleLabel: "Horizontal marker",
+                key: "marker-horizontal",
+            },
+            factory: freehandTools.markerPenHorizontal,
+        },
+        {
+            item: {
+                icon: <i.MarkerVerticalMd />,
+                accessibleLabel: "Vertical marker",
+                key: "marker-vertical",
+            },
+            factory: freehandTools.markerPenVertical,
+        },
+        {
+            item: {
+                icon: <i.BucketMd />,
+                accessibleLabel: "Flood fill",
+                key: "flood-fill",
+            },
+            factory: floodTools.bucket,
+        },
+        {
+            item: {
+                icon: <i.EraserMd />,
+                accessibleLabel: "Eraser",
+                key: "eraser",
+            },
+            factory: freehandTools.eraser,
+        },
+        {
+            item: {
+                icon: <i.AreaEraserMd />,
+                accessibleLabel: "Area eraser",
+                key: "flood-erase",
+            },
+            factory: floodTools.eraser,
+        },
+    ]
 
-const createTool = (index: number): Tool => {
-    switch (index) {
-        case 0: return boundedTools.line()
-        case 1: return boundedTools.rectangle()
-        case 2: return boundedTools.ellipse()
-        case 3: return freehandTools.pencil()
-        case 4: return freehandTools.markerPenHorizontal()
-        case 5: return freehandTools.markerPenVertical()
-        case 6: return floodTools.bucket()
-        case 7: return freehandTools.eraser()
-        case 8: return floodTools.eraser()
-        default: return new NoopTool()
-    }
-}
+const toolItems: Array<ToggleGroupItem<number>> = tools.map((tool, index) => ({
+    value: index,
+    tooltip: <Text>{tool.item.accessibleLabel}</Text>,
+    ...tool.item
+}))
+
+const createTool = (index: number): Tool => (tools.at(index)?.factory ?? (() => new NoopTool()))()
 
 export const Editor = () => {
     const hero = DB.useHero("Bob")
     const [toolIndex, setToolIndex] = React.useState(0)
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
+    const [zoom, setZoom] = React.useState(16)
+
+    const toolOptions = {
+        color: "blue",
+        brushSize: 3,
+    }
+
     const handlePaint = useCallback((result: ToolResult | undefined) => {
         if (result && result.tag === "affects-bitmap") {
             const bmp = result.value
@@ -101,21 +114,28 @@ export const Editor = () => {
         }
     }, [hero])
 
+    const handleWheel: React.WheelEventHandler = e => {
+        if (e.shiftKey) {
+            e.stopPropagation()
+            setZoom(z => clamp(1, 32, e.deltaY * -0.01 + z))
+        }
+    }
+
     return (
-        <div>
+        <div onWheel={handleWheel} style={{ height: "100vh" }}>
             <header><Title order={2}>{hero?.name}</Title></header>
             <Toolbar
-                tools={tools}
+                tools={toolItems}
                 toolIndex={toolIndex}
                 onChange={setToolIndex}
             />
             {hero
                 ? (
                     <Center p="xl" bg="gray">
-                        <div style={{ display: "grid" }}>
+                        <div style={{ display: "grid" }} >
                             <BitmapView
                                 bmp={hero.logo}
-                                zoom={16}
+                                zoom={Math.floor(zoom)}
                                 style={{
                                     gridArea: "1 / 1",
                                     zIndex: 1,
@@ -125,9 +145,7 @@ export const Editor = () => {
                             <ToolPreview
                                 bmp={hero.logo}
                                 tool={tool}
-                                color="yellowgreen"
-                                brushSize={4}
-                                zoom={16}
+                                zoom={Math.floor(zoom)}
                                 onDone={handlePaint}
                                 style={{
                                     gridArea: "1 / 1",
@@ -135,6 +153,7 @@ export const Editor = () => {
                                     mixBlendMode: "difference",
                                     opacity: 0.9
                                 }}
+                                {...toolOptions}
                             />
                         </div>
                     </Center>

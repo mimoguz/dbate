@@ -25,14 +25,14 @@ export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element =>
                 />
                 <Divider orientation="vertical" />
                 <Group gap="xs" p={0}>
+                    <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
+                        <i.InvertMd />
+                    </ActionIcon>
                     <ActionIcon onClick={actions.onFlipHorizontal} variant="subtle" size="lg">
                         <i.FlipHorizontalMd />
                     </ActionIcon>
                     <ActionIcon onClick={actions.onFlipVertical} variant="subtle" size="lg">
                         <i.FlipVerticalMd />
-                    </ActionIcon>
-                    <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
-                        <i.InvertMd />
                     </ActionIcon>
                     <ActionIcon onClick={actions.onRotateClockwise} variant="subtle" size="lg">
                         <i.RotateClockwiseMd />

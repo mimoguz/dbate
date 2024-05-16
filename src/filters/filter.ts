@@ -1,3 +1,3 @@
 import { Bitmap } from "../schema";
 
-export type Filter = (bmp: Bitmap) => Bitmap
+export type Filter = (source: Bitmap) => Bitmap

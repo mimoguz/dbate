@@ -8,6 +8,12 @@ const empty = (width: number, height: number): Bitmap => ({
     colorBuffer: new Array<RGBA>(width * height).fill(rgba.transparent),
 })
 
+const emptyUninitialized = (width: number, height: number): Bitmap => ({
+    width,
+    height,
+    colorBuffer: new Array<RGBA>(width * height),
+})
+
 const clone = (bmp: Bitmap): Bitmap => ({
     width: bmp.width,
     height: bmp.height,
@@ -55,6 +61,7 @@ export const bitmap = {
     clone,
     contains,
     empty,
+    emptyUninitialized,
     getPixel,
     map,
     mapMut,

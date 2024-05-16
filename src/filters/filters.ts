@@ -3,13 +3,7 @@ import { bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { Filter } from "./filter";
 
-const swap = <T,>(array: Array<T>, i: number, j: number) => {
-    const iValue = array[i]
-    array[i] = array[j]
-    array[j] = iValue
-}
-
-const invert: Filter = (bmp: Bitmap): Bitmap => bitmap.map(bmp, color => {
+const invert: Filter = (source: Bitmap): Bitmap => bitmap.map(source, color => {
     const { r, g, b, a } = rgba.split(color)
     return rgba.pack(
         255 - r,
@@ -19,56 +13,44 @@ const invert: Filter = (bmp: Bitmap): Bitmap => bitmap.map(bmp, color => {
     )
 })
 
-const flipHorizontal: Filter = (bmp: Bitmap): Bitmap => {
-    const cloned = bitmap.clone(bmp)
-    const halfWidth = Math.floor(cloned.width / 2)
-    for (let y = 0; y < cloned.height; y++) {
-        for (let x = 0; x < halfWidth; x++) {
-            const left = bitmap.toIndex(cloned, x, y)
-            const right = bitmap.toIndex(cloned, bmp.width - x - 1, y)
-            swap(cloned.colorBuffer, left, right)
-        }
+const transform = (transformPt: (source: Bitmap, pt: Point) => void, initialize: boolean = true) =>
+    (source: Bitmap): Bitmap => {
+        const result = initialize
+            ? bitmap.empty(source.width, source.height)
+            : bitmap.emptyUninitialized(source.width, source.height)
+        source.colorBuffer.forEach((color, index) => {
+            const pt = bitmap.toPoint(source, index)
+            transformPt(source, pt)
+            bitmap.putPixelMut(result, pt, color)
+        })
+        return result
     }
-    return cloned
-}
 
-const flipVertical: Filter = (bmp) => {
-    const cloned = bitmap.clone(bmp)
-    const halfHeight = Math.floor(cloned.height / 2)
-    for (let y = 0; y < halfHeight; y++) {
-        for (let x = 0; x < cloned.width; x++) {
-            const top = bitmap.toIndex(cloned, x, y)
-            const bottom = bitmap.toIndex(cloned, x, cloned.height - y - 1)
-            swap(cloned.colorBuffer, top, bottom)
-        }
-    }
-    return cloned
-}
+const flipHorizontal: Filter = transform(
+    (source, pt) => {
+        pt.x = source.width - pt.x - 1
+    },
+    false
+)
 
-const rotate = (getTarget: (bmp: Bitmap, source: Point) => Point) => (bmp: Bitmap): Bitmap => {
-    const result = bitmap.empty(bmp.width, bmp.height)
-    const pixels = bmp.width * bmp.height
-    for (let index = 0; index < pixels; index++) {
-        const source = bitmap.toPoint(bmp, index)
-        const target = getTarget(bmp, source)
-        if (bitmap.contains(bmp, target)) bitmap.putPixelMut(
-            result,
-            target,
-            bitmap.getPixel(bmp, source)
-        )
-    }
-    return result
-}
+const flipVertical: Filter = transform(
+    (source, pt) => {
+        pt.y = source.height - pt.y - 1
+    },
+    false
+)
 
-const rotateClockwise: Filter = rotate((bmp, source) => ({
-    x: bmp.width - source.y - 1,
-    y: source.x
-}))
+const rotateClockwise: Filter = transform((source, pt) => {
+    const x = pt.x
+    pt.x = source.width - pt.y - 1
+    pt.y = x
+})
 
-const rotateCounterClockwise: Filter = rotate((bmp, source) => ({
-    x: source.y,
-    y: bmp.height - source.x - 1,
-}))
+const rotateCounterClockwise: Filter = transform((source, pt) => {
+    const x = pt.x
+    pt.x = pt.y
+    pt.y = source.height - x - 1
+})
 
 export const filters = {
     invert,

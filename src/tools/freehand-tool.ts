@@ -4,8 +4,6 @@ import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
 
-
-
 export class FreehandTool extends ToolBase {
     constructor(
         put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void,

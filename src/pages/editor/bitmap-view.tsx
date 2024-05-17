@@ -1,6 +1,6 @@
 import React from "react";
+import { bitmap } from "../../drawing";
 import { Bitmap } from "../../schema";
-import { bitmap, rgba } from "../../drawing";
 
 interface Props {
     bmp?: Bitmap
@@ -8,24 +8,11 @@ interface Props {
     style?: React.CSSProperties
 }
 
-const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap) => {
-    const lastColor = {
-        style: "#00000000",
-        value: rgba.transparent,
-    }
-    ctx.save()
+const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap, scale: number = 1) => {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
+    ctx.imageSmoothingEnabled = false
     ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight)
-    ctx.fillStyle = lastColor.style
-    bmp.colorBuffer.forEach((color, index) => {
-        if (color !== lastColor.value) {
-            lastColor.style = rgba.toString(color)
-            lastColor.value = color
-            ctx.fillStyle = lastColor.style
-        }
-        const { x, y } = bitmap.toPoint(bmp, index)
-        ctx.fillRect(x, y, 1, 1)
-    })
-    ctx.restore()
+    bitmap.draw(bmp, ctx)
 }
 
 export const BitmapView = ({ bmp, zoom, style }: Props): JSX.Element => {
@@ -36,9 +23,7 @@ export const BitmapView = ({ bmp, zoom, style }: Props): JSX.Element => {
         () => {
             const ctx = view.current?.getContext("2d") ?? undefined
             if (!ctx || !bmp) return
-            ctx.setTransform(scale, 0, 0, scale, 0, 0)
-            ctx.imageSmoothingEnabled = false
-            draw(ctx, bmp)
+            draw(ctx, bmp, scale)
         },
         [bmp, scale]
     )

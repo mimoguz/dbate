@@ -1,5 +1,5 @@
 import { Rect } from "../common"
-import { Point } from "../common/point"
+import { Point, point } from "../common/point"
 import { Bitmap } from "../schema/bitmap-schema"
 import { RGBA, rgba } from "./rgba-ops"
 
@@ -20,6 +20,52 @@ const clone = (bmp: Bitmap): Bitmap => ({
     height: bmp.height,
     colorBuffer: bmp.colorBuffer.slice(),
 })
+
+const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: Point) => {
+    const rect = sourceRect ?? {
+        x: 0,
+        y: 0,
+        w: source.width,
+        h: source.height,
+    }
+    const offset = targetOffset ?? point.zero()
+    const right = rect.x + rect.w
+    const bottom = rect.y + rect.h
+    const sourcePt = point.zero()
+    const targetPt = point.zero()
+    for (let y = rect.y; y < bottom; y++) {
+        if (y > target.height) break
+        for (let x = rect.x; x < right; x++) {
+            if (x > target.width) break
+            sourcePt.x = rect.x + x
+            sourcePt.y = rect.y + y
+            targetPt.x = sourcePt.x + offset.x
+            targetPt.y = sourcePt.y + offset.y
+            if (bitmap.contains(target, targetPt)) {
+                bitmap.putPixelMut(target, targetPt, bitmap.getPixel(source, sourcePt))
+            }
+        }
+    }
+}
+
+const draw = (
+    bmp: Bitmap,
+    context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    colorTransform: (color: RGBA) => RGBA = color => color,
+) => {
+    context.save()
+    let lastColor = rgba.transparent
+    context.fillStyle = rgba.toString(colorTransform(lastColor))
+    bmp.colorBuffer.forEach((color, index) => {
+        const { x, y } = bitmap.toPoint(bmp, index)
+        if (color != lastColor) {
+            lastColor = color
+            context.fillStyle = rgba.toString(colorTransform(lastColor))
+        }
+        context.fillRect(x, y, 1, 1)
+    })
+    context.restore()
+}
 
 const getPixel = (bmp: Bitmap, point: Point): RGBA => bmp.colorBuffer[point.y * bmp.width + point.x]
 
@@ -68,9 +114,14 @@ const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
     y >= 0 && y < bmp.height
 )
 
+/**
+ * Bitmap functions. None of them check if their input is valid, the onus is on the caller.
+ */
 export const bitmap = {
     clone,
     contains,
+    copy,
+    draw,
     empty,
     emptyUninitialized,
     fillRect,

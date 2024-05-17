@@ -17,11 +17,6 @@ export class MoveTool extends ToolBase {
 
     private startPt: Point = point.outside()
 
-    private lastColor = {
-        value: rgba.transparent,
-        style: "transparent",
-    }
-
     protected override handleStart() {
         this.startPt = this.pt
         this.fillCanvas()
@@ -37,16 +32,7 @@ export class MoveTool extends ToolBase {
         const dx = this.pt.x - this.startPt.x
         const dy = this.pt.y - this.startPt.y
         const cloned = bitmap.empty(this.bmp.width, this.bmp.height)
-        this.bmp.colorBuffer.forEach((color, index) => {
-            const source = bitmap.toPoint(cloned, index)
-            const target = {
-                x: source.x + dx,
-                y: source.y + dy
-            }
-            if (bitmap.contains(cloned, target)) {
-                bitmap.putPixelMut(cloned, target, color)
-            }
-        })
+        bitmap.copy(this.bmp, cloned, undefined, { x: dx, y: dy })
         this.clearOffscreen()
         this.startPt = point.outside()
         return resultBitmap(cloned)
@@ -60,9 +46,8 @@ export class MoveTool extends ToolBase {
     private fillCanvas() {
         if (!this.bmp) return
 
-        const bmp = this.bmp
-        const width = bmp.width
-        const height = bmp.height
+        const width = this.bmp.width
+        const height = this.bmp.height
 
         if (
             width != this.offscreenCanvas.width ||
@@ -74,21 +59,7 @@ export class MoveTool extends ToolBase {
             this.clearOffscreen()
         }
 
-        this.offscreenContext.save()
-        this.offscreenContext.fillStyle = this.lastColor.style
-        bmp.colorBuffer.forEach((color, index) => {
-            const { x, y } = bitmap.toPoint(bmp, index)
-            if (color != this.lastColor.value) {
-                this.lastColor = {
-                    value: color,
-                    style: rgba.toString(rgba.shift(color, 50, -50)),
-                }
-                this.offscreenContext.fillStyle = this.lastColor.style
-            }
-            this.offscreenContext.fillRect(x, y, 1, 1)
-        })
-
-        this.offscreenContext.restore()
+        bitmap.draw(this.bmp, this.offscreenContext, color => rgba.shift(color, 50, -50))
     }
 
     private draw() {

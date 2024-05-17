@@ -1,4 +1,4 @@
-import { Point, point } from "../common";
+import { Point } from "../common";
 import { RGBA, bitmap, flood, rgba } from "../drawing";
 import { Bitmap } from "../schema";
 import { ToolBase } from "./tool-base";
@@ -12,43 +12,19 @@ export class FloodTool extends ToolBase {
 
     private fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void
 
-    private pt: Point = point.outside()
-
-    start(pt: Point, bmp: Bitmap): void {
-        this.bmp = bmp
-        this.pt = pt
-        this.drawCursor(pt)
+    protected override handleStart(): void {
+        this.handleCursor(this.pt)
     }
 
-    moveTo(pt: Point): void {
-        if (!point.equals(pt, this.pt)) {
-            this.pt = pt
-            this.drawCursor(pt)
-        }
+    protected override handleProgress(): void {
+        this.handleCursor(this.pt)
     }
 
-    end(pt: Point): ToolResult | undefined {
-        if (this.bmp) {
-            const clone = bitmap.clone(this.bmp)
-            this.fill(clone, pt, rgba.fromString(this.opt.color))
-            const result = resultBitmap(clone)
-            this.reset()
-            this.drawCursor(pt)
-            return result
-        }
-        this.reset()
-        this.drawCursor(pt)
-        return undefined
-    }
-
-    protected override reset(): void {
-        super.reset()
-        this.pt = point.outside()
-    }
-
-    private drawCursor(pt: Point) {
-        this.clear()
-        this.context?.fillRect(pt.x, pt.y, 1, 1)
+    protected override handleEnd(): ToolResult | undefined {
+        if (!this.bmp) return undefined
+        const clone = bitmap.clone(this.bmp)
+        this.fill(clone, this.pt, rgba.fromString(this.options.color))
+        return resultBitmap(clone)
     }
 }
 

@@ -1,3 +1,3 @@
-import { ToolBase2 } from "./tool-base"
+import { ToolBase } from "./tool-base"
 
-export class NoopTool extends ToolBase2 { }
+export class NoopTool extends ToolBase { }

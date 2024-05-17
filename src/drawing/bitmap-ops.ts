@@ -1,3 +1,4 @@
+import { Rect } from "../common"
 import { Point } from "../common/point"
 import { Bitmap } from "../schema/bitmap-schema"
 import { RGBA, rgba } from "./rgba-ops"
@@ -45,6 +46,16 @@ const map = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA): Bitmap => {
     return cloned
 }
 
+const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA) => {
+    const right = rect.x + rect.w
+    const bottom = rect.y + rect.h
+    for (let y = rect.y; y < bottom; y++) {
+        for (let x = rect.x; x < right; x++) {
+            bitmap.putPixelMut(bmp, { x, y }, color)
+        }
+    }
+}
+
 const toIndex = (bmp: Bitmap, x: number, y: number): number => x + y * bmp.width
 
 const toPoint = (bmp: Bitmap, flatIndex: number): Point => ({
@@ -62,6 +73,7 @@ export const bitmap = {
     contains,
     empty,
     emptyUninitialized,
+    fillRect,
     getPixel,
     map,
     mapMut,

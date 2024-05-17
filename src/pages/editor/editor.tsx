@@ -4,13 +4,13 @@ import { clamp } from "../../common"
 import { ToggleGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
+import { Bitmap } from "../../schema"
 import { ColorPickerTool, Tool, ToolOptions, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
 import { NoopTool } from "../../tools/noop-tool"
+import { transforms } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-import { Bitmap } from "../../schema"
-import { filters } from "../../filters"
 
 const tools: Array<{
     item: Pick<ToggleGroupItem<number>, "icon" | "accessibleLabel" | "key">,
@@ -137,35 +137,35 @@ export const Editor = () => {
 
     const handleFlipHorizontal = () => {
         hero?.incrementalModify(doc => {
-            doc.logo = filters.flipHorizontal(doc.logo as Bitmap)
+            doc.logo = transforms.flipHorizontal(doc.logo as Bitmap)
             return doc
         })
     }
 
     const handleFlipVertical = () => {
         hero?.incrementalModify(doc => {
-            doc.logo = filters.flipVertical(doc.logo as Bitmap)
+            doc.logo = transforms.flipVertical(doc.logo as Bitmap)
             return doc
         })
     }
 
     const handleInvert = () => {
         hero?.incrementalModify(doc => {
-            doc.logo = filters.invert(doc.logo as Bitmap)
+            doc.logo = transforms.invert(doc.logo as Bitmap)
             return doc
         })
     }
 
     const handleRotateCW = () => {
         hero?.incrementalModify(doc => {
-            doc.logo = filters.rotateClockwise(doc.logo as Bitmap)
+            doc.logo = transforms.rotateClockwise(doc.logo as Bitmap)
             return doc
         })
     }
 
     const handleRotateCCW = () => {
         hero?.incrementalModify(doc => {
-            doc.logo = filters.rotateCounterClockwise(doc.logo as Bitmap)
+            doc.logo = transforms.rotateCounterClockwise(doc.logo as Bitmap)
             return doc
         })
     }

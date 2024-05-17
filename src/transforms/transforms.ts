@@ -1,9 +1,9 @@
 import { Point } from "../common";
 import { bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
-import { Filter } from "./filter";
+import { Transform } from "./transform";
 
-const invert: Filter = (source: Bitmap): Bitmap => bitmap.map(source, color => {
+const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color => {
     const { r, g, b, a } = rgba.split(color)
     return rgba.pack(
         255 - r,
@@ -26,33 +26,33 @@ const transform = (transformPt: (source: Bitmap, pt: Point) => void, initialize:
         return result
     }
 
-const flipHorizontal: Filter = transform(
+const flipHorizontal: Transform = transform(
     (source, pt) => {
         pt.x = source.width - pt.x - 1
     },
     false
 )
 
-const flipVertical: Filter = transform(
+const flipVertical: Transform = transform(
     (source, pt) => {
         pt.y = source.height - pt.y - 1
     },
     false
 )
 
-const rotateClockwise: Filter = transform((source, pt) => {
+const rotateClockwise: Transform = transform((source, pt) => {
     const x = pt.x
     pt.x = source.width - pt.y - 1
     pt.y = x
 })
 
-const rotateCounterClockwise: Filter = transform((source, pt) => {
+const rotateCounterClockwise: Transform = transform((source, pt) => {
     const x = pt.x
     pt.x = pt.y
     pt.y = source.height - x - 1
 })
 
-export const filters = {
+export const transforms = {
     invert,
     flipHorizontal,
     flipVertical,

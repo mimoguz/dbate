@@ -57,18 +57,18 @@ export abstract class ToolBase implements Tool {
  * Override handle... methods to add functionality 
  * */
 export abstract class ToolBase2 implements Tool {
-    handleInit(): void { }
-    handleStart(): void { }
-    handleProgress(): void { }
-    handleEnd(): ToolResult | undefined { return undefined }
-    handleCancel(): void { }
-    handleOptionsChanged(): void { }
-    handleContextChanged(): void { }
-    handleCursor(currentPt: Point): void { this.ctx?.fillRect(currentPt.x, currentPt.y, 1, 1) }
+    protected handleInit(): void { }
+    protected handleStart(): void { }
+    protected handleProgress(): void { }
+    protected handleEnd(): ToolResult | undefined { return undefined }
+    protected handleCancel(): void { }
+    protected handleOptionsChanged(): void { }
+    protected handleContextChanged(): void { }
+    protected handleCursor(currentPt: Point): void { this.ctx?.fillRect(currentPt.x, currentPt.y, 1, 1) }
 
-    protected ctx: CanvasRenderingContext2D | undefined
+    private ctx: CanvasRenderingContext2D | undefined
 
-    protected opt: ToolOptions = {
+    private opt: ToolOptions = {
         color: "black",
         brushSize: 1
     }
@@ -110,6 +110,7 @@ export abstract class ToolBase2 implements Tool {
         if (this.isDrawing) {
             this.handleProgress()
         } else {
+            this.clear()
             this.handleCursor(pt)
         }
     }

@@ -1,8 +1,8 @@
-import { Point, point } from "../common";
+import { Point } from "../common";
 import { RGBA, bitmap, rgba } from "../drawing";
 import { Bitmap } from "../schema";
-import { ToolBase } from "./tool-base";
-import { ToolOptions, ToolResult, resultBitmap } from "./tool-result";
+import { ToolBase2 } from "./tool-base";
+import { ToolResult, resultBitmap } from "./tool-result";
 
 interface Rect {
     x: number
@@ -11,150 +11,138 @@ interface Rect {
     h: number
 }
 
-export class FreehandTool extends ToolBase {
+export class FreehandTool extends ToolBase2 {
     constructor(
-        draw: (context: CanvasRenderingContext2D, rect: Rect) => void,
         put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void,
-        rectFactory?: (brushSize: number) => (pt: Point, brushSize: number) => Rect
+        rectFactory?: (brushSize: number) => (pt: Point) => Rect
     ) {
         super()
-        this.draw = draw
         this.put = put
         if (rectFactory) this.rectFactory = rectFactory
         this.getRect = this.rectFactory(this.options.brushSize)
     }
 
-    private readonly draw: (context: CanvasRenderingContext2D, rect: Rect) => void
-
     private readonly put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void
 
     private readonly stroke: Array<Rect> = []
 
-    private pt: Point = point.outside()
-
-    private isDrawing: boolean = false
-
     private color: RGBA = rgba.transparent
 
-    private getRect: (pt: Point, brushSize: number) => Rect
+    private getRect: (pt: Point) => Rect
 
-    private readonly rectFactory: (brushSize: number) => (pt: Point, brushSize: number) => Rect = (brushSize: number) => {
-        const shift = Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
-        return ((pt: Point, brushSize: number) => ({
-            x: pt.x - shift,
-            y: pt.y - shift,
-            w: brushSize,
-            h: brushSize,
-        }))
-    }
+    private readonly rectFactory: (brushSize: number) => (pt: Point) => Rect = () => pt => ({ ...pt, w: 1, h: 1 })
 
-    override set options(value: ToolOptions) {
-        super.options = value
-        this.getRect = this.rectFactory(value.brushSize)
+    protected override handleOptionsChanged(): void {
+        this.getRect = this.rectFactory(this.options.brushSize)
         this.color = rgba.fromString(this.options.color)
-        if (!this.isDrawing) this.drawCursor(this.pt)
+        if (!this.isDrawing) {
+            this.clear()
+            this.handleCursor(this.pt)
+        }
     }
 
-    override get options(): ToolOptions {
-        return super.options
-    }
-
-    override start(pt: Point, bmp: Bitmap): void {
-        this.bmp = bmp;
-        this.isDrawing = true
-        this.pt = pt;
+    protected override handleStart(): void {
         this.drawCurrentPoint()
     }
 
-    override moveTo(pt: Point): void {
-        if (point.equals(pt, this.pt)) return
-        if (this.isDrawing) {
-            this.pt = pt
-            this.drawCurrentPoint()
-        } else {
-            this.clear()
-            this.drawCursor(pt)
-        }
+    protected override handleProgress(): void {
+        this.drawCurrentPoint()
     }
 
-    override end(pt: Point): ToolResult | undefined {
-        this.moveTo(pt)
-        if (this.isDrawing && this.bmp) {
-            const clone = bitmap.clone(this.bmp)
-            this.put(clone, this.stroke, this.color)
-            const result = resultBitmap(clone)
-            this.reset()
-            this.drawCursor(pt)
-            return result
-        }
-        return undefined
-    }
-
-    protected override reset(): void {
-        super.reset()
+    protected override handleEnd(): ToolResult | undefined {
+        if (!this.bmp) return undefined
+        const clone = bitmap.clone(this.bmp)
+        this.put(clone, this.stroke, this.color)
         this.stroke.splice(0)
-        this.pt = point.outside()
-        this.isDrawing = false
+        return resultBitmap(clone)
     }
 
-    private drawCursor(pt: Point) {
+    protected override handleCancel(): void {
+        this.stroke.splice(0)
+    }
+
+    protected override handleCursor(currentPt: Point): void {
         if (!this.context) return
-        const rect = this.getRect(pt, this.opt.brushSize)
-        this.draw(this.context, rect)
+        const rect = this.getRect(currentPt)
+        this.clear()
+        this.drawRect(rect)
     }
 
     private drawCurrentPoint() {
-        const rect = this.getRect(this.pt, this.opt.brushSize)
-        if (this.context) this.draw(this.context, rect)
+        const rect = this.getRect(this.pt)
+        this.drawRect(rect)
         this.stroke.push(rect)
+    }
+
+    private drawRect(rect: Rect) {
+        this.context?.fillRect(rect.x, rect.y, rect.w, rect.h)
     }
 }
 
-const fillStroke = (target: Bitmap, stroke: Array<Rect>, color: RGBA) => {
+const fillStroke = (bmp: Bitmap, stroke: Array<Rect>, color: RGBA) => {
     for (const rect of stroke) {
         const right = rect.x + rect.w
         const bottom = rect.y + rect.h
         for (let y = rect.y; y < bottom; y++) {
             for (let x = rect.x; x < right; x++) {
-                bitmap.putPixelMut(target, { x, y }, color)
+                bitmap.putPixelMut(bmp, { x, y }, color)
             }
         }
     }
 }
 
+const getShift = (brushSize: number): number => Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
+
 export const freehandTools = {
     pencil: () => new FreehandTool(
-        (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
+        brushSize => {
+            const shift = getShift(brushSize)
+            return ((pt: Point) => ({
+                x: pt.x - shift,
+                y: pt.y - shift,
+                w: brushSize,
+                h: brushSize,
+            }))
+        },
     ),
+
     markerPenHorizontal: () => new FreehandTool(
-        (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
-        (brushSize: number) => {
-            const shift = Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
-            return ((pt: Point, brushSize: number) => ({
+        brushSize => {
+            const shift = getShift(brushSize)
+            return ((pt: Point) => ({
                 x: pt.x - shift,
                 y: pt.y,
                 w: brushSize,
                 h: 1,
             }))
-        }
+        },
     ),
+
     markerPenVertical: () => new FreehandTool(
-        (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
         fillStroke,
-        (brushSize: number) => {
-            const shift = Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
-            return ((pt: Point, brushSize: number) => ({
+        brushSize => {
+            const shift = getShift(brushSize)
+            return ((pt: Point) => ({
                 x: pt.x,
                 y: pt.y - shift,
                 w: 1,
                 h: brushSize,
             }))
-        }
+        },
     ),
+
     eraser: () => new FreehandTool(
-        (context: CanvasRenderingContext2D, rect: Rect) => context.fillRect(rect.x, rect.y, rect.w, rect.h),
-        (target: Bitmap, stroke: Array<Rect>) => fillStroke(target, stroke, rgba.transparent),
+        (target, stroke) => fillStroke(target, stroke, rgba.transparent),
+        brushSize => {
+            const shift = getShift(brushSize)
+            return ((pt: Point) => ({
+                x: pt.x - shift,
+                y: pt.y - shift,
+                w: brushSize,
+                h: brushSize,
+            }))
+        },
     )
 } as const

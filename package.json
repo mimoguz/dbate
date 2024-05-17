@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "7.9.1",
-    "@mantine/hooks": "7.9.1",
+    "@mantine/core": "7.9.2",
+    "@mantine/hooks": "7.9.2",
     "@types/color-rgba": "^2.1.2",
     "color-rgba": "^3.0.0",
     "react": "^18.3.1",

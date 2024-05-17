@@ -41,13 +41,13 @@ const fromString = (colorStr: string): RGBA => {
     return pack(r, g, b, a * 255)
 }
 
-const shift = (value: RGBA, offset: number): RGBA => {
+const shift = (value: RGBA, offset: number, alphaOffset: number = 0): RGBA => {
     const { r, g, b, a } = split(value)
     return pack(
         asUByte(r + offset),
         asUByte(g + offset),
         asUByte(b + offset),
-        a
+        asUByte(a + alphaOffset),
     )
 }
 

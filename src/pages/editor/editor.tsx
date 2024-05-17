@@ -5,7 +5,7 @@ import { ToggleGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
 import { Bitmap } from "../../schema"
-import { ColorPickerTool, Tool, ToolOptions, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
+import { ColorPickerTool, MoveTool, Tool, ToolOptions, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
 import { NoopTool } from "../../tools/noop-tool"
 import { transforms } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
@@ -96,12 +96,20 @@ const tools: Array<{
             },
             factory: () => new ColorPickerTool(),
         },
+        {
+            item: {
+                icon: <i.MoveMd />,
+                accessibleLabel: "Move",
+                key: "move",
+            },
+            factory: () => new MoveTool(),
+        },
     ]
 
 const toolItems: Array<ToggleGroupItem<number>> = tools.map((tool, index) => ({
+    ...tool.item,
     value: index,
     tooltip: <Text>{tool.item.accessibleLabel}</Text>,
-    ...tool.item
 }))
 
 const createTool = (index: number): Tool => (tools.at(index)?.factory ?? (() => new NoopTool()))()

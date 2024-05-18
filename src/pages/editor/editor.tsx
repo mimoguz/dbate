@@ -1,4 +1,18 @@
-import { ActionIcon, Center, ColorPicker, ColorSwatch, Divider, Group, Popover, PopoverDropdown, PopoverTarget, Slider, Stack, Text, Title } from "@mantine/core"
+import {
+    ActionIcon,
+    Center,
+    ColorPicker,
+    ColorSwatch,
+    Divider,
+    Group,
+    Popover,
+    PopoverDropdown,
+    PopoverTarget,
+    Slider,
+    Stack,
+    Text,
+    Title
+} from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
 import { clamp } from "../../common"
 import { ToolGroupItem } from "../../common/components"
@@ -116,6 +130,8 @@ const toolItems: Array<ToolGroupItem<number>> = tools.map((tool, index) => ({
 
 const createTool = (index: number): Tool => (tools.at(index)?.factory ?? (() => new NoopTool()))()
 
+const MAX_ZOOM = 32
+
 export const Editor = () => {
     const hero = DB.useHero("Bob")
     const [toolIndex, setToolIndex] = React.useState(0)
@@ -141,7 +157,7 @@ export const Editor = () => {
     const handleWheel: React.WheelEventHandler = e => {
         if (e.shiftKey) {
             e.stopPropagation()
-            setZoom(z => clamp(1, 32, e.deltaY * -0.01 + z))
+            setZoom(z => clamp(1, MAX_ZOOM, e.deltaY * -0.01 + z))
         }
     }
 
@@ -200,7 +216,7 @@ export const Editor = () => {
             <div className={classes.editor__sidebar}>
                 <Stack gap="sm" px="sm" py="md">
                     <Group gap="6px">
-                        <Popover >
+                        <Popover position="bottom-start" withArrow shadow="md">
                             <PopoverTarget>
                                 <ActionIcon size="lg" variant="outline">
                                     <Text size="sm" fw={600}>{toolOptions.brushSize}px</Text>
@@ -216,7 +232,7 @@ export const Editor = () => {
                                 />
                             </PopoverDropdown>
                         </Popover>
-                        <Popover >
+                        <Popover position="right-start" withArrow shadow="md">
                             <PopoverTarget>
                                 <ActionIcon size="lg" variant="outline">
                                     <ColorSwatch color={toolOptions.color} />
@@ -310,7 +326,19 @@ export const Editor = () => {
                     : null}
             </main>
             <footer className={classes.editor__footer}>
-                ...
+                <Center p="xs">
+                    <Group>
+                        <i.MagnifyingGlassSm />
+                        <Slider
+                            w={310}
+                            min={1}
+                            max={MAX_ZOOM}
+                            value={Math.floor(zoom)}
+                            onChange={setZoom}
+                        />
+                        <i.MagnifyingGlassSm color="transparent" />
+                    </Group>
+                </Center>
             </footer>
         </div>
     )

@@ -1,7 +1,7 @@
-import { ActionIcon, Center, ColorPicker, ColorSwatch, Divider, Group, Popover, PopoverDropdown, PopoverTarget, Slider, Text, Title } from "@mantine/core"
+import { ActionIcon, Center, ColorPicker, ColorSwatch, Divider, Group, Popover, PopoverDropdown, PopoverTarget, Slider, Stack, Text, Title } from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
 import { clamp } from "../../common"
-import { ToggleGroupItem } from "../../common/components"
+import { ToolGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
 import { Bitmap } from "../../schema"
@@ -15,7 +15,7 @@ import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
 const tools: Array<{
-    item: Pick<ToggleGroupItem<number>, "icon" | "accessibleLabel" | "key">,
+    item: Pick<ToolGroupItem<number>, "icon" | "accessibleLabel" | "key">,
     factory: () => Tool
 }> = [
         {
@@ -76,6 +76,14 @@ const tools: Array<{
         },
         {
             item: {
+                icon: <i.EyeDropperMd />,
+                accessibleLabel: "Color picker",
+                key: "color-picker",
+            },
+            factory: () => new ColorPickerTool(),
+        },
+        {
+            item: {
                 icon: <i.EraserMd />,
                 accessibleLabel: "Eraser",
                 key: "eraser",
@@ -92,14 +100,6 @@ const tools: Array<{
         },
         {
             item: {
-                icon: <i.EyeDropperMd />,
-                accessibleLabel: "Color picker",
-                key: "color-picker",
-            },
-            factory: () => new ColorPickerTool(),
-        },
-        {
-            item: {
                 icon: <i.MoveMd />,
                 accessibleLabel: "Move",
                 key: "move",
@@ -108,7 +108,7 @@ const tools: Array<{
         },
     ]
 
-const toolItems: Array<ToggleGroupItem<number>> = tools.map((tool, index) => ({
+const toolItems: Array<ToolGroupItem<number>> = tools.map((tool, index) => ({
     ...tool.item,
     value: index,
     tooltip: <Text>{tool.item.accessibleLabel}</Text>,
@@ -191,12 +191,15 @@ export const Editor = () => {
     }))
 
     return (
-        <div onWheel={handleWheel} style={{ height: "100vh" }}>
-            <header><Title order={2}>{hero?.name}</Title></header>
-            <Center p="md">
-                <Group gap="lg">
-                    <Group gap="xs">
-                        <Text fw={600} size="sm">Brush</Text>
+        <div onWheel={handleWheel} className={classes.editor}>
+            <header className={classes.editor__header}>
+                <Center p="md">
+                    <Title order={2}>{hero?.name}</Title>
+                </Center>
+            </header>
+            <div className={classes.editor__sidebar}>
+                <Stack gap="sm" px="sm" py="md">
+                    <Group gap="6px">
                         <Popover >
                             <PopoverTarget>
                                 <ActionIcon size="lg" variant="outline">
@@ -233,7 +236,7 @@ export const Editor = () => {
                             </PopoverDropdown>
                         </Popover>
                     </Group>
-                    <Divider orientation="vertical" />
+                    <Divider orientation="horizontal" />
                     <Toolbar
                         tools={toolItems}
                         toolIndex={toolIndex}
@@ -244,68 +247,71 @@ export const Editor = () => {
                         onRotateClockwise={handleRotateCW}
                         onRotateCounterClockwise={handleRotateCCW}
                     />
-                </Group>
-            </Center>
-            {hero
-                ? (
-                    <Center p="xl" className={classes.band}>
-                        <div
-                            style={{
-                                display: "grid",
-                                backgroundColor: "white"
-                            }}
-                        >
-                            <Checkerboard
-                                width={hero.logo.width}
-                                height={hero.logo.height}
-                                zoom={Math.floor(zoom)}
+                </Stack>
+            </div>
+            <main className={classes.editor__main}>
+                {hero
+                    ? (
+                        <Center p="xl" h="100%">
+                            <div
                                 style={{
-                                    gridArea: "1 / 1",
-                                    zIndex: 1,
-                                    opacity: 0.1,
-                                    pointerEvents: "none",
+                                    display: "grid",
+                                    backgroundColor: "white"
                                 }}
-                            />
-                            <BitmapView
-                                bmp={hero.logo as Bitmap}
-                                zoom={Math.floor(zoom)}
-                                style={{
-                                    gridArea: "1 / 1",
-                                    zIndex: 2,
-                                }}
-                            />
-                            <ToolPreview
-                                {...toolOptions}
-                                bmp={hero.logo as Bitmap}
-                                tool={tool}
-                                zoom={Math.floor(zoom)}
-                                onDone={handlePaint}
-                                style={{
-                                    gridArea: "1 / 1",
-                                    zIndex: 3,
-                                    mixBlendMode: "difference",
-                                    opacity: 0.7
-                                }}
-                            />
-                            <Checkerboard
-                                width={hero.logo.width}
-                                height={hero.logo.height}
-                                zoom={Math.floor(zoom)}
-                                style={{
-                                    gridArea: "1 / 1",
-                                    zIndex: 4,
-                                    opacity: 0.1,
-                                    pointerEvents: "none",
-                                    visibility: "collapse",
-                                }}
-                            />
-                        </div>
-                    </Center>
-                )
-                : null}
-            <Center p="lg">
-
-            </Center>
+                                className={classes.editor__canvas__stack}
+                            >
+                                <Checkerboard
+                                    width={hero.logo.width}
+                                    height={hero.logo.height}
+                                    zoom={Math.floor(zoom)}
+                                    style={{
+                                        gridArea: "1 / 1",
+                                        zIndex: 1,
+                                        opacity: 0.1,
+                                        pointerEvents: "none",
+                                    }}
+                                />
+                                <BitmapView
+                                    bmp={hero.logo as Bitmap}
+                                    zoom={Math.floor(zoom)}
+                                    style={{
+                                        gridArea: "1 / 1",
+                                        zIndex: 2,
+                                    }}
+                                />
+                                <ToolPreview
+                                    {...toolOptions}
+                                    bmp={hero.logo as Bitmap}
+                                    tool={tool}
+                                    zoom={Math.floor(zoom)}
+                                    onDone={handlePaint}
+                                    style={{
+                                        gridArea: "1 / 1",
+                                        zIndex: 3,
+                                        mixBlendMode: "difference",
+                                        opacity: 0.7
+                                    }}
+                                />
+                                <Checkerboard
+                                    width={hero.logo.width}
+                                    height={hero.logo.height}
+                                    zoom={Math.floor(zoom)}
+                                    style={{
+                                        gridArea: "1 / 1",
+                                        zIndex: 4,
+                                        opacity: 0.1,
+                                        pointerEvents: "none",
+                                        visibility: "collapse",
+                                    }}
+                                />
+                            </div>
+                        </Center>
+                    )
+                    : null}
+            </main>
+            <footer className={classes.editor__footer}>
+                ...
+            </footer>
         </div>
     )
 }

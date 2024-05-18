@@ -1,6 +1,6 @@
-import { ActionIcon, Flex, StyleProp, Tooltip } from "@mantine/core"
+import { ActionIcon, SimpleGrid, StyleProp, Tooltip } from "@mantine/core"
 
-export interface ToggleGroupItem<T> {
+export interface ToolGroupItem<T> {
     icon: JSX.Element,
     accessibleLabel: string,
     tooltip: JSX.Element
@@ -9,17 +9,18 @@ export interface ToggleGroupItem<T> {
 }
 
 interface Props<T> {
-    items: Array<ToggleGroupItem<T>>,
+    items: Array<ToolGroupItem<T>>,
     value: T,
     onChange: (value: T) => void,
     direction?: StyleProp<"row" | "column">
 }
 
-export const ToggleGroup = <T,>({ items, value, onChange, direction }: Props<T>): JSX.Element => {
+export const ToolGroup = <T,>({ items, value, onChange, direction }: Props<T>): JSX.Element => {
     const handleClick = (itemValue: T) => () => onChange(itemValue)
+    const cols = direction === "column" ? 2 : Math.ceil(items.length / 2)
 
     return (
-        <Flex gap="xs" direction={direction ?? "row"} wrap="wrap">
+        <SimpleGrid cols={cols} style={{ width: "fit-content" }} spacing="6px" verticalSpacing="6px">
             {items.map(({ icon, accessibleLabel, tooltip, value: itemValue, key }, index) => (
                 <Tooltip label={tooltip} key={key ?? index}>
                     <ActionIcon
@@ -33,6 +34,6 @@ export const ToggleGroup = <T,>({ items, value, onChange, direction }: Props<T>)
                     </ActionIcon>
                 </Tooltip>
             ))}
-        </Flex>
+        </SimpleGrid>
     )
 } 

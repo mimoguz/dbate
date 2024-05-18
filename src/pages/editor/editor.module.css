@@ -1,3 +1,31 @@
-.band {
-    background-color: var(--mantine-color-gray-filled);
+.editor {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.editor__header {
+    grid-area: 1 / 1 / 2 / 3;
+    border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.editor__sidebar {
+    grid-area: 2 / 1 / 4 / 2;
+    border-right: 1px solid var(--mantine-color-default-border);
+
+}
+
+.editor__main {
+    grid-area: 2 / 2;
+    overflow: auto;
+}
+
+.editor__footer {
+    grid-area: 3 / 2;
+    border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.editor__canvas__stack {
+    border: 1px solid var(--mantine-color-default-border);
 }

@@ -1,9 +1,9 @@
-import { ActionIcon, Divider, Group } from "@mantine/core"
-import { ToggleGroup, ToggleGroupItem } from "../../common/components"
+import { ActionIcon, Divider, SimpleGrid, Stack } from "@mantine/core"
+import { ToolGroup, ToolGroupItem } from "../../common/components"
 import * as i from "../../icons"
 
 interface Props {
-    tools: Array<ToggleGroupItem<number>>
+    tools: Array<ToolGroupItem<number>>
     toolIndex: number,
     onChange: (index: number) => void
     onInvert?: () => void
@@ -14,17 +14,15 @@ interface Props {
 }
 
 export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element => (
-    <Group gap="md" p={0}>
-        <ToggleGroup
+    <Stack gap="sm" p={0}>
+        <ToolGroup
+            direction="column"
             items={tools}
             value={toolIndex}
             onChange={actions.onChange}
         />
-        <Divider orientation="vertical" />
-        <Group gap="xs" p={0}>
-            <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
-                <i.InvertMd />
-            </ActionIcon>
+        <Divider orientation="horizontal" />
+        <SimpleGrid cols={2} style={{ width: "fit-content" }} spacing="6px" verticalSpacing="6px">
             <ActionIcon onClick={actions.onFlipHorizontal} variant="subtle" size="lg">
                 <i.FlipHorizontalMd />
             </ActionIcon>
@@ -37,6 +35,9 @@ export const Toolbar = ({ tools, toolIndex, ...actions }: Props): JSX.Element =>
             <ActionIcon onClick={actions.onRotateCounterClockwise} variant="subtle" size="lg">
                 <i.RotateCounterClockwiseMd />
             </ActionIcon>
-        </Group>
-    </Group>
+            <ActionIcon onClick={actions.onInvert} variant="subtle" size="lg">
+                <i.InvertMd />
+            </ActionIcon>
+        </SimpleGrid>
+    </Stack>
 )

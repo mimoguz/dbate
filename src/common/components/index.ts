@@ -1,1 +1,1 @@
-export { type ToggleGroupItem, ToggleGroup } from "./toggle-group";
+export { type ToolGroupItem, ToolGroup } from "./tool-group";

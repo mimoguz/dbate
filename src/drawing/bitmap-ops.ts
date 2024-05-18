@@ -93,8 +93,8 @@ const map = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA): Bitmap => {
 }
 
 const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA) => {
-    const right = rect.w
-    const bottom = rect.h
+    const right = rect.x + rect.w
+    const bottom = rect.y + rect.h
     for (let y = rect.y; y < bottom; y++) {
         for (let x = rect.x; x < right; x++) {
             bitmap.putPixelMut(bmp, { x, y }, color)

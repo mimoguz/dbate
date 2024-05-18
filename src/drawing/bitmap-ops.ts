@@ -37,8 +37,8 @@ const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: 
         if (y > target.height) break
         for (let x = rect.x; x < right; x++) {
             if (x > target.width) break
-            sourcePt.x = rect.x + x
-            sourcePt.y = rect.y + y
+            sourcePt.x = x
+            sourcePt.y = y
             targetPt.x = sourcePt.x + offset.x
             targetPt.y = sourcePt.y + offset.y
             if (bitmap.contains(target, targetPt)) {
@@ -93,8 +93,8 @@ const map = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA): Bitmap => {
 }
 
 const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA) => {
-    const right = rect.x + rect.w
-    const bottom = rect.y + rect.h
+    const right = rect.w
+    const bottom = rect.h
     for (let y = rect.y; y < bottom; y++) {
         for (let x = rect.x; x < right; x++) {
             bitmap.putPixelMut(bmp, { x, y }, color)

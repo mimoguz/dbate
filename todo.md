@@ -18,3 +18,6 @@
 ## Database
 - [ ] Export/import
 - [ ] Export images
+
+## General
+[ ] TESTS!!!

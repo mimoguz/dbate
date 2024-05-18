@@ -4,9 +4,8 @@ import { bitmap } from "./bitmap-ops"
 import { RGBA, rgba } from "./rgba-ops"
 
 const canSpread = (pt: Point, sampleColor: RGBA, bmp: Bitmap): boolean => (
-    pt.x >= 0 && pt.x < bmp.width &&
-    pt.y >= 0 && pt.y < bmp.height &&
-    bitmap.getPixel(bmp, pt) === sampleColor
+    bitmap.contains(bmp, pt)
+    && bitmap.getPixel(bmp, pt) === sampleColor
 )
 
 const spread = (

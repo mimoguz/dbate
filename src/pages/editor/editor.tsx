@@ -40,6 +40,7 @@ export const Editor = () => {
     })
     const [isDarkBg, setDarkBg] = React.useState(false)
     const [isCheckerVisible, setCheckerVisible] = React.useState(false)
+    const [recentColors, setRecentColors] = React.useState<Array<string>>(["#0000ff"])
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
 
     const handlePaint = useCallback((result: ToolResult | undefined) => {
@@ -74,10 +75,10 @@ export const Editor = () => {
         }
     }
 
-    const setColor = (color: string) => setToolOptions(opt => ({
-        brushSize: opt.brushSize,
-        color,
-    }))
+    const setColor = (color: string) => {
+        setToolOptions(opt => ({ brushSize: opt.brushSize, color }))
+        setRecentColors(cols => cols.indexOf(color) >= 0 ? cols : [color, ...cols.slice(0, 2)])
+    }
 
     const setBrushSize = (brushSize: number) => setToolOptions(opt => ({
         color: opt.color,
@@ -87,7 +88,6 @@ export const Editor = () => {
     const handleDarkBgClick = () => setDarkBg(bg => !bg)
 
     const handleCheckerClick = () => setCheckerVisible(visible => !visible)
-
 
     return (
         <div onWheel={handleWheel} className={classes.editor}>
@@ -142,6 +142,16 @@ export const Editor = () => {
                         toolIndex={toolIndex}
                         onChange={setToolIndex}
                     />
+                    <Divider orientation="horizontal" />
+                    <Stack align="center">
+                        {recentColors.map(col => (
+                            <ColorSwatch
+                                color={col}
+                                onClick={() => setColor(col)}
+                                style={{ cursor: "pointer" }}
+                            />
+                        ))}
+                    </Stack>
                 </Stack>
             </div>
             <main className={classes.editor__main}>

@@ -9,138 +9,38 @@ import {
     PopoverDropdown,
     PopoverTarget,
     Slider,
+    Space,
     Stack,
     Text,
     Title
 } from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
 import { clamp } from "../../common"
-import { ToolGroupItem } from "../../common/components"
 import * as DB from "../../database"
 import * as i from "../../icons"
 import { Bitmap } from "../../schema"
-import { ColorPickerTool, MoveTool, Tool, ToolOptions, ToolResult, boundedTools, floodTools, freehandTools } from "../../tools"
-import { NoopTool } from "../../tools/noop-tool"
-import { transforms } from "../../transforms"
+import { ToolOptions, ToolResult } from "../../tools"
 import { BitmapView } from "./bitmap-view"
 import { Checkerboard } from "./checkerboard"
+import { createTool, editorTools } from "./editor-tools"
+import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-
-const tools: Array<{
-    item: Pick<ToolGroupItem<number>, "icon" | "accessibleLabel" | "key">,
-    factory: () => Tool
-}> = [
-        {
-            item: {
-                icon: <i.LineMd />,
-                accessibleLabel: "Draw line",
-                key: "line",
-            },
-            factory: boundedTools.line,
-        },
-        {
-            item: {
-                icon: <i.RectangleMd />,
-                accessibleLabel: "Draw rectangle",
-                key: "rectangle",
-            },
-            factory: boundedTools.rectangle,
-        },
-        {
-            item: {
-                icon: <i.EllipseMd />,
-                accessibleLabel: "Draw ellipse",
-                key: "ellipse",
-            },
-            factory: boundedTools.ellipse,
-        },
-        {
-            item: {
-                icon: <i.PencilMd />,
-                accessibleLabel: "Pencil",
-                key: "pencil",
-            },
-            factory: freehandTools.pencil,
-        },
-        {
-            item: {
-                icon: <i.MarkerHorizontalMd />,
-                accessibleLabel: "Horizontal marker",
-                key: "marker-horizontal",
-            },
-            factory: freehandTools.markerPenHorizontal,
-        },
-        {
-            item: {
-                icon: <i.MarkerVerticalMd />,
-                accessibleLabel: "Vertical marker",
-                key: "marker-vertical",
-            },
-            factory: freehandTools.markerPenVertical,
-        },
-        {
-            item: {
-                icon: <i.BucketMd />,
-                accessibleLabel: "Flood fill",
-                key: "flood-fill",
-            },
-            factory: floodTools.bucket,
-        },
-        {
-            item: {
-                icon: <i.EyeDropperMd />,
-                accessibleLabel: "Color picker",
-                key: "color-picker",
-            },
-            factory: () => new ColorPickerTool(),
-        },
-        {
-            item: {
-                icon: <i.EraserMd />,
-                accessibleLabel: "Eraser",
-                key: "eraser",
-            },
-            factory: freehandTools.eraser,
-        },
-        {
-            item: {
-                icon: <i.AreaEraserMd />,
-                accessibleLabel: "Area eraser",
-                key: "flood-erase",
-            },
-            factory: floodTools.eraser,
-        },
-        {
-            item: {
-                icon: <i.MoveMd />,
-                accessibleLabel: "Move",
-                key: "move",
-            },
-            factory: () => new MoveTool(),
-        },
-    ]
-
-const toolItems: Array<ToolGroupItem<number>> = tools.map((tool, index) => ({
-    ...tool.item,
-    value: index,
-    tooltip: <Text>{tool.item.accessibleLabel}</Text>,
-}))
-
-const createTool = (index: number): Tool => (tools.at(index)?.factory ?? (() => new NoopTool()))()
 
 const MAX_ZOOM = 32
 
 export const Editor = () => {
     const hero = DB.useHero("Bob")
     const [toolIndex, setToolIndex] = React.useState(0)
-    const tool = useMemo(() => createTool(toolIndex), [toolIndex])
     const [zoom, setZoom] = React.useState(16)
     const [toolOptions, setToolOptions] = React.useState<ToolOptions>({
         color: "#0000ff",
         brushSize: 3,
     })
+    const [isDarkBg, setDarkBg] = React.useState(false)
+    const [isCheckerVisible, setCheckerVisible] = React.useState(false)
+    const tool = useMemo(() => createTool(toolIndex), [toolIndex])
 
     const handlePaint = useCallback((result: ToolResult | undefined) => {
         if (!result) return
@@ -154,46 +54,24 @@ export const Editor = () => {
         }
     }, [hero])
 
+    const editorTransforms = React.useMemo(
+        () => editorTransformItems.map(({ item, transformAction }) => ({
+            ...item,
+            action: hero?.logo
+                ? () => hero?.incrementalModify(doc => {
+                    doc.logo = transformAction(hero.logo as Bitmap)
+                    return doc
+                })
+                : () => { }
+        })),
+        [hero]
+    )
+
     const handleWheel: React.WheelEventHandler = e => {
         if (e.shiftKey) {
             e.stopPropagation()
             setZoom(z => clamp(1, MAX_ZOOM, e.deltaY * -0.01 + z))
         }
-    }
-
-    const handleFlipHorizontal = () => {
-        hero?.incrementalModify(doc => {
-            doc.logo = transforms.flipHorizontal(doc.logo as Bitmap)
-            return doc
-        })
-    }
-
-    const handleFlipVertical = () => {
-        hero?.incrementalModify(doc => {
-            doc.logo = transforms.flipVertical(doc.logo as Bitmap)
-            return doc
-        })
-    }
-
-    const handleInvert = () => {
-        hero?.incrementalModify(doc => {
-            doc.logo = transforms.invert(doc.logo as Bitmap)
-            return doc
-        })
-    }
-
-    const handleRotateCW = () => {
-        hero?.incrementalModify(doc => {
-            doc.logo = transforms.rotateClockwise(doc.logo as Bitmap)
-            return doc
-        })
-    }
-
-    const handleRotateCCW = () => {
-        hero?.incrementalModify(doc => {
-            doc.logo = transforms.rotateCounterClockwise(doc.logo as Bitmap)
-            return doc
-        })
     }
 
     const setColor = (color: string) => setToolOptions(opt => ({
@@ -206,6 +84,11 @@ export const Editor = () => {
         brushSize,
     }))
 
+    const handleDarkBgClick = () => setDarkBg(bg => !bg)
+
+    const handleCheckerClick = () => setCheckerVisible(visible => !visible)
+
+
     return (
         <div onWheel={handleWheel} className={classes.editor}>
             <header className={classes.editor__header}>
@@ -214,7 +97,7 @@ export const Editor = () => {
                 </Center>
             </header>
             <div className={classes.editor__sidebar}>
-                <Stack gap="sm" px="sm" py="md">
+                <Stack gap="sm" px="xs" py="sm">
                     <Group gap="6px">
                         <Popover position="bottom-start" withArrow shadow="md">
                             <PopoverTarget>
@@ -235,7 +118,7 @@ export const Editor = () => {
                         <Popover position="right-start" withArrow shadow="md">
                             <PopoverTarget>
                                 <ActionIcon size="lg" variant="outline">
-                                    <ColorSwatch color={toolOptions.color} />
+                                    <ColorSwatch color={toolOptions.color} size={20} />
                                 </ActionIcon>
                             </PopoverTarget>
                             <PopoverDropdown>
@@ -254,14 +137,10 @@ export const Editor = () => {
                     </Group>
                     <Divider orientation="horizontal" />
                     <Toolbar
-                        tools={toolItems}
+                        toolItems={editorTools}
+                        transformItems={editorTransforms}
                         toolIndex={toolIndex}
                         onChange={setToolIndex}
-                        onFlipHorizontal={handleFlipHorizontal}
-                        onFlipVertical={handleFlipVertical}
-                        onInvert={handleInvert}
-                        onRotateClockwise={handleRotateCW}
-                        onRotateCounterClockwise={handleRotateCCW}
                     />
                 </Stack>
             </div>
@@ -272,7 +151,7 @@ export const Editor = () => {
                             <div
                                 style={{
                                     display: "grid",
-                                    backgroundColor: "white"
+                                    backgroundColor: isDarkBg ? "black" : "white"
                                 }}
                                 className={classes.editor__canvas__stack}
                             >
@@ -317,7 +196,7 @@ export const Editor = () => {
                                         zIndex: 4,
                                         opacity: 0.1,
                                         pointerEvents: "none",
-                                        visibility: "collapse",
+                                        visibility: isCheckerVisible ? "visible" : "collapse",
                                     }}
                                 />
                             </div>
@@ -326,7 +205,23 @@ export const Editor = () => {
                     : null}
             </main>
             <footer className={classes.editor__footer}>
-                <Center p="xs">
+                <Group p="6px" gap="md" justify="space-between">
+                    <Group gap="6px">
+                        <ActionIcon
+                            variant={isDarkBg ? "filled" : "subtle"}
+                            color={isDarkBg ? "green" : undefined}
+                            onClick={handleDarkBgClick}
+                        >
+                            <i.ColorSchemeMd />
+                        </ActionIcon>
+                        <ActionIcon
+                            variant={isCheckerVisible ? "filled" : "subtle"}
+                            color={isCheckerVisible ? "green" : undefined}
+                            onClick={handleCheckerClick}
+                        >
+                            <i.CheckerboardMd />
+                        </ActionIcon>
+                    </Group>
                     <Group>
                         <i.MagnifyingGlassSm />
                         <Slider
@@ -336,9 +231,9 @@ export const Editor = () => {
                             value={Math.floor(zoom)}
                             onChange={setZoom}
                         />
-                        <i.MagnifyingGlassSm color="transparent" />
                     </Group>
-                </Center>
+                    <Space w={100} />
+                </Group>
             </footer>
         </div>
     )

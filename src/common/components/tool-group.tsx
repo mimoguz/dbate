@@ -1,4 +1,4 @@
-import { ActionIcon, SimpleGrid, StyleProp, Tooltip } from "@mantine/core"
+import { ActionIcon, SimpleGrid, Tooltip } from "@mantine/core"
 
 export interface ToolGroupItem<T> {
     icon: JSX.Element,
@@ -9,15 +9,14 @@ export interface ToolGroupItem<T> {
 }
 
 interface Props<T> {
+    cols: number,
     items: Array<ToolGroupItem<T>>,
     value: T,
     onChange: (value: T) => void,
-    direction?: StyleProp<"row" | "column">
 }
 
-export const ToolGroup = <T,>({ items, value, onChange, direction }: Props<T>): JSX.Element => {
+export const ToolGroup = <T,>({ cols, items, value, onChange }: Props<T>): JSX.Element => {
     const handleClick = (itemValue: T) => () => onChange(itemValue)
-    const cols = direction === "column" ? 2 : Math.ceil(items.length / 2)
 
     return (
         <SimpleGrid cols={cols} style={{ width: "fit-content" }} spacing="6px" verticalSpacing="6px">

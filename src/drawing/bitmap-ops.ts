@@ -115,7 +115,7 @@ const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
 )
 
 /**
- * Bitmap functions. None of them check if their input is valid, the onus is on the caller.
+ * Bitmap functions. None of them check if their inputs are valid, the onus is on the caller.
  */
 export const bitmap = {
     clone,

@@ -1,4 +1,4 @@
-import { Center, Text, Title } from "@mantine/core"
+import { ActionIcon, Center, ColorPicker, ColorSwatch, Divider, Group, Popover, PopoverDropdown, PopoverTarget, Slider, Text, Title } from "@mantine/core"
 import React, { useCallback, useMemo } from "react"
 import { clamp } from "../../common"
 import { ToggleGroupItem } from "../../common/components"
@@ -9,6 +9,8 @@ import { ColorPickerTool, MoveTool, Tool, ToolOptions, ToolResult, boundedTools,
 import { NoopTool } from "../../tools/noop-tool"
 import { transforms } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
+import { Checkerboard } from "./checkerboard"
+import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
@@ -120,7 +122,7 @@ export const Editor = () => {
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
     const [zoom, setZoom] = React.useState(16)
     const [toolOptions, setToolOptions] = React.useState<ToolOptions>({
-        color: "blue",
+        color: "#0000ff",
         brushSize: 3,
     })
 
@@ -178,30 +180,98 @@ export const Editor = () => {
         })
     }
 
+    const setColor = (color: string) => setToolOptions(opt => ({
+        brushSize: opt.brushSize,
+        color,
+    }))
+
+    const setBrushSize = (brushSize: number) => setToolOptions(opt => ({
+        color: opt.color,
+        brushSize,
+    }))
+
     return (
         <div onWheel={handleWheel} style={{ height: "100vh" }}>
             <header><Title order={2}>{hero?.name}</Title></header>
-            <Toolbar
-                tools={toolItems}
-                toolIndex={toolIndex}
-                onChange={setToolIndex}
-                onFlipHorizontal={handleFlipHorizontal}
-                onFlipVertical={handleFlipVertical}
-                onInvert={handleInvert}
-                onRotateClockwise={handleRotateCW}
-                onRotateCounterClockwise={handleRotateCCW}
-            />
+            <Center p="md">
+                <Group gap="lg">
+                    <Group gap="xs">
+                        <Text fw={600} size="sm">Brush</Text>
+                        <Popover >
+                            <PopoverTarget>
+                                <ActionIcon size="lg" variant="outline">
+                                    <Text size="sm" fw={600}>{toolOptions.brushSize}px</Text>
+                                </ActionIcon>
+                            </PopoverTarget>
+                            <PopoverDropdown>
+                                <Slider
+                                    w={160}
+                                    min={1}
+                                    max={9}
+                                    value={toolOptions.brushSize}
+                                    onChange={setBrushSize}
+                                />
+                            </PopoverDropdown>
+                        </Popover>
+                        <Popover >
+                            <PopoverTarget>
+                                <ActionIcon size="lg" variant="outline">
+                                    <ColorSwatch color={toolOptions.color} />
+                                </ActionIcon>
+                            </PopoverTarget>
+                            <PopoverDropdown>
+                                <ColorPicker
+                                    value={toolOptions.color}
+                                    onChange={setColor}
+                                    format="hex"
+                                    swatches={[
+                                        '#2e2e2e', '#868e96', '#fa5252', '#e64980', '#be4bdb',
+                                        '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886',
+                                        '#40c057', '#82c91e', '#fab005', '#00000000'
+                                    ]}
+                                />
+                            </PopoverDropdown>
+                        </Popover>
+                    </Group>
+                    <Divider orientation="vertical" />
+                    <Toolbar
+                        tools={toolItems}
+                        toolIndex={toolIndex}
+                        onChange={setToolIndex}
+                        onFlipHorizontal={handleFlipHorizontal}
+                        onFlipVertical={handleFlipVertical}
+                        onInvert={handleInvert}
+                        onRotateClockwise={handleRotateCW}
+                        onRotateCounterClockwise={handleRotateCCW}
+                    />
+                </Group>
+            </Center>
             {hero
                 ? (
-                    <Center p="xl" bg="gray">
-                        <div style={{ display: "grid" }} >
+                    <Center p="xl" className={classes.band}>
+                        <div
+                            style={{
+                                display: "grid",
+                                backgroundColor: "white"
+                            }}
+                        >
+                            <Checkerboard
+                                width={hero.logo.width}
+                                height={hero.logo.height}
+                                zoom={Math.floor(zoom)}
+                                style={{
+                                    gridArea: "1 / 1",
+                                    zIndex: 1,
+                                    opacity: 0.1,
+                                    pointerEvents: "none",
+                                }}
+                            />
                             <BitmapView
                                 bmp={hero.logo as Bitmap}
                                 zoom={Math.floor(zoom)}
                                 style={{
                                     gridArea: "1 / 1",
-                                    zIndex: 1,
-                                    backgroundColor: "white"
+                                    zIndex: 2,
                                 }}
                             />
                             <ToolPreview
@@ -212,15 +282,30 @@ export const Editor = () => {
                                 onDone={handlePaint}
                                 style={{
                                     gridArea: "1 / 1",
-                                    zIndex: 2,
+                                    zIndex: 3,
                                     mixBlendMode: "difference",
-                                    opacity: 0.9
+                                    opacity: 0.7
+                                }}
+                            />
+                            <Checkerboard
+                                width={hero.logo.width}
+                                height={hero.logo.height}
+                                zoom={Math.floor(zoom)}
+                                style={{
+                                    gridArea: "1 / 1",
+                                    zIndex: 4,
+                                    opacity: 0.1,
+                                    pointerEvents: "none",
+                                    visibility: "collapse",
                                 }}
                             />
                         </div>
                     </Center>
                 )
                 : null}
+            <Center p="lg">
+
+            </Center>
         </div>
     )
 }

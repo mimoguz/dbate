@@ -13,7 +13,7 @@ const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color =
     )
 })
 
-const transform = (transformPt: (source: Bitmap, pt: Point) => void, initialize: boolean = true) =>
+const transformation = (transformPt: (source: Bitmap, pt: Point) => void, initialize: boolean = true) =>
     (source: Bitmap): Bitmap => {
         const result = initialize
             ? bitmap.empty(source.width, source.height)
@@ -26,27 +26,27 @@ const transform = (transformPt: (source: Bitmap, pt: Point) => void, initialize:
         return result
     }
 
-const flipHorizontal: Transform = transform(
+const flipHorizontal: Transform = transformation(
     (source, pt) => {
         pt.x = source.width - pt.x - 1
     },
     false
 )
 
-const flipVertical: Transform = transform(
+const flipVertical: Transform = transformation(
     (source, pt) => {
         pt.y = source.height - pt.y - 1
     },
     false
 )
 
-const rotateClockwise: Transform = transform((source, pt) => {
+const rotateClockwise: Transform = transformation((source, pt) => {
     const x = pt.x
     pt.x = source.width - pt.y - 1
     pt.y = x
 })
 
-const rotateCounterClockwise: Transform = transform((source, pt) => {
+const rotateCounterClockwise: Transform = transformation((source, pt) => {
     const x = pt.x
     pt.x = pt.y
     pt.y = source.height - x - 1

@@ -31,9 +31,15 @@ const pack = (
     (asUByte(a) & 0xff)
 ) as RGBA
 
-const toString = (value: RGBA): string => {
+const hex = (n: number): string => n.toString(16).padStart(2, "0")
+
+const toString = (value: RGBA, format: "hex" | "rgba" = "hex"): string => {
     const { r, g, b, a } = split(value)
-    return `rgb(${r}, ${g}, ${b}, ${a})`
+    return (
+        format === "hex"
+            ? `#${hex(r)}${hex(g)}${hex(b)}${hex(a)}`
+            : `rgba(${r}, ${g}, ${b}, ${a})`
+    )
 }
 
 const fromString = (colorStr: string): RGBA => {

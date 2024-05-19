@@ -113,7 +113,7 @@ export const Editor = observer(() => {
                                     <PopoverTarget>
                                         <Tooltip label={(<Group>Brush size <Kbd>{brushSizeTooltip}</Kbd></Group>)}>
                                             <ActionIcon size="lg" variant="outline">
-                                                <Text size="sm" fw={600}>{state?.brushSize}</Text><Text size="0.6667em">px</Text>
+                                                <Text size="sm" fw={600}>{state.brushSize}</Text><Text size="0.6667em">px</Text>
                                             </ActionIcon>
                                         </Tooltip>
                                     </PopoverTarget>
@@ -255,7 +255,7 @@ export const Editor = observer(() => {
                                     min={1}
                                     max={EditorStore.MAX_ZOOM}
                                     value={store.scale}
-                                    onChange={state.setZoom}
+                                    onChange={store.setZoom}
                                 />
                             </Group>
                             <Space w={100} />

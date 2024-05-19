@@ -43,7 +43,7 @@ export const Editor = () => {
     })
     const [isDarkBg, setDarkBg] = React.useState(false)
     const [isCheckerVisible, setCheckerVisible] = React.useState(false)
-    const [recentColors, setRecentColors] = React.useState<Array<string>>(["#0000ff"])
+    const [recentColors, setRecentColors] = React.useState<Array<string>>(["transparent", "#0000ff"])
     const tool = useMemo(() => createTool(toolIndex), [toolIndex])
 
     const handlePaint = useCallback((result: ToolResult | undefined) => {
@@ -80,7 +80,7 @@ export const Editor = () => {
 
     const setColor = (color: string) => {
         setToolOptions(opt => ({ brushSize: opt.brushSize, color }))
-        setRecentColors(cols => cols.indexOf(color) >= 0 ? cols : [color, ...cols.slice(0, 2)])
+        setRecentColors(cols => cols.indexOf(color) >= 0 ? cols : ["transparent", color, ...cols.slice(1, 3)])
     }
 
     const setBrushSize = (brushSize: number) => setToolOptions(opt => ({
@@ -102,6 +102,10 @@ export const Editor = () => {
         ["7", () => setBrushSize(7)],
         ["8", () => setBrushSize(8)],
         ["9", () => setBrushSize(9)],
+        ["mod+1", () => recentColors.at(0) && setColor(recentColors[0])],
+        ["mod+2", () => recentColors.at(1) && setColor(recentColors[1])],
+        ["mod+3", () => recentColors.at(2) && setColor(recentColors[2])],
+        ["mod+4", () => recentColors.at(3) && setColor(recentColors[3])],
     ])
 
     useHotkeys(
@@ -163,12 +167,21 @@ export const Editor = () => {
                     />
                     <Divider orientation="horizontal" />
                     <Stack align="center" gap="xs">
-                        {recentColors.map(col => (
-                            <ColorSwatch
-                                color={col}
-                                onClick={() => setColor(col)}
-                                style={{ cursor: "pointer" }}
-                            />
+                        {recentColors.map((col, index) => (
+                            <Tooltip
+                                label={(
+                                    <Group>
+                                        Set color {col}
+                                        <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
+                                    </Group>
+                                )}
+                            >
+                                <ColorSwatch
+                                    color={col}
+                                    onClick={() => setColor(col)}
+                                    style={{ cursor: "pointer" }}
+                                />
+                            </Tooltip>
                         ))}
                     </Stack>
                 </Stack>
@@ -211,7 +224,7 @@ export const Editor = () => {
                                     onDone={handlePaint}
                                     style={{
                                         gridArea: "1 / 1",
-                                        zIndex: 3,
+                                        zIndex: 4,
                                         mixBlendMode: "difference",
                                         opacity: 0.7
                                     }}

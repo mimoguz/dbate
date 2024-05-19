@@ -54,6 +54,11 @@ export const Editor = () => {
                 break
             case "affects-options":
                 setToolOptions(() => result.value)
+                setRecentColors(cols => (
+                    cols.indexOf(result.value.color) >= 0
+                        ? cols
+                        : ["transparent", result.value.color, ...cols.slice(1, 3)]
+                ))
                 break
         }
     }, [hero])

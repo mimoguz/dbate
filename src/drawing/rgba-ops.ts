@@ -37,7 +37,7 @@ const toString = (value: RGBA, format: "hex" | "rgba" = "hex"): string => {
     const { r, g, b, a } = split(value)
     return (
         format === "hex"
-            ? `#${hex(r)}${hex(g)}${hex(b)}${hex(a)}`
+            ? `#${hex(r)}${hex(g)}${hex(b)}${a !== 255 ? hex(a) : ""}`
             : `rgba(${r}, ${g}, ${b}, ${a})`
     )
 }

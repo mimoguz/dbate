@@ -55,7 +55,7 @@ export const Editor = () => {
             case "affects-options":
                 setToolOptions(() => result.value)
                 setRecentColors(cols => (
-                    cols.indexOf(result.value.color) >= 0
+                    cols.indexOf(result.value.color) >= 0 || result.value.color === "#00000000"
                         ? cols
                         : ["transparent", result.value.color, ...cols.slice(1, 3)]
                 ))

@@ -8,11 +8,14 @@ interface Props {
     style?: React.CSSProperties
 }
 
-const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap, scale: number = 1) => {
-    ctx.setTransform(scale, 0, 0, scale, 0, 0)
+
+const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap, scale: number) => {
+    ctx.save()
     ctx.imageSmoothingEnabled = false
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
     ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight)
     bitmap.draw(bmp, ctx)
+    ctx.restore()
 }
 
 export const BitmapView = ({ bmp, zoom, style }: Props): JSX.Element => {

@@ -5,7 +5,6 @@ import { bitmap } from "../drawing"
 import { Bitmap, HeroCollection, HeroDocument, HeroDocumentMethods } from "../schema"
 import { EditorStateCollection, EditorStateDocument, EditorStateDocumentMethods, editorStateSchema } from "../schema/editor-state-schema"
 import { heroSchema } from "../schema/hero-schema"
-import { clamp } from "../common"
 
 addRxPlugin(RxDBLeaderElectionPlugin)
 
@@ -20,8 +19,7 @@ export type DbType = RxDatabase<DbCollections, unknown, unknown, unknown>
 
 export const MAX_RECENT_COLORS = 3
 export const MAX_SWATCHES = 16
-export const MAX_ZOOM = 32
-export const MAX_BRUSH_SIZE = 10
+export const MAX_HISTORY = 8
 
 const editorStateDocumentMethods: EditorStateDocumentMethods = {
     setColor: async function (this: EditorStateDocument, value: string): Promise<void> {
@@ -58,12 +56,6 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
         })
     },
 
-    setBrushSize: async function (this: EditorStateDocument, value: number): Promise<void> {
-        const v = clamp(1, MAX_BRUSH_SIZE, value)
-        if (this.brushSize === clamp(1, MAX_BRUSH_SIZE, v)) return
-        await this.incrementalPatch({ brushSize: clamp(1, MAX_BRUSH_SIZE, v) })
-    },
-
     setCheckerboardOverlay: async function (this: EditorStateDocument, value: boolean): Promise<void> {
         if (this.showCheckerboardOverlay === value) return
         await this.incrementalPatch({ showCheckerboardOverlay: value })
@@ -84,20 +76,31 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
 } as const
 
 const heroDocumentMethods: HeroDocumentMethods = {
-    pushHistory: async function (this: HeroDocument, bmp: Bitmap, limit: number) {
-        const history = this.history
-        if (history.length >= limit) {
-            history.splice(0, history.length - limit + 1)
-        }
-        history.push(bmp)
-        await this.incrementalPatch({ history })
+    updateLogo: async function (this: HeroDocument, bmp: Bitmap): Promise<void> {
+        await this.incrementalModify(doc => {
+            const history = doc.history
+            if (history.length >= MAX_HISTORY) {
+                history.splice(0, history.length - MAX_HISTORY + 1)
+            }
+            history.push(bmp)
+            doc.logo = bmp
+            doc.history = history
+            return doc
+        })
+
     },
 
-    popHistory: async function (this: HeroDocument): Promise<Bitmap | undefined> {
-        const history = this.history
-        const result = history.pop()
-        await this.incrementalPatch({ history })
-        return result ? result as Bitmap : undefined
+    goBack: async function (this: HeroDocument): Promise<void> {
+        await this.incrementalModify(doc => {
+            const history = this.history
+            const result = history.pop()
+            if (result) {
+                doc.logo = result
+                doc.history = history
+            }
+            return doc
+        })
+
     },
 
     historySize: function (this: HeroDocument): number {
@@ -139,7 +142,6 @@ const create = async (): Promise<DbType> => {
     if (!(await db.editorState.findOne({ selector: { id: "editor-state-0" } }).exec())) {
         await db.editorState.upsert({
             id: "editor-state-0",
-            brushSize: 1,
             color: "#0000ff",
             showDarkBackground: false,
             showCheckerboardOverlay: false,

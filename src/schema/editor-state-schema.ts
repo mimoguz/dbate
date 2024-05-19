@@ -14,7 +14,6 @@ export const editorStateSchemaLiteral = {
     type: "object",
     properties: {
         id: { type: "string", maxLength: 100 },
-        brushSize: { type: "integer" },
         color: { type: "string" },
         showDarkBackground: { type: "boolean" },
         showCheckerboardOverlay: { type: "boolean" },
@@ -28,8 +27,12 @@ export const editorStateSchemaLiteral = {
         },
     },
     required: [
-        "id", "brushSize", "color", "showDarkBackground", "swatches",
-        "showCheckerboardOverlay", "recentColors", "recentColors",
+        "id",
+        "color",
+        "showDarkBackground",
+        "showCheckerboardOverlay",
+        "swatches",
+        "recentColors",
     ],
 } as const
 
@@ -42,7 +45,6 @@ export const editorStateSchema: RxJsonSchema<EditorState> = editorStateSchemaLit
 export type EditorStateDocumentMethods = {
     addSwatch: (color: string) => Promise<void>
     removeSwatch: (color: string) => Promise<void>,
-    setBrushSize: (value: number) => Promise<void>
     setCheckerboardOverlay: (value: boolean) => Promise<void>,
     setColor: (color: string) => Promise<void>,
     setDarkBackground: (value: boolean) => Promise<void>,

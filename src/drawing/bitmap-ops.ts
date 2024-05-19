@@ -1,4 +1,4 @@
-import { Rect } from "../common"
+import { Rect, clamp } from "../common"
 import { Point, point } from "../common/point"
 import { Bitmap } from "../schema/bitmap-schema"
 import { RGBA, rgba } from "./rgba-ops"
@@ -93,10 +93,12 @@ const map = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA): Bitmap => {
 }
 
 const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA) => {
-    const right = rect.x + rect.w
-    const bottom = rect.y + rect.h
-    for (let y = rect.y; y < bottom; y++) {
-        for (let x = rect.x; x < right; x++) {
+    const right = clamp(0, bmp.width, rect.x + rect.w)
+    const bottom = clamp(0, bmp.height, rect.y + rect.h)
+    const left = clamp(0, right, rect.x)
+    const top = clamp(0, bottom, rect.y)
+    for (let y = top; y < bottom; y++) {
+        for (let x = left; x < right; x++) {
             bitmap.putPixelMut(bmp, { x, y }, color)
         }
     }

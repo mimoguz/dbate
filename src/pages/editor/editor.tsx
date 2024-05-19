@@ -32,7 +32,7 @@ import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
-const brushSizeTooltip = `1,2…${DB.MAX_BRUSH_SIZE > 9 ? 0 : DB.MAX_BRUSH_SIZE}`
+const brushSizeTooltip = `1,2…${EditorStore.MAX_BRUSH_SIZE > 9 ? 0 : EditorStore.MAX_BRUSH_SIZE}`
 
 export const Editor = observer(() => {
     const hero = DB.useHero("Bob")
@@ -40,18 +40,21 @@ export const Editor = observer(() => {
     const store = React.useContext(EditorContext)
     const tool = useMemo(() => createTool(store.toolIndex), [store.toolIndex])
 
-    const handlePaint = useCallback((result: ToolResult | undefined) => {
-        if (!result) return
-        switch (result.tag) {
-            case "affects-bitmap":
-                hero?.incrementalPatch({ logo: result.value })
-                break
-            case "affects-options":
-                state?.setColor(result.value.color)
-                state?.setBrushSize(result.value.brushSize)
-                break
-        }
-    }, [hero, state])
+    const handleToolResult = useCallback(
+        (result: ToolResult | undefined) => {
+            if (!result) return
+            switch (result.tag) {
+                case "affects-bitmap":
+                    hero?.updateLogo(result.value)
+                    break
+                case "affects-options":
+                    state?.setColor(result.value.color)
+                    store.setBrushSize(result.value.brushSize)
+                    break
+            }
+        },
+        [hero, state, store]
+    )
 
     const editorTransforms = React.useMemo(
         () => editorTransformItems.map(({ item, transformAction }) => ({
@@ -74,16 +77,16 @@ export const Editor = observer(() => {
     }
 
     useHotkeys([
-        ["1", () => state?.setBrushSize(1)],
-        ["2", () => state?.setBrushSize(2)],
-        ["3", () => state?.setBrushSize(3)],
-        ["4", () => state?.setBrushSize(4)],
-        ["5", () => state?.setBrushSize(5)],
-        ["6", () => state?.setBrushSize(6)],
-        ["7", () => state?.setBrushSize(7)],
-        ["8", () => state?.setBrushSize(8)],
-        ["9", () => state?.setBrushSize(9)],
-        ["0", () => state?.setBrushSize(10)],
+        ["1", () => store.setBrushSize(1)],
+        ["2", () => store.setBrushSize(2)],
+        ["3", () => store.setBrushSize(3)],
+        ["4", () => store.setBrushSize(4)],
+        ["5", () => store.setBrushSize(5)],
+        ["6", () => store.setBrushSize(6)],
+        ["7", () => store.setBrushSize(7)],
+        ["8", () => store.setBrushSize(8)],
+        ["9", () => store.setBrushSize(9)],
+        ["0", () => store.setBrushSize(10)],
         ["mod+1", () => state?.recentColors.at(0) && state?.setColor(state?.recentColors[0])],
         ["mod+2", () => state?.recentColors.at(1) && state?.setColor(state?.recentColors[1])],
         ["mod+3", () => state?.recentColors.at(2) && state?.setColor(state?.recentColors[2])],
@@ -113,7 +116,7 @@ export const Editor = observer(() => {
                                     <PopoverTarget>
                                         <Tooltip label={(<Group>Brush size <Kbd>{brushSizeTooltip}</Kbd></Group>)}>
                                             <ActionIcon size="lg" variant="outline">
-                                                <Text size="sm" fw={600}>{state.brushSize}</Text><Text size="0.6667em">px</Text>
+                                                <Text size="sm" fw={600}>{store.brushSize}</Text><Text size="0.6667em">px</Text>
                                             </ActionIcon>
                                         </Tooltip>
                                     </PopoverTarget>
@@ -121,9 +124,9 @@ export const Editor = observer(() => {
                                         <Slider
                                             w={160}
                                             min={1}
-                                            max={DB.MAX_BRUSH_SIZE}
-                                            value={state.brushSize ?? 1}
-                                            onChange={state.setBrushSize}
+                                            max={EditorStore.MAX_BRUSH_SIZE}
+                                            value={store.brushSize ?? 1}
+                                            onChange={store.setBrushSize}
                                         />
                                     </PopoverDropdown>
                                 </Popover>
@@ -146,6 +149,8 @@ export const Editor = observer(() => {
                                 transformItems={editorTransforms}
                                 toolIndex={store.toolIndex}
                                 onChange={store.setToolIndex}
+                                hasUndo={(hero?.history?.length ?? 0) > 0}
+                                onUndo={hero?.goBack}
                             />
                             <Divider orientation="horizontal" />
                             <Stack align="center" gap="xs">
@@ -203,9 +208,9 @@ export const Editor = observer(() => {
                                             bmp={hero.logo as Bitmap}
                                             tool={tool}
                                             color={state.color}
-                                            brushSize={state.brushSize}
+                                            brushSize={store.brushSize}
                                             zoom={store.scale}
-                                            onDone={handlePaint}
+                                            onDone={handleToolResult}
                                             style={{
                                                 gridArea: "1 / 1",
                                                 zIndex: 4,

@@ -34,8 +34,8 @@ export type Hero = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>
 export const heroSchema: RxJsonSchema<Hero> = heroSchemaLiteral
 
 export type HeroDocumentMethods = {
-    pushHistory: (item: Bitmap, limit: number) => Promise<void>
-    popHistory: () => Promise<Bitmap | undefined>
+    updateLogo: (item: Bitmap) => Promise<void>
+    goBack: () => Promise<void>
     historySize: () => number
 }
 

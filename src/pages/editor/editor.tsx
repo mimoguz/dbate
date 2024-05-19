@@ -1,10 +1,10 @@
 import {
     ActionIcon,
     Center,
-    ColorPicker,
     ColorSwatch,
     Divider,
     Group,
+    Kbd,
     Popover,
     PopoverDropdown,
     PopoverTarget,
@@ -12,8 +12,10 @@ import {
     Space,
     Stack,
     Text,
-    Title
+    Title,
+    Tooltip
 } from "@mantine/core"
+import { useHotkeys } from "@mantine/hooks"
 import React, { useCallback, useMemo } from "react"
 import { clamp } from "../../common"
 import * as DB from "../../database"
@@ -22,6 +24,7 @@ import { Bitmap } from "../../schema"
 import { ToolOptions, ToolResult } from "../../tools"
 import { BitmapView } from "./bitmap-view"
 import { Checkerboard } from "./checkerboard"
+import { ColorPalette } from "./color-palette"
 import { createTool, editorTools } from "./editor-tools"
 import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
@@ -89,6 +92,24 @@ export const Editor = () => {
 
     const handleCheckerClick = () => setCheckerVisible(visible => !visible)
 
+    useHotkeys([
+        ["1", () => setBrushSize(1)],
+        ["2", () => setBrushSize(2)],
+        ["3", () => setBrushSize(3)],
+        ["4", () => setBrushSize(4)],
+        ["5", () => setBrushSize(5)],
+        ["6", () => setBrushSize(6)],
+        ["7", () => setBrushSize(7)],
+        ["8", () => setBrushSize(8)],
+        ["9", () => setBrushSize(9)],
+    ])
+
+    useHotkeys(
+        editorTools
+            .filter(it => it.shortcut)
+            .map((it, i) => [it.shortcut!.join("+"), () => setToolIndex(i)])
+    )
+
     return (
         <div onWheel={handleWheel} className={classes.editor}>
             <header className={classes.editor__header}>
@@ -101,9 +122,11 @@ export const Editor = () => {
                     <Group gap="6px">
                         <Popover position="bottom-start" withArrow shadow="md">
                             <PopoverTarget>
-                                <ActionIcon size="lg" variant="outline">
-                                    <Text size="sm" fw={600}>{toolOptions.brushSize}px</Text>
-                                </ActionIcon>
+                                <Tooltip label={<Group>Brush size <Group><Kbd>1,2,...9</Kbd></Group></Group>}>
+                                    <ActionIcon size="lg" variant="outline">
+                                        <Text size="sm" fw={600}>{toolOptions.brushSize}px</Text>
+                                    </ActionIcon>
+                                </Tooltip>
                             </PopoverTarget>
                             <PopoverDropdown>
                                 <Slider
@@ -117,20 +140,16 @@ export const Editor = () => {
                         </Popover>
                         <Popover position="right-start" withArrow shadow="md">
                             <PopoverTarget>
-                                <ActionIcon size="lg" variant="outline">
-                                    <ColorSwatch color={toolOptions.color} size={20} />
-                                </ActionIcon>
+                                <Tooltip label="Tool color">
+                                    <ActionIcon size="lg" variant="outline">
+                                        <ColorSwatch color={toolOptions.color} size={20} />
+                                    </ActionIcon>
+                                </Tooltip>
                             </PopoverTarget>
                             <PopoverDropdown>
-                                <ColorPicker
+                                <ColorPalette
                                     value={toolOptions.color}
                                     onChange={setColor}
-                                    format="hex"
-                                    swatches={[
-                                        '#2e2e2e', '#868e96', '#fa5252', '#e64980', '#be4bdb',
-                                        '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886',
-                                        '#40c057', '#82c91e', '#fab005', '#00000000'
-                                    ]}
                                 />
                             </PopoverDropdown>
                         </Popover>
@@ -143,7 +162,7 @@ export const Editor = () => {
                         onChange={setToolIndex}
                     />
                     <Divider orientation="horizontal" />
-                    <Stack align="center">
+                    <Stack align="center" gap="xs">
                         {recentColors.map(col => (
                             <ColorSwatch
                                 color={col}

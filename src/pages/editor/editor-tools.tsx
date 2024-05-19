@@ -1,16 +1,16 @@
-import { Text } from "@mantine/core";
 import { ToolGroupItem } from "../../common/components";
 import * as i from "../../icons";
 import { ColorPickerTool, MoveTool, Tool, boundedTools, floodTools, freehandTools } from "../../tools";
 import { NoopTool } from "../../tools/noop-tool";
 
-type Item = Pick<ToolGroupItem<number>, "icon" | "accessibleLabel" | "key">
+type Item = Omit<ToolGroupItem<number>, "value">
 
 const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
     {
         item: {
             icon: <i.LineMd />,
             accessibleLabel: "Draw line",
+            shortcut: ["L"],
             key: "line",
         },
         factory: boundedTools.line,
@@ -19,6 +19,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.RectangleMd />,
             accessibleLabel: "Draw rectangle",
+            shortcut: ["R"],
             key: "rectangle",
         },
         factory: boundedTools.rectangle,
@@ -27,6 +28,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EllipseMd />,
             accessibleLabel: "Draw ellipse",
+            shortcut: ["E"],
             key: "ellipse",
         },
         factory: boundedTools.ellipse,
@@ -35,6 +37,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.PencilMd />,
             accessibleLabel: "Pencil",
+            shortcut: ["P"],
             key: "pencil",
         },
         factory: freehandTools.pencil,
@@ -43,6 +46,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MarkerHorizontalMd />,
             accessibleLabel: "Horizontal marker",
+            shortcut: ["H"],
             key: "marker-horizontal",
         },
         factory: freehandTools.markerPenHorizontal,
@@ -51,6 +55,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MarkerVerticalMd />,
             accessibleLabel: "Vertical marker",
+            shortcut: ["V"],
             key: "marker-vertical",
         },
         factory: freehandTools.markerPenVertical,
@@ -59,6 +64,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.BucketMd />,
             accessibleLabel: "Flood fill",
+            shortcut: ["F"],
             key: "flood-fill",
         },
         factory: floodTools.bucket,
@@ -67,6 +73,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EyeDropperMd />,
             accessibleLabel: "Color picker",
+            shortcut: ["C"],
             key: "color-picker",
         },
         factory: () => new ColorPickerTool(),
@@ -75,6 +82,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EraserMd />,
             accessibleLabel: "Eraser",
+            shortcut: ["X"],
             key: "eraser",
         },
         factory: freehandTools.eraser,
@@ -83,6 +91,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.AreaEraserMd />,
             accessibleLabel: "Area eraser",
+            shortcut: ["A"],
             key: "flood-erase",
         },
         factory: floodTools.eraser,
@@ -91,6 +100,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MoveMd />,
             accessibleLabel: "Move",
+            shortcut: ["M"],
             key: "move",
         },
         factory: () => new MoveTool(),
@@ -100,7 +110,6 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
 export const editorTools: Array<ToolGroupItem<number>> = editorToolItems.map((tool, index) => ({
     ...tool.item,
     value: index,
-    tooltip: <Text>{tool.item.accessibleLabel}</Text>,
 }));
 
 export const createTool = (index: number): Tool => (editorToolItems.at(index)?.factory ?? (() => new NoopTool()))();

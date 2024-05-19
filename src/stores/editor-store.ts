@@ -1,6 +1,6 @@
-import { action, computed, makeAutoObservable, makeObservable, observable } from "mobx"
-import { clamp } from "../common"
+import { makeAutoObservable } from "mobx"
 import React from "react"
+import { clamp } from "../common"
 
 export class EditorStore {
     constructor() {

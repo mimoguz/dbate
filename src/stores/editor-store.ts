@@ -1,31 +1,10 @@
-import { action, computed, makeObservable, observable } from "mobx"
+import { action, computed, makeAutoObservable, makeObservable, observable } from "mobx"
 import { clamp } from "../common"
 import React from "react"
 
 export class EditorStore {
     constructor() {
-        makeObservable(this, {
-            toolIndex: observable,
-            brushSize: observable,
-            color: observable,
-            showDarkBackground: observable,
-            showCheckerboardOverlay: observable,
-            zoom: observable,
-            recentColors: observable,
-            swatches: observable,
-            scale: computed,
-            setToolIndex: action.bound,
-            setBrushSize: action.bound,
-            setColor: action.bound,
-            setShowDarkBackground: action.bound,
-            setShowCheckerboardOverlay: action.bound,
-            toggleDarkBackground: action.bound,
-            toggleCheckerboardOverlay: action.bound,
-            setZoom: action.bound,
-            changeZoom: action.bound,
-            addSwatch: action.bound,
-            removeSwatch: action.bound,
-        })
+        makeAutoObservable(this, undefined, { autoBind: true })
     }
 
     toolIndex: number = 0

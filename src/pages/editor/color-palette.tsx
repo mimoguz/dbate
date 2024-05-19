@@ -1,28 +1,42 @@
-import { Button, ColorPicker, ColorSwatch, Group, Stack } from "@mantine/core"
+import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, SimpleGrid, Stack } from "@mantine/core"
+import { observer } from "mobx-react-lite"
 import React from "react"
+import { EditorContext } from "../../stores"
+import { PlusMd, TrashMd } from "../../icons"
 
-interface Props {
-    value: string,
-    onChange: (newValue: string) => void
-}
-
-export const ColorPalette = ({ value, onChange }: Props) => {
-    const [currentValue, setCurrentValue] = React.useState(value)
+export const ColorPalette = observer(() => {
+    const store = React.useContext(EditorContext)
+    const [currentValue, setCurrentValue] = React.useState(store.color)
 
     return (
         <Stack>
             <Group justify="space-between">
                 <Group gap={0}>
-                    <ColorSwatch color={value} radius="6px 0 0 6px" withShadow={false} size={35} />
-                    <ColorSwatch color={currentValue} radius="0 6px 6px 0" withShadow={false} size={35} />
+                    <ColorSwatch color={store.color} radius="4px 0 0 4px" withShadow={false} size={35} />
+                    <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
                 </Group>
-                <Button onClick={() => onChange(currentValue)}>Select</Button>
+                <Button onClick={() => store.setColor(currentValue)}>Select</Button>
             </Group>
             <ColorPicker
                 value={currentValue}
                 onChange={setCurrentValue}
                 format="hex"
             />
+            <Divider label="Swatches" />
+            <SimpleGrid cols={6} spacing={6} verticalSpacing={12}>
+                {store.swatches.map(color => (
+                    <ColorSwatch
+                        key={color}
+                        color={color}
+                        onClick={() => store.setColor(color)}
+                        style={{ cursor: "pointer" }}
+                    />
+                ))}
+            </SimpleGrid>
+            <Group gap={6}>
+                <ActionIcon onClick={() => store.addSwatch(currentValue)} color="green" size="lg"><PlusMd /></ActionIcon>
+                <ActionIcon onClick={() => store.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
+            </Group>
         </Stack>
     )
-}
+})

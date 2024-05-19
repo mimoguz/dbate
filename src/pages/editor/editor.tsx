@@ -21,7 +21,7 @@ import React, { useCallback, useMemo } from "react"
 import * as DB from "../../database"
 import * as i from "../../icons"
 import { Bitmap } from "../../schema"
-import { EditorStore } from "../../stores"
+import { EditorContext, EditorStore } from "../../stores"
 import { ToolResult } from "../../tools"
 import { BitmapView } from "./bitmap-view"
 import { Checkerboard } from "./checkerboard"
@@ -32,12 +32,13 @@ import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
-const brushSizeTooltip = `1,2…${EditorStore.MAX_BRUSH_SIZE > 9 ? 0 : EditorStore.MAX_BRUSH_SIZE}`
+const brushSizeTooltip = `1,2…${DB.MAX_BRUSH_SIZE > 9 ? 0 : DB.MAX_BRUSH_SIZE}`
 
 export const Editor = observer(() => {
     const hero = DB.useHero("Bob")
     const state = DB.useEditorState("editor-state-0")
-    const tool = useMemo(() => createTool(state?.toolIndex ?? 0), [state?.toolIndex])
+    const store = React.useContext(EditorContext)
+    const tool = useMemo(() => createTool(store.toolIndex), [store.toolIndex])
 
     const handlePaint = useCallback((result: ToolResult | undefined) => {
         if (!result) return
@@ -68,7 +69,7 @@ export const Editor = observer(() => {
     const handleWheel: React.WheelEventHandler = e => {
         if (e.shiftKey) {
             e.stopPropagation()
-            state?.updateZoom(e.deltaY * -0.01)
+            store.changeZoom(e.deltaY * -0.01)
         }
     }
 
@@ -92,7 +93,7 @@ export const Editor = observer(() => {
     useHotkeys(
         editorTools
             .filter(it => it.shortcut)
-            .map((it, i) => [it.shortcut!.join("+"), () => state?.setToolIndex(i)])
+            .map((it, i) => [it.shortcut!.join("+"), () => store.setToolIndex(i)])
     )
 
     return (
@@ -120,7 +121,7 @@ export const Editor = observer(() => {
                                         <Slider
                                             w={160}
                                             min={1}
-                                            max={EditorStore.MAX_BRUSH_SIZE}
+                                            max={DB.MAX_BRUSH_SIZE}
                                             value={state.brushSize ?? 1}
                                             onChange={state.setBrushSize}
                                         />
@@ -143,8 +144,8 @@ export const Editor = observer(() => {
                             <Toolbar
                                 toolItems={editorTools}
                                 transformItems={editorTransforms}
-                                toolIndex={state.toolIndex}
-                                onChange={state.setToolIndex}
+                                toolIndex={store.toolIndex}
+                                onChange={store.setToolIndex}
                             />
                             <Divider orientation="horizontal" />
                             <Stack align="center" gap="xs">
@@ -182,7 +183,7 @@ export const Editor = observer(() => {
                                         <Checkerboard
                                             width={hero.logo.width}
                                             height={hero.logo.height}
-                                            zoom={state.scale()}
+                                            zoom={store.scale}
                                             style={{
                                                 gridArea: "1 / 1",
                                                 zIndex: 1,
@@ -192,7 +193,7 @@ export const Editor = observer(() => {
                                         />
                                         <BitmapView
                                             bmp={hero.logo as Bitmap}
-                                            zoom={state.scale()}
+                                            zoom={store.scale}
                                             style={{
                                                 gridArea: "1 / 1",
                                                 zIndex: 2,
@@ -203,7 +204,7 @@ export const Editor = observer(() => {
                                             tool={tool}
                                             color={state.color}
                                             brushSize={state.brushSize}
-                                            zoom={state.scale()}
+                                            zoom={store.scale}
                                             onDone={handlePaint}
                                             style={{
                                                 gridArea: "1 / 1",
@@ -215,7 +216,7 @@ export const Editor = observer(() => {
                                         <Checkerboard
                                             width={hero.logo.width}
                                             height={hero.logo.height}
-                                            zoom={state.scale()}
+                                            zoom={store.scale}
                                             style={{
                                                 gridArea: "1 / 1",
                                                 zIndex: 4,
@@ -253,7 +254,7 @@ export const Editor = observer(() => {
                                     w={310}
                                     min={1}
                                     max={EditorStore.MAX_ZOOM}
-                                    value={state.scale()}
+                                    value={store.scale}
                                     onChange={state.setZoom}
                                 />
                             </Group>

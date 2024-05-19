@@ -14,12 +14,10 @@ export const editorStateSchemaLiteral = {
     type: "object",
     properties: {
         id: { type: "string", maxLength: 100 },
-        toolIndex: { type: "integer" },
         brushSize: { type: "integer" },
         color: { type: "string" },
         showDarkBackground: { type: "boolean" },
         showCheckerboardOverlay: { type: "boolean" },
-        zoom: { type: "number" },
         recentColors: {
             type: "array",
             items: { type: "string", maxLength: 16 },
@@ -30,9 +28,8 @@ export const editorStateSchemaLiteral = {
         },
     },
     required: [
-        "id", "toolIndex", "brushSize", "color",
-        "showDarkBackground", "showCheckerboardOverlay",
-        "zoom", "recentColors", "recentColors", "swatches"
+        "id", "brushSize", "color", "showDarkBackground", "swatches",
+        "showCheckerboardOverlay", "recentColors", "recentColors",
     ],
 } as const
 
@@ -45,16 +42,12 @@ export const editorStateSchema: RxJsonSchema<EditorState> = editorStateSchemaLit
 export type EditorStateDocumentMethods = {
     addSwatch: (color: string) => Promise<void>
     removeSwatch: (color: string) => Promise<void>,
-    scale: () => number,
     setBrushSize: (value: number) => Promise<void>
     setCheckerboardOverlay: (value: boolean) => Promise<void>,
     setColor: (color: string) => Promise<void>,
     setDarkBackground: (value: boolean) => Promise<void>,
-    setToolIndex: (value: number) => Promise<void>
-    setZoom: (value: number) => Promise<void>
     toggleCheckerboardOverlay: () => Promise<void>,
     toggleDarkBackground: () => Promise<void>,
-    updateZoom: (delta: number) => Promise<void>
 }
 
 export type EditorStateDocument = RxDocument<EditorState, EditorStateDocumentMethods>

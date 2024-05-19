@@ -18,10 +18,10 @@ export type DbCollections = {
 
 export type DbType = RxDatabase<DbCollections, unknown, unknown, unknown>
 
-const MAX_RECENT_COLORS = 3
-const MAX_SWATCHES = 16
-const MAX_ZOOM = 32
-const MAX_BRUSH_SIZE = 10
+export const MAX_RECENT_COLORS = 3
+export const MAX_SWATCHES = 16
+export const MAX_ZOOM = 32
+export const MAX_BRUSH_SIZE = 10
 
 const editorStateDocumentMethods: EditorStateDocumentMethods = {
     setColor: async function (this: EditorStateDocument, value: string): Promise<void> {
@@ -58,10 +58,6 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
         })
     },
 
-    scale: function (this: EditorStateDocument) {
-        return Math.floor(this.zoom)
-    },
-
     setBrushSize: async function (this: EditorStateDocument, value: number): Promise<void> {
         const v = clamp(1, MAX_BRUSH_SIZE, value)
         if (this.brushSize === clamp(1, MAX_BRUSH_SIZE, v)) return
@@ -78,27 +74,12 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
         await this.incrementalPatch({ showDarkBackground: value })
     },
 
-    setToolIndex: async function (this: EditorStateDocument, value: number): Promise<void> {
-        if (this.toolIndex === value) return
-        await this.incrementalPatch({ toolIndex: value })
-    },
-
-    setZoom: async function (this: EditorStateDocument, value: number): Promise<void> {
-        const v = clamp(1, MAX_ZOOM, value)
-        if (this.zoom === v) return
-        await this.incrementalPatch({ zoom: v })
-    },
-
     toggleCheckerboardOverlay: async function (this: EditorStateDocument): Promise<void> {
         await this.incrementalPatch({ showCheckerboardOverlay: !this.showCheckerboardOverlay })
     },
 
     toggleDarkBackground: async function (this: EditorStateDocument): Promise<void> {
         await this.incrementalPatch({ showDarkBackground: !this.showDarkBackground })
-    },
-
-    updateZoom: async function (this: EditorStateDocument, delta: number): Promise<void> {
-        await this.incrementalPatch({ zoom: clamp(1, MAX_ZOOM, this.zoom + delta) })
     },
 } as const
 
@@ -158,12 +139,10 @@ const create = async (): Promise<DbType> => {
     if (!(await db.editorState.findOne({ selector: { id: "editor-state-0" } }).exec())) {
         await db.editorState.upsert({
             id: "editor-state-0",
-            toolIndex: 0,
             brushSize: 1,
             color: "#0000ff",
             showDarkBackground: false,
             showCheckerboardOverlay: false,
-            zoom: 8,
             recentColors: ["transparent", "#0000ff"],
             swatches: ["#ff0000", "#00ff00", "#0000ff"]
         })

@@ -28,7 +28,7 @@ export const ColorPalette = observer(() => {
                     <ColorSwatch
                         key={color}
                         color={color}
-                        onClick={() => store.setColor(color)}
+                        onClick={() => setCurrentValue(color)}
                         style={{ cursor: "pointer" }}
                     />
                 ))}

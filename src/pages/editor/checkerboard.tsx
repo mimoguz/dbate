@@ -19,7 +19,6 @@ export const Checkerboard = ({ style, zoom, width, height }: Props): JSX.Element
         () => {
             const ctx = view.current?.getContext("2d")
             if (!ctx) return
-            console.log(ctx.canvas.clientWidth)
             ctx.setTransform(scale, 0, 0, scale, 0, 0)
             ctx.imageSmoothingEnabled = false
             ctx.clearRect(0, 0, width, height)

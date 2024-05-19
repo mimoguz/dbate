@@ -1,2 +1,2 @@
 export { type DbType, type DbCollections, get } from "./database"
-export { useHero } from "./hooks"
+export { useHero, useEditorState } from "./hooks"

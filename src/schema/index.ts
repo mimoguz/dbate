@@ -4,5 +4,11 @@ export {
     type Hero,
     type HeroDocument,
     type HeroDocumentMethods,
-    type HeroCollection
+    type HeroCollection,
 } from "./hero-schema"
+export {
+    type EditorState,
+    type EditorStateDocument,
+    type EditorStateDocumentMethods,
+    type EditorStateCollection,
+} from "./editor-state-schema"

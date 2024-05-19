@@ -1,15 +1,12 @@
-import "@mantine/core/styles.layer.css"
 import { MantineProvider } from "@mantine/core"
-import { theme } from "./theme"
+import "@mantine/core/styles.layer.css"
 import { Editor } from "./pages/editor/editor"
-import { EditorContext, editorStore } from "./stores"
+import { theme } from "./theme"
 
 export default function App() {
     return (
         <MantineProvider theme={theme}>
-            <EditorContext.Provider value={editorStore}>
-                <Editor />
-            </EditorContext.Provider>
+            <Editor />
         </MantineProvider>
     )
 }

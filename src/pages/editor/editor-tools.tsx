@@ -10,7 +10,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.LineMd />,
             accessibleLabel: "Draw line",
-            shortcut: ["L"],
+            shortcut: { sKey: "L" },
             key: "line",
         },
         factory: boundedTools.line,
@@ -19,7 +19,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.RectangleMd />,
             accessibleLabel: "Draw rectangle",
-            shortcut: ["R"],
+            shortcut: { sKey: "R" },
             key: "rectangle",
         },
         factory: boundedTools.rectangle,
@@ -28,7 +28,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EllipseMd />,
             accessibleLabel: "Draw ellipse",
-            shortcut: ["E"],
+            shortcut: { sKey: "E" },
             key: "ellipse",
         },
         factory: boundedTools.ellipse,
@@ -37,7 +37,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.PencilMd />,
             accessibleLabel: "Pencil",
-            shortcut: ["P"],
+            shortcut: { sKey: "P" },
             key: "pencil",
         },
         factory: freehandTools.pencil,
@@ -46,7 +46,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MarkerHorizontalMd />,
             accessibleLabel: "Horizontal marker",
-            shortcut: ["H"],
+            shortcut: { sKey: "H" },
             key: "marker-horizontal",
         },
         factory: freehandTools.markerPenHorizontal,
@@ -55,7 +55,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MarkerVerticalMd />,
             accessibleLabel: "Vertical marker",
-            shortcut: ["V"],
+            shortcut: { sKey: "V" },
             key: "marker-vertical",
         },
         factory: freehandTools.markerPenVertical,
@@ -64,7 +64,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.BucketMd />,
             accessibleLabel: "Flood fill",
-            shortcut: ["F"],
+            shortcut: { sKey: "F" },
             key: "flood-fill",
         },
         factory: floodTools.bucket,
@@ -73,7 +73,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EyeDropperMd />,
             accessibleLabel: "Color picker",
-            shortcut: ["C"],
+            shortcut: { sKey: "C" },
             key: "color-picker",
         },
         factory: () => new ColorPickerTool(),
@@ -82,7 +82,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.EraserMd />,
             accessibleLabel: "Eraser",
-            shortcut: ["X"],
+            shortcut: { sKey: "X" },
             key: "eraser",
         },
         factory: freehandTools.eraser,
@@ -91,7 +91,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.AreaEraserMd />,
             accessibleLabel: "Area eraser",
-            shortcut: ["A"],
+            shortcut: { sKey: "A" },
             key: "flood-erase",
         },
         factory: floodTools.eraser,
@@ -100,7 +100,7 @@ const editorToolItems: Array<{ item: Item, factory: () => Tool }> = [
         item: {
             icon: <i.MoveMd />,
             accessibleLabel: "Move",
-            shortcut: ["M"],
+            shortcut: { sKey: "M" },
             key: "move",
         },
         factory: () => new MoveTool(),

@@ -4,7 +4,6 @@ import {
     ColorSwatch,
     Divider,
     Group,
-    Kbd,
     Popover,
     PopoverDropdown,
     PopoverTarget,
@@ -32,6 +31,8 @@ import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
+import { ShortcutGroup, hotkey } from "../../common/components"
+import { Transform } from "../../transforms"
 
 const brushSizeTooltip = `1,2…${EditorStore.MAX_BRUSH_SIZE > 9 ? 0 : EditorStore.MAX_BRUSH_SIZE}`
 
@@ -57,14 +58,17 @@ export const Editor = observer(() => {
         [hero, state, store]
     )
 
+    const applyTransform = useCallback(
+        (transform: Transform) => () => { if (hero) hero.updateLogo(transform(hero.logo as Bitmap)) },
+        [hero]
+    )
+
     const editorTransforms = React.useMemo(
         () => editorTransformItems.map(({ item, transformAction }) => ({
             ...item,
-            action: hero?.logo
-                ? () => hero?.updateLogo(transformAction(hero.logo as Bitmap))
-                : () => { }
+            action: applyTransform(transformAction)
         })),
-        [hero]
+        [applyTransform]
     )
 
     const handleWheel: React.WheelEventHandler = e => {
@@ -97,15 +101,18 @@ export const Editor = observer(() => {
     useHotkeys(
         editorTools
             .filter(it => it.shortcut)
-            .map((it, i) => [it.shortcut!.join("+"), () => store.setToolIndex(i)])
+            .map(({ shortcut }, i) => [
+                hotkey(shortcut!),
+                () => store.setToolIndex(i)
+            ])
     )
 
     useHotkeys(
         editorTransformItems
             .filter(it => it.item.shortcut)
-            .map(it => [
-                it.item.shortcut!.join("+"),
-                () => { if (hero) hero.updateLogo(it.transformAction(hero.logo as Bitmap)) }
+            .map(({ item: { shortcut }, transformAction }) => [
+                hotkey(shortcut!),
+                applyTransform(transformAction)
             ])
     )
 
@@ -125,7 +132,7 @@ export const Editor = observer(() => {
                             <Group gap={6} px="xs">
                                 <Popover position="bottom-start" withArrow shadow="md">
                                     <PopoverTarget>
-                                        <Tooltip label={(<Group>Brush size <Kbd>{brushSizeTooltip}</Kbd></Group>)}>
+                                        <Tooltip label={<Group>Brush size <ShortcutGroup sKey={brushSizeTooltip} /></Group>}>
                                             <ActionIcon size="lg" variant="outline">
                                                 <Text size="sm" fw={600}>{store.brushSize}</Text><Text size="0.6667em">px</Text>
                                             </ActionIcon>
@@ -170,7 +177,7 @@ export const Editor = observer(() => {
                                             label={(
                                                 <Group>
                                                     Set color {color}
-                                                    <Group gap={4}><Kbd>Ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
+                                                    <ShortcutGroup mod="mod" sKey={index + 1} />
                                                 </Group>
                                             )}
                                             key={color}
@@ -250,20 +257,24 @@ export const Editor = observer(() => {
                     <footer className={classes.editor__footer}>
                         <Group p={6} gap="md" justify="space-between">
                             <Group gap={6}>
-                                <ActionIcon
-                                    variant={state.showDarkBackground ? "filled" : "subtle"}
-                                    color={state.showDarkBackground ? "green" : undefined}
-                                    onClick={state.toggleDarkBackground}
-                                >
-                                    <i.ColorSchemeMd />
-                                </ActionIcon>
-                                <ActionIcon
-                                    variant={state.showCheckerboardOverlay ? "filled" : "subtle"}
-                                    color={state.showCheckerboardOverlay ? "green" : undefined}
-                                    onClick={state.toggleCheckerboardOverlay}
-                                >
-                                    <i.CheckerboardMd />
-                                </ActionIcon>
+                                <Tooltip label={<Group>Toggle dark background <ShortcutGroup sKey="D" /></Group>}>
+                                    <ActionIcon
+                                        variant={state.showDarkBackground ? "filled" : "subtle"}
+                                        color={state.showDarkBackground ? "green" : undefined}
+                                        onClick={state.toggleDarkBackground}
+                                    >
+                                        <i.ColorSchemeMd />
+                                    </ActionIcon>
+                                </Tooltip>
+                                <Tooltip label={<Group>Toggle checkerboard overlay <ShortcutGroup sKey="O" /></Group>}>
+                                    <ActionIcon
+                                        variant={state.showCheckerboardOverlay ? "filled" : "subtle"}
+                                        color={state.showCheckerboardOverlay ? "green" : undefined}
+                                        onClick={state.toggleCheckerboardOverlay}
+                                    >
+                                        <i.CheckerboardMd />
+                                    </ActionIcon>
+                                </Tooltip>
                             </Group>
                             <Group>
                                 <i.MagnifyingGlassSm />

@@ -1,3 +1,4 @@
 export { type ActionGroupItem, ActionGroup } from "./action-group";
 export { type ToolGroupItem, ToolGroup } from "./tool-group";
-export { getShortcut } from "./shared";
+export { ShortcutGroup } from "./shortcut-group";
+export { type Shortcut, hotkey } from "./shortcut";

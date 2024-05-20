@@ -1,11 +1,12 @@
 import { ActionIcon, Group, MantineSpacing, SimpleGrid, StyleProp, Tooltip } from "@mantine/core"
-import { getShortcut } from "./shared"
+import { Shortcut } from "./shortcut"
+import { ShortcutGroup } from "./shortcut-group"
 
 export interface ActionGroupItem {
     accessibleLabel: string
     icon: JSX.Element
     key: React.Key
-    shortcut?: Array<string>
+    shortcut?: Shortcut
     action: (key: React.Key) => void
 }
 
@@ -28,7 +29,7 @@ export const ActionGroup = ({ cols, items, ...padding }: Props): JSX.Element => 
         >
             {items.map(({ icon, accessibleLabel, shortcut, action, key }, index) => {
                 const tooltip = shortcut
-                    ? <Group>{accessibleLabel} {getShortcut(shortcut)}</Group>
+                    ? <Group>{accessibleLabel} <ShortcutGroup {...shortcut} /></Group>
                     : accessibleLabel
                 return (
                     <Tooltip label={tooltip ?? accessibleLabel} key={key ?? index}>

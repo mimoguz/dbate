@@ -1,5 +1,5 @@
-import { ActionIcon, Divider, Group, Kbd, Stack, Tooltip } from "@mantine/core"
-import { ActionGroup, ActionGroupItem, ToolGroup, ToolGroupItem } from "../../common/components"
+import { ActionIcon, Divider, Group, Stack, Tooltip } from "@mantine/core"
+import { ActionGroup, ActionGroupItem, ShortcutGroup, ToolGroup, ToolGroupItem } from "../../common/components"
 import { UndoMd } from "../../icons"
 
 interface Props {
@@ -29,7 +29,7 @@ export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, onChang
         />
         <Divider orientation="horizontal" label="History" />
         <Group px="xs">
-            <Tooltip label={<Group>Undo <Group gap={4}><Kbd>Ctrl/⌘</Kbd>+<Kbd>Z</Kbd></Group></Group>}>
+            <Tooltip label={<Group>Undo <ShortcutGroup mod="mod" sKey="Z" /></Group>}>
                 <ActionIcon
                     size="lg"
                     variant="subtle"

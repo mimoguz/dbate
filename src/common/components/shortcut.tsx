@@ -4,4 +4,4 @@ export interface Shortcut {
     sKey: string | number;
 }
 
-export const hotkey = ({ mod, shift, sKey }: Shortcut) => `${mod ? `${mod === "mod" ? "ctrl/⌘" : mod}+` : ""}${shift ? "shift+" : ""}${sKey}`;
+export const hotkey = ({ mod, shift, sKey }: Shortcut) => `${mod ? `${mod}+` : ""}${shift ? "shift+" : ""}${sKey}`;

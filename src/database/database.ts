@@ -79,10 +79,10 @@ const heroDocumentMethods: HeroDocumentMethods = {
     updateLogo: async function (this: HeroDocument, bmp: Bitmap): Promise<void> {
         await this.incrementalModify(doc => {
             const history = doc.history
-            if (history.length >= MAX_HISTORY) {
-                history.splice(0, history.length - MAX_HISTORY + 1)
+            if (history.length >= (MAX_HISTORY - 1)) {
+                doc.history.splice(0, history.length - MAX_HISTORY + 1)
             }
-            history.push(bmp)
+            history.push(doc.logo)
             doc.logo = bmp
             doc.history = history
             return doc

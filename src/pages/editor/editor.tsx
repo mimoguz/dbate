@@ -60,10 +60,7 @@ export const Editor = observer(() => {
         () => editorTransformItems.map(({ item, transformAction }) => ({
             ...item,
             action: hero?.logo
-                ? () => hero?.incrementalModify(doc => {
-                    doc.logo = transformAction(hero.logo as Bitmap)
-                    return doc
-                })
+                ? () => hero?.updateLogo(transformAction(hero.logo as Bitmap))
                 : () => { }
         })),
         [hero]

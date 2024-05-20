@@ -11,7 +11,7 @@
 - [x] ~~Rotate transforms~~
 
 ## General editing
-- [-] History (bug: applies two steps at once)
+- [x] ~~History~~
 - [ ] Clipboard
 - [-] Keyboard shortcuts (transform, canvas, and undo missing)
 

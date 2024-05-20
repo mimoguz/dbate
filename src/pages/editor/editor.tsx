@@ -8,6 +8,7 @@ import {
     Popover,
     PopoverDropdown,
     PopoverTarget,
+    SimpleGrid,
     Slider,
     Space,
     Stack,
@@ -119,7 +120,7 @@ export const Editor = observer(() => {
                         </Center>
                     </header>
                     <div className={classes.editor__sidebar}>
-                        <Stack gap="sm" px={6} py="sm">
+                        <Stack gap="sm" px={6} py="xs">
                             <Divider orientation="horizontal" label="Brush" />
                             <Group gap={6} px="xs">
                                 <Popover position="bottom-start" withArrow shadow="md">
@@ -162,25 +163,27 @@ export const Editor = observer(() => {
                                 onUndo={hero?.goBack}
                             />
                             <Divider orientation="horizontal" label="Quick colors" />
-                            <Stack align="center" gap="xs">
-                                {state.recentColors.map((color, index) => (
-                                    <Tooltip
-                                        label={(
-                                            <Group>
-                                                Set color {color}
-                                                <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
-                                            </Group>
-                                        )}
-                                        key={color}
-                                    >
-                                        <ColorSwatch
-                                            color={color}
-                                            onClick={() => state.setColor(color)}
-                                            style={{ cursor: "pointer" }}
-                                        />
-                                    </Tooltip>
-                                ))}
-                            </Stack>
+                            <Center>
+                                <SimpleGrid cols={2} spacing={6} verticalSpacing={6}>
+                                    {state.recentColors.map((color, index) => (
+                                        <Tooltip
+                                            label={(
+                                                <Group>
+                                                    Set color {color}
+                                                    <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
+                                                </Group>
+                                            )}
+                                            key={color}
+                                        >
+                                            <ColorSwatch
+                                                color={color}
+                                                onClick={() => state.setColor(color)}
+                                                style={{ cursor: "pointer" }}
+                                            />
+                                        </Tooltip>
+                                    ))}
+                                </SimpleGrid>
+                            </Center>
                         </Stack>
                     </div>
                     <main className={classes.editor__main}>

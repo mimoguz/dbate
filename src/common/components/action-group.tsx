@@ -27,7 +27,12 @@ export const ActionGroup = ({ cols, items, ...padding }: Props): JSX.Element => 
         >
             {items.map(({ icon, accessibleLabel, shortcut, action, key }, index) => {
                 const tooltip = shortcut
-                    ? <Group>{accessibleLabel} {shortcut.map((s, i) => <Kbd key={i}>{s}</Kbd>)}</Group>
+                    ? <Group>
+                        {accessibleLabel}
+                        <Group gap={4}>
+                            {shortcut.map((s, i) => <><Kbd key={i}>{s}</Kbd>{i == (shortcut.length - 1) ? null : "+"}</>)}
+                        </Group>
+                    </Group>
                     : accessibleLabel
                 return (
                     <Tooltip label={tooltip ?? accessibleLabel} key={key ?? index}>

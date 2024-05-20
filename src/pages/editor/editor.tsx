@@ -170,7 +170,7 @@ export const Editor = observer(() => {
                                             label={(
                                                 <Group>
                                                     Set color {color}
-                                                    <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
+                                                    <Group gap={4}><Kbd>Ctrl/⌘</Kbd>+<Kbd>{index + 1}</Kbd></Group>
                                                 </Group>
                                             )}
                                             key={color}

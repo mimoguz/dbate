@@ -29,7 +29,7 @@ export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, onChang
         />
         <Divider orientation="horizontal" label="History" />
         <Group px="xs">
-            <Tooltip label={<Group>Undo <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>Z</Kbd></Group></Group>}>
+            <Tooltip label={<Group>Undo <Group gap={4}><Kbd>Ctrl/⌘</Kbd>+<Kbd>Z</Kbd></Group></Group>}>
                 <ActionIcon
                     size="lg"
                     variant="subtle"

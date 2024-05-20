@@ -25,6 +25,10 @@ export const ColorPalette = observer(() => {
                 format="hex"
             />
             <Divider label="Swatches" />
+            <Group gap={6}>
+                <ActionIcon onClick={() => state?.addSwatch(currentValue)} size="lg"><PlusMd /></ActionIcon>
+                <ActionIcon onClick={() => state?.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
+            </Group>
             <SimpleGrid cols={6} spacing={6} verticalSpacing={12}>
                 {state?.swatches.map(color => (
                     <ColorSwatch
@@ -35,10 +39,6 @@ export const ColorPalette = observer(() => {
                     />
                 ))}
             </SimpleGrid>
-            <Group gap={6}>
-                <ActionIcon onClick={() => state?.addSwatch(currentValue)} color="green" size="lg"><PlusMd /></ActionIcon>
-                <ActionIcon onClick={() => state?.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
-            </Group>
         </Stack>
     )
 })

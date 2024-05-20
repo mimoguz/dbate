@@ -1,4 +1,4 @@
-import { ActionIcon, Divider, Stack } from "@mantine/core"
+import { ActionIcon, Divider, Group, Kbd, Stack, Tooltip } from "@mantine/core"
 import { ActionGroup, ActionGroupItem, ToolGroup, ToolGroupItem } from "../../common/components"
 import { UndoMd } from "../../icons"
 
@@ -13,25 +13,32 @@ interface Props {
 
 export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, onChange, onUndo }: Props): JSX.Element => (
     <Stack gap="sm" p={0}>
+        <Divider orientation="horizontal" label="Tools" />
         <ToolGroup
             cols={2}
             items={toolItems}
             value={toolIndex}
             onChange={onChange}
+            px="xs"
         />
-        <Divider orientation="horizontal" />
+        <Divider orientation="horizontal" label="Actions" />
         <ActionGroup
             cols={2}
             items={transformItems}
+            px="xs"
         />
-        <Divider orientation="horizontal" />
-        <ActionIcon
-            size="lg"
-            variant="subtle"
-            disabled={!hasUndo}
-            onClick={onUndo}
-        >
-            <UndoMd />
-        </ActionIcon>
+        <Divider orientation="horizontal" label="History" />
+        <Group px="xs">
+            <Tooltip label={<Group>Undo <Group gap={4}><Kbd>ctrl/⌘</Kbd>+<Kbd>Z</Kbd></Group></Group>}>
+                <ActionIcon
+                    size="lg"
+                    variant="subtle"
+                    disabled={!hasUndo}
+                    onClick={onUndo}
+                >
+                    <UndoMd />
+                </ActionIcon>
+            </Tooltip>
+        </Group>
     </Stack>
 )

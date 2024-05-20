@@ -13,6 +13,7 @@
 .editor__sidebar {
     grid-area: 2 / 1 / 4 / 2;
     border-right: 1px solid var(--mantine-color-default-border);
+    overflow: auto;
 
 }
 

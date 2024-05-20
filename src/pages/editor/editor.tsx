@@ -88,12 +88,24 @@ export const Editor = observer(() => {
         ["mod+2", () => state?.recentColors.at(1) && state?.setColor(state?.recentColors[1])],
         ["mod+3", () => state?.recentColors.at(2) && state?.setColor(state?.recentColors[2])],
         ["mod+4", () => state?.recentColors.at(3) && state?.setColor(state?.recentColors[3])],
+        ["mod+Z", () => hero?.goBack()],
+        ["D", () => state?.toggleDarkBackground()],
+        ["O", () => state?.toggleCheckerboardOverlay()],
     ])
 
     useHotkeys(
         editorTools
             .filter(it => it.shortcut)
             .map((it, i) => [it.shortcut!.join("+"), () => store.setToolIndex(i)])
+    )
+
+    useHotkeys(
+        editorTransformItems
+            .filter(it => it.item.shortcut)
+            .map(it => [
+                it.item.shortcut!.join("+"),
+                () => { if (hero) hero.updateLogo(it.transformAction(hero.logo as Bitmap)) }
+            ])
     )
 
     return (
@@ -107,8 +119,9 @@ export const Editor = observer(() => {
                         </Center>
                     </header>
                     <div className={classes.editor__sidebar}>
-                        <Stack gap="sm" px="xs" py="sm">
-                            <Group gap={6}>
+                        <Stack gap="sm" px={6} py="sm">
+                            <Divider orientation="horizontal" label="Brush" />
+                            <Group gap={6} px="xs">
                                 <Popover position="bottom-start" withArrow shadow="md">
                                     <PopoverTarget>
                                         <Tooltip label={(<Group>Brush size <Kbd>{brushSizeTooltip}</Kbd></Group>)}>
@@ -140,7 +153,6 @@ export const Editor = observer(() => {
                                     </PopoverDropdown>
                                 </Popover>
                             </Group>
-                            <Divider orientation="horizontal" />
                             <Toolbar
                                 toolItems={editorTools}
                                 transformItems={editorTransforms}
@@ -149,7 +161,7 @@ export const Editor = observer(() => {
                                 hasUndo={(hero?.history?.length ?? 0) > 0}
                                 onUndo={hero?.goBack}
                             />
-                            <Divider orientation="horizontal" />
+                            <Divider orientation="horizontal" label="Quick colors" />
                             <Stack align="center" gap="xs">
                                 {state.recentColors.map((color, index) => (
                                     <Tooltip

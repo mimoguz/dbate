@@ -3,7 +3,7 @@ import * as i from "../../icons";
 import { Bitmap } from "../../schema";
 import { transforms } from "../../transforms";
 
-type Item = Pick<ActionGroupItem, "icon" | "accessibleLabel" | "key">
+type Item = Omit<ActionGroupItem, "action">
 
 export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bitmap) => Bitmap }> = [
     {
@@ -11,6 +11,7 @@ export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bi
             icon: <i.FlipHorizontalMd />,
             accessibleLabel: "Flip horizontal",
             key: "flip-horizontal",
+            shortcut: ["alt", "H"],
         },
         transformAction: transforms.flipHorizontal,
     },
@@ -19,6 +20,7 @@ export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bi
             icon: <i.FlipVerticalMd />,
             accessibleLabel: "Flip vertical",
             key: "flip-vertical",
+            shortcut: ["alt", "V"],
         },
         transformAction: transforms.flipVertical,
     },
@@ -27,6 +29,7 @@ export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bi
             icon: <i.RotateClockwiseMd />,
             accessibleLabel: "Rotate clockwise",
             key: "rotate-cw",
+            shortcut: ["alt", "C"],
         },
         transformAction: transforms.rotateClockwise,
     },
@@ -35,6 +38,7 @@ export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bi
             icon: <i.RotateCounterClockwiseMd />,
             accessibleLabel: "Rotate counter-clockwise",
             key: "rotate-ccw",
+            shortcut: ["alt", "W"],
         },
         transformAction: transforms.rotateCounterClockwise,
     },
@@ -43,6 +47,7 @@ export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bi
             icon: <i.InvertMd />,
             accessibleLabel: "Invert colors",
             key: "invert",
+            shortcut: ["alt", "I"],
         },
         transformAction: transforms.invert,
     },

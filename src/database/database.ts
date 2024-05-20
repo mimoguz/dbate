@@ -27,7 +27,7 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
         await this.incrementalModify(doc => {
             doc.color = value
             let recentColors = doc.recentColors ?? []
-            if (recentColors.indexOf(value) >= 0) return doc
+            if (recentColors.indexOf(value) >= 0 || value === "#00000000") return doc
             recentColors = ["transparent", value, ...recentColors.slice(1, MAX_RECENT_COLORS)]
             doc.recentColors = recentColors
             return doc

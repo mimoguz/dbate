@@ -1,33 +1,48 @@
-import { ActionIcon, SimpleGrid, Tooltip } from "@mantine/core"
+import { ActionIcon, Group, Kbd, MantineSpacing, SimpleGrid, StyleProp, Tooltip } from "@mantine/core"
 
 export interface ActionGroupItem {
-    accessibleLabel: string,
-    icon: JSX.Element,
+    accessibleLabel: string
+    icon: JSX.Element
     key: React.Key
-    tooltip?: JSX.Element,
-    action: (key: React.Key) => void,
+    shortcut?: Array<string>
+    action: (key: React.Key) => void
 }
 
 interface Props {
-    cols: number,
-    items: Array<ActionGroupItem>,
+    cols: number
+    items: Array<ActionGroupItem>
+    p?: StyleProp<MantineSpacing>
+    px?: StyleProp<MantineSpacing>
+    py?: StyleProp<MantineSpacing>
 }
 
-export const ActionGroup = ({ cols, items }: Props): JSX.Element => {
+export const ActionGroup = ({ cols, items, ...padding }: Props): JSX.Element => {
     return (
-        <SimpleGrid cols={cols} style={{ width: "fit-content" }} spacing="6px" verticalSpacing="6px">
-            {items.map(({ icon, accessibleLabel, tooltip, action, key }, index) => (
-                <Tooltip label={tooltip ?? accessibleLabel} key={key ?? index}>
-                    <ActionIcon
-                        aria-label={accessibleLabel}
-                        variant="subtle"
-                        size="lg"
-                        onClick={() => action(key)}
-                    >
-                        {icon}
-                    </ActionIcon>
-                </Tooltip>
-            ))}
+        <SimpleGrid
+            {...padding}
+            cols={cols}
+            style={{ width: "fit-content" }}
+            spacing={6}
+            verticalSpacing={6}
+        >
+            {items.map(({ icon, accessibleLabel, shortcut, action, key }, index) => {
+                const tooltip = shortcut
+                    ? <Group>{accessibleLabel} {shortcut.map((s, i) => <Kbd key={i}>{s}</Kbd>)}</Group>
+                    : accessibleLabel
+                return (
+                    <Tooltip label={tooltip ?? accessibleLabel} key={key ?? index}>
+                        <ActionIcon
+                            aria-label={accessibleLabel}
+                            variant="subtle"
+                            size="lg"
+                            onClick={() => action(key)}
+                        >
+                            {icon}
+                        </ActionIcon>
+                    </Tooltip>
+                )
+            })}
+
         </SimpleGrid>
     )
-} 
+}

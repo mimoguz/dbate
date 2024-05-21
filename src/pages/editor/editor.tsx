@@ -18,11 +18,12 @@ import {
 import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
-import * as DB from "../../database"
+import { ShortcutGroup, hotkey } from "../../common/components"
 import * as i from "../../icons"
 import { Bitmap } from "../../schema"
 import { EditorContext, EditorStore } from "../../stores"
 import { ToolResult } from "../../tools"
+import { Transform } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
 import { Checkerboard } from "./checkerboard"
 import { ColorPalette } from "./color-palette"
@@ -31,22 +32,24 @@ import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-import { ShortcutGroup, hotkey } from "../../common/components"
-import { Transform } from "../../transforms"
 
 const brushSizeTooltip = `1,2…${EditorStore.MAX_BRUSH_SIZE > 9 ? 0 : EditorStore.MAX_BRUSH_SIZE}`
 
 export const Editor = observer(() => {
-    const hero = DB.useHero("Bob")
     const store = React.useContext(EditorContext)
     const tool = useMemo(() => createTool(store.toolIndex), [store.toolIndex])
+
+    React.useEffect(
+        () => store.selectHero("Bob"),
+        [store]
+    )
 
     const handleToolResult = useCallback(
         (result: ToolResult | undefined) => {
             if (!result) return
             switch (result.tag) {
                 case "affects-bitmap":
-                    hero?.updateLogo(result.value)
+                    store.updateLogo(result.value)
                     break
                 case "affects-options":
                     store.setColor(result.value.color)
@@ -54,12 +57,12 @@ export const Editor = observer(() => {
                     break
             }
         },
-        [hero, store]
+        [store]
     )
 
     const applyTransform = useCallback(
-        (transform: Transform) => () => { if (hero) hero.updateLogo(transform(hero.logo as Bitmap)) },
-        [hero]
+        (transform: Transform) => () => { if (store.selectedLogo) store.updateLogo(transform(store.selectedLogo as Bitmap)) },
+        [store]
     )
 
     const editorTransforms = React.useMemo(
@@ -92,7 +95,7 @@ export const Editor = observer(() => {
         ["mod+2", () => store.quickColors.at(1) && store.setColor(store.quickColors[1])],
         ["mod+3", () => store.quickColors.at(2) && store.setColor(store.quickColors[2])],
         ["mod+4", () => store.quickColors.at(3) && store.setColor(store.quickColors[3])],
-        ["mod+Z", () => hero?.goBack()],
+        ["mod+Z", () => store.undoLogoUpdate()],
         ["D", () => store.toggleDarkBackground()],
         ["O", () => store.toggleCheckerboardOverlay()],
     ])
@@ -119,7 +122,7 @@ export const Editor = observer(() => {
         <div onWheel={handleWheel} className={classes.editor}>
             <header className={classes.editor__header}>
                 <Center p="md">
-                    <Title order={2}>{hero?.name}</Title>
+                    <Title order={2}>{store.selectedName}</Title>
                 </Center>
             </header>
             <div className={classes.editor__sidebar}>
@@ -162,8 +165,8 @@ export const Editor = observer(() => {
                         transformItems={editorTransforms}
                         toolIndex={store.toolIndex}
                         onChange={store.setToolIndex}
-                        hasUndo={(hero?.history?.length ?? 0) > 0}
-                        onUndo={hero?.goBack}
+                        hasUndo={store.canUndo}
+                        onUndo={store.undoLogoUpdate}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
@@ -190,7 +193,7 @@ export const Editor = observer(() => {
                 </Stack>
             </div>
             <main className={classes.editor__main}>
-                {hero
+                {store.selectedLogo
                     ? (
                         <Center p="xl" h="100%">
                             <div
@@ -201,8 +204,8 @@ export const Editor = observer(() => {
                                 className={classes.editor__canvas__stack}
                             >
                                 <Checkerboard
-                                    width={hero.logo.width}
-                                    height={hero.logo.height}
+                                    width={store.selectedLogo.width}
+                                    height={store.selectedLogo.height}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",
@@ -212,7 +215,7 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <BitmapView
-                                    bmp={hero.logo as Bitmap}
+                                    bmp={store.selectedLogo as Bitmap}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",
@@ -220,7 +223,7 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <ToolPreview
-                                    bmp={hero.logo as Bitmap}
+                                    bmp={store.selectedLogo as Bitmap}
                                     tool={tool}
                                     color={store.color}
                                     brushSize={store.brushSize}
@@ -234,8 +237,8 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <Checkerboard
-                                    width={hero.logo.width}
-                                    height={hero.logo.height}
+                                    width={store.selectedLogo.width}
+                                    height={store.selectedLogo.height}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",

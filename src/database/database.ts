@@ -67,11 +67,17 @@ const editorStateDocumentMethods: EditorStateDocumentMethods = {
     },
 
     toggleCheckerboardOverlay: async function (this: EditorStateDocument): Promise<void> {
-        await this.incrementalPatch({ showCheckerboardOverlay: !this.showCheckerboardOverlay })
+        await this.incrementalModify(doc => {
+            doc.showCheckerboardOverlay = !doc.showCheckerboardOverlay
+            return doc
+        })
     },
 
     toggleDarkBackground: async function (this: EditorStateDocument): Promise<void> {
-        await this.incrementalPatch({ showDarkBackground: !this.showDarkBackground })
+        await this.incrementalModify(doc => {
+            doc.showDarkBackground = !doc.showDarkBackground
+            return doc
+        })
     },
 } as const
 

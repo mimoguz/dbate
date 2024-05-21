@@ -1,9 +1,9 @@
 import { makeAutoObservable } from "mobx"
 import React from "react"
+import { Subscription } from "rxjs"
 import { clamp } from "../common"
 import { DbType } from "../database"
 import { Bitmap, EditorStateDocument, HeroDocument } from "../schema"
-import { Subscription } from "rxjs"
 
 export class EditorStore {
     constructor(getDb?: Promise<DbType>) {
@@ -132,7 +132,7 @@ export class EditorStore {
         this.syncSelectedHistorySize([])
     }
 
-    // Settings collection sync actions
+    // Settings sync actions
     private syncColor(value: string) { if (value !== this.color) this.color = value }
     private syncQuickColors(value: Array<string>) { if (value !== this.quickColors) this.quickColors = value }
     private syncSwatches(value: Array<string>) { if (value !== this.swatches) this.swatches = value }
@@ -141,7 +141,7 @@ export class EditorStore {
 
     // Hero sync actions
     private syncSelectedHistorySize(history: Array<unknown>) { if (history.length !== this.selectedHistorySize) this.selectedHistorySize = history.length }
-    private syncSelectedName(value?: string) { if (value !== this.selectedName) this.selectedHeroName = value }
+    private syncSelectedName(value?: string) { if (value !== this.selectedName) this.selectedName = value }
     private syncSelectedLogo(value?: Bitmap) { if (value !== this.selectedLogo) this.selectedLogo = value }
 
     static readonly MAX_ZOOM = 32

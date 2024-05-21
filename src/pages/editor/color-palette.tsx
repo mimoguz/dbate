@@ -1,23 +1,21 @@
 import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, SimpleGrid, Stack } from "@mantine/core"
 import { observer } from "mobx-react-lite"
-import React, { useEffect } from "react"
+import React from "react"
 import { PlusMd, TrashMd } from "../../icons"
-import * as DB from "../../database"
+import { EditorContext } from "../../stores"
 
 export const ColorPalette = observer(() => {
-    const state = DB.useEditorState("editor-state-0")
-    const [currentValue, setCurrentValue] = React.useState(state?.color ?? "transparent")
-
-    useEffect(() => setCurrentValue(state?.color ?? "transparent"), [state?.color])
+    const store = React.useContext(EditorContext)
+    const [currentValue, setCurrentValue] = React.useState(store.color)
 
     return (
         <Stack>
             <Group justify="space-between">
                 <Group gap={0}>
-                    <ColorSwatch color={state?.color ?? "transparent"} radius="4px 0 0 4px" withShadow={false} size={35} />
+                    <ColorSwatch color={store.color} radius="4px 0 0 4px" withShadow={false} size={35} />
                     <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
                 </Group>
-                <Button onClick={() => state?.setColor(currentValue)}>Select</Button>
+                <Button onClick={() => store.setColor(currentValue)}>Select</Button>
             </Group>
             <ColorPicker
                 value={currentValue}
@@ -26,11 +24,11 @@ export const ColorPalette = observer(() => {
             />
             <Divider label="Swatches" />
             <Group gap={6}>
-                <ActionIcon onClick={() => state?.addSwatch(currentValue)} size="lg"><PlusMd /></ActionIcon>
-                <ActionIcon onClick={() => state?.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
+                <ActionIcon onClick={() => store.addSwatch(currentValue)} size="lg"><PlusMd /></ActionIcon>
+                <ActionIcon onClick={() => store.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
             </Group>
             <SimpleGrid cols={6} spacing={6} verticalSpacing={12}>
-                {state?.swatches.map(color => (
+                {store.swatches.map(color => (
                     <ColorSwatch
                         key={color}
                         color={color}

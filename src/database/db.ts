@@ -18,7 +18,7 @@ export interface Hero {
     thumbnail?: ImageBitmap
 }
 
-export interface History {
+export interface HistoryItem {
     id?: number
     heroName: string
     encodedLogo: string
@@ -35,7 +35,7 @@ export class Database extends Dexie {
     }
 
     heroes!: Table<Hero>
-    history!: Table<History>
+    history!: Table<HistoryItem>
 }
 
 export const db = new Database();

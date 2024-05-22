@@ -1,29 +1,44 @@
 import pako from "pako";
 import { Bitmap, Database, EncodedBitmap, Hero } from "../database/db";
 
-const MAX_HISTORY = 64
+const MAX_HISTORY = 8
 
 export class DataStore {
     constructor(db: Database) {
         this.db = db
     }
 
+    private readonly db: Database
+
     selectedHero?: Hero
     selectedLogo?: Bitmap
     selectedName?: string
+    selectedHistory: Array<Bitmap> = []
     heroes: Array<Hero> = []
-    currentHistory: Array<Bitmap> = []
 
-    async load(): Promise<void> {
-        this.heroes = await this.db.heroes.toArray()
-    }
-
-    // TODO: load history
-    selectHero(this: DataStore, name: string): Hero | undefined {
+    async selectHero(name: string): Promise<void> {
         const hero = this.heroes.find(hero => hero.name === name)
         this.selectedHero = hero
         this.selectedLogo = hero ? DataStore.decodeBitmap(hero.encodedLogo) : undefined
-        return hero
+        // Restore the history if the hero is the last edited one
+        this.selectedHistory = (await this.db.history.where("heroName").equals(name).toArray())
+            .map(it => DataStore.decodeBitmap(it.encodedLogo))
+            .filter(it => it) as Array<Bitmap>
+    }
+
+    deselectHero() {
+        this.selectedHero = undefined
+        this.selectedLogo = undefined
+        this.selectedName = undefined
+        this.selectedHistory = []
+    }
+
+    updateSelectedLogo(bmp: Bitmap) {
+        this.selectedLogo = bmp
+    }
+
+    async load(): Promise<void> {
+        this.heroes = await this.db.heroes.toArray()
     }
 
     async createHero(name: string, logo: Bitmap): Promise<string | undefined> {
@@ -41,44 +56,40 @@ export class DataStore {
         }
     }
 
-    async writeLogo(bmp: Bitmap) {
+    async writeLogo() {
         const currentHero = this.selectedHero
-        const history = this.currentHistory
+        const currentLogo = this.selectedLogo
+        if (!(currentHero && currentLogo)) return
+
         const db = this.db
-        if (currentHero) {
-            currentHero.thumbnail = undefined
-            await db.transaction("rw", this.db.heroes, this.db.history, async () => {
-                const heroQuery = db.heroes.where("name").equals("name")
+        const history = this.selectedHistory.length > MAX_HISTORY
+            ? this.selectedHistory.slice(0, MAX_HISTORY)
+            : this.selectedHistory
 
-                // If hero doesn't exists, clear any traces of its history and return
-                const hero = await heroQuery.first()
-                if (!hero) {
-                    await db.history.where("heroName").equals(currentHero.name).delete()
-                    return
-                }
+        currentHero.thumbnail = undefined
+        currentHero.encodedLogo = DataStore.encodeBitmap(currentLogo)
 
-                // Limit history size
-                const historySize = await db.history.count()
-                if ((historySize + history.length) > MAX_HISTORY) {
-                    const toDelete = await db.history.limit((historySize + history.length) - MAX_HISTORY).sortBy("id")
-                    await db.history.bulkDelete(toDelete)
-                }
+        // Update database
+        await db.transaction("rw", this.db.heroes, this.db.history, async () => {
+            const heroQuery = db.heroes.where("name").equals("name")
+            const hero = await heroQuery.first()
+            if (!hero) return
 
-                const historyItems = history.map(bmp => ({
-                    heroName: hero.name,
-                    encodedLogo: DataStore.encodeBitmap(bmp)
-                }))
+            const historyItems = history.map(hist => ({
+                heroName: hero.name,
+                encodedLogo: DataStore.encodeBitmap(hist)
+            }))
 
-                await db.history.bulkAdd(historyItems)
-                await db.heroes.where("name").equals(currentHero.name).modify(hero => {
-                    hero.encodedLogo = DataStore.encodeBitmap(bmp)
-                    hero.thumbnail = undefined
-                })
+            // Only keep the last edited hero's history
+            await db.history.clear()
+            await db.history.bulkAdd(historyItems)
+
+            await db.heroes.where("name").equals(currentHero.name).modify(hero => {
+                hero.encodedLogo = currentHero.encodedLogo
+                hero.thumbnail = undefined
             })
-        }
+        })
     }
-
-    private readonly db: Database
 
     static async getThumbnail(hero: Hero): Promise<ImageBitmap> {
         if (hero.thumbnail) return hero.thumbnail
@@ -102,11 +113,11 @@ export class DataStore {
     private static decodeBitmap(source: string): Bitmap | undefined {
         try {
             const json: EncodedBitmap = JSON.parse(source)
-            const colorBuffer = new Uint8ClampedArray(Buffer.from(json.data, "base64"))
+            const inflated = pako.inflate(Buffer.from(json.data, "base64"))
             return ({
                 width: json.width,
                 height: json.height,
-                colorBuffer
+                colorBuffer: new Uint8ClampedArray(inflated)
             })
         } catch (error) {
             console.debug(error)

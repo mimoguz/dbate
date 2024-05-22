@@ -1,4 +1,3 @@
 export { type Branded } from "./branded"
-export { type Rect, clamp } from "./math"
-export { type Point, point } from "./point"
+export { type Point, type Rect, clamp, point } from "./math"
 export { intersperse } from "./array"

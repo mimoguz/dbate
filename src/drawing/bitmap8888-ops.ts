@@ -1,5 +1,4 @@
-import { Rect, clamp } from "../common"
-import { Point, point } from "../common/point"
+import { Point, Rect, clamp, point } from "../common"
 import { Bitmap } from "../database/db"
 import { RGBA8888, rgba8888 } from "./rgba8888-ops"
 

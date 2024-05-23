@@ -32,6 +32,9 @@ export class SizedStack<T> {
     }
 
     push(value: T) {
+        if (value === undefined || value === null) {
+            throw new Error("Sized stack doesn't support null or undefined values")
+        }
         if (this._count == this.size) {
             // Slide one
             this.first = (this.first + 1) % this.size

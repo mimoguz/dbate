@@ -36,7 +36,8 @@ const toString = (value: RGBA8888, format: "hex" | "rgba" = "hex"): string => {
 }
 
 const fromString = (colorStr: string): RGBA8888 => {
-    const [r, g, b, a] = colorRgba(colorStr) ?? [0, 0, 0, 1]
+    const channels = colorRgba(colorStr)
+    const [r, g, b, a] = (!channels || channels.length < 4) ? [0, 0, 0, 1] : channels
     return pack(r, g, b, a * 255)
 }
 

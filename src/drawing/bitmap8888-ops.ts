@@ -33,7 +33,7 @@ const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: 
             if (sourcePt.x > target.width) break
             targetPt.x = sourcePt.x + offset.x
             targetPt.y = sourcePt.y + offset.y
-            if (contains(target, targetPt)) {
+            if (contains(source, sourcePt) && contains(target, targetPt)) {
                 readPixel(source, sourcePt, sample)
                 putPixelMut(target, targetPt, sample)
             }
@@ -104,7 +104,7 @@ const map = (bmp: Bitmap, mutator: (color: RGBA8888, index: number) => void): Bi
     return cloned
 }
 
-const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA8888) => {
+const fillRectMut = (bmp: Bitmap, rect: Rect, color: RGBA8888) => {
     const right = clamp(0, bmp.width, rect.x + rect.w)
     const bottom = clamp(0, bmp.height, rect.y + rect.h)
     const left = clamp(0, right, rect.x)
@@ -142,7 +142,7 @@ export const bitmap8888 = {
     copy,
     draw,
     empty,
-    fillRect,
+    fillRectMut,
     getPixel,
     map,
     mapMut,

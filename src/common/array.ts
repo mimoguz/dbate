@@ -26,7 +26,7 @@ export class SizedStack<T> {
     }
 
     clear() {
-        this.data.splice(0)
+        this.data.fill(undefined)
         this.first = -1
         this.last = -1
     }

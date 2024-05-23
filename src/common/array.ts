@@ -11,7 +11,7 @@ export class SizedStack<T> {
     constructor(size: number) {
         if (size < 1) throw new Error("Size can't be less than one")
         this.size = Math.floor(size)
-        this.data = new Array<T>(size)
+        this.data = new Array<T | undefined>(size)
     }
 
     readonly size: number

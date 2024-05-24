@@ -1,3 +1,5 @@
+import { mod } from "./math"
+
 export function* intersperse<T, U>(xs: Array<T>, separator: U): Generator<T | U> {
     for (let i = 0; i < xs.length; i++) {
         yield xs[i]
@@ -11,14 +13,13 @@ export class SizedStack<T> {
     constructor(size: number) {
         if (size < 1) throw new Error("Size can't be less than one")
         this.size = Math.floor(size)
-        this.data = new Array<T | undefined>(size)
+        this.data = new Array<T | null>(size)
     }
 
     readonly size: number
 
-    private readonly data: Array<T | undefined>
-    private first: number = -1
-    private last: number = -1
+    private readonly data: Array<T | null>
+    private point: number = -1
     private _count: number = 0
 
     get count(): number {
@@ -26,55 +27,45 @@ export class SizedStack<T> {
     }
 
     clear() {
-        this.data.fill(undefined)
-        this.first = -1
-        this.last = -1
+        this.data.fill(null)
+        this.point = -1
+        this._count = 0
     }
 
     push(value: T) {
         if (value === undefined || value === null) {
             throw new Error("Sized stack doesn't support null or undefined values")
         }
-        if (this._count == this.size) {
-            // Slide one
-            this.first = (this.first + 1) % this.size
-            this._count -= 1
-        } else if (this.first < 0) {
-            this.first = 0
-        }
-        this.last = (this.last + 1) % this.size
-        this.data[this.last] = value
-        this._count += 1
+        this.increase()
+        this.data[this.point] = value
     }
 
     pop(): T | undefined {
-        if (this._count > 0) {
-            const result = this.data[this.last]!
-            this.data[this.last] = undefined
-            this.last = this.last - 1
-            if (this.last < 0) this.last = this.size - 1
-            this._count -= 1
-            if (this.count === 0) {
-                this.last = -1
-                this.first = -1
-            }
-            return result
-        }
-        return undefined
+        if (this.count <= 0) return undefined
+        const result = this.data[this.point]!
+        this.data[this.point] = null
+        this.decrease()
+        return result
     }
 
     mapToArray<U>(f: (value: T) => U): Array<U> {
         if (this._count === 0) return []
-        if (this._count === 1) return [f(this.data[0]!)]
+        if (this._count === 1) return [f(this.data[this.point]!)]
         const result = new Array(this._count)
-        let node = this.first
-        let i = 0
-        do {
-            result[i] = f(this.data[node]!)
-            node = (node + 1) % this.size
-            i++
-        } while (node !== this.last)
-        result[this._count - 1] = f(this.data[this.last]!)
+        for (let offset = 0; offset < this._count; offset++) {
+            const index = mod(this.point - offset, this.size)
+            result[this._count - offset - 1] = f(this.data[index]!)
+        }
         return result
+    }
+
+    private increase() {
+        this.point = (this.point + 1) % this.size
+        this._count = Math.min(this._count + 1, this.size)
+    }
+
+    private decrease() {
+        this.point = mod(this.point - 1, this.size)
+        this._count = Math.max(0, this.count - 1)
     }
 }

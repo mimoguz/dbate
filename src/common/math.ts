@@ -27,3 +27,5 @@ export const point = {
 } as const
 
 export const clamp = (min: number, max: number, value: number): number => Math.max(min, Math.min(max, value))
+
+export const mod = (dividend: number, divisor: number): number => (dividend % divisor + divisor) % divisor

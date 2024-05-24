@@ -54,6 +54,7 @@ export class SizedStack<T> {
         if (this._count === 1) return [f(this.data[this.point]!)]
         const result = new Array(this._count)
         for (let offset = 0; offset < this._count; offset++) {
+            // Traverse backward starting from point _count number of items
             const index = mod(this.point - offset, this.size)
             result[this._count - offset - 1] = f(this.data[index]!)
         }

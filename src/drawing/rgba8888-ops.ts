@@ -53,7 +53,7 @@ const shift = (value: RGBA8888, offset: number, alphaOffset: number = 0): RGBA88
 
 const equals = (color1: RGBA8888, color2: RGBA8888): boolean => {
     for (let i = 0; i < 4; i++) {
-        if (color1[i] != color2[i]) return false
+        if (color1[i] !== color2[i]) return false
     }
     return true
 }
@@ -67,6 +67,7 @@ const copy = (source: RGBA8888, target: RGBA8888) => {
 export const rgba8888 = {
     copy,
     equals,
+    zero: () => Uint8ClampedArray.of(0, 0, 0, 0) as RGBA8888,
     fromString,
     pack,
     shift,

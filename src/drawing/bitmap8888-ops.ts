@@ -26,7 +26,7 @@ const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: 
     const bottom = rect.y + rect.h
     const sourcePt = point.zero()
     const targetPt = point.zero()
-    const sample = rgba8888.pack(0, 0, 0, 0)
+    const sample = rgba8888.zero()
     for (sourcePt.y = rect.y; sourcePt.y < bottom; sourcePt.y++) {
         if (sourcePt.y > target.height) break
         for (sourcePt.x = rect.x; sourcePt.x < right; sourcePt.x++) {
@@ -50,7 +50,7 @@ const draw = (
     const lastSample = rgba8888.transparent
     context.fillStyle = rgba8888.toString(colorTransform(lastSample))
     const pixels = bmp.width * bmp.height
-    const sample = rgba8888.pack(0, 0, 0, 0)
+    const sample = rgba8888.zero()
     const pt = { x: 0, y: 0 }
     for (let index = 0; index < pixels; index++) {
         toPoint(bmp, index, pt)

@@ -5,7 +5,7 @@ import { RGBA8888, rgba8888 } from "./rgba8888-ops"
 
 const canSpread = (pt: Point, sampleColor: RGBA8888, bmp: Bitmap): boolean => (
     bitmap8888.contains(bmp, pt)
-    && bitmap8888.getPixel(bmp, pt) === sampleColor
+    && rgba8888.equals(bitmap8888.getPixel(bmp, pt), sampleColor)
 )
 
 const spread = (
@@ -23,7 +23,7 @@ const spread = (
 
 const fill = (bmp: Bitmap, start: Point, fillColor: RGBA8888): void => {
     const sampleColor = bitmap8888.getPixel(bmp, start)
-    if (sampleColor === fillColor) return
+    if (rgba8888.equals(sampleColor, fillColor)) return
     const stack: Array<Point> = []
     spread(start, sampleColor, fillColor, bmp, stack)
     while (stack.length > 0) {

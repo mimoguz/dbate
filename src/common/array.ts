@@ -10,6 +10,7 @@ export function* intersperse<T, U>(xs: Array<T>, separator: U): Generator<T | U>
 /// A simple stack with a maximum size. 
 /// When the stack size exceed the maximum size, older items will be dropped.
 export class SizedStack<T> {
+    // This is implemented as a circular array
     constructor(size: number) {
         if (size < 1) throw new Error("Size can't be less than one")
         this.size = Math.floor(size)
@@ -34,7 +35,7 @@ export class SizedStack<T> {
 
     push(value: T) {
         if (value === undefined || value === null) {
-            throw new Error("Sized stack doesn't support null or undefined values")
+            throw new Error("SizedStack doesn't support null or undefined values")
         }
         this.increase()
         this.data[this.point] = value

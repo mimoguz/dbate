@@ -33,12 +33,32 @@ export class SizedStack<T> {
         this._count = 0
     }
 
-    push(value: T) {
+    exists(predicate: (value: T) => boolean): boolean {
+        for (let offset = 0; offset < this._count; offset++) {
+            // Traverse backward starting from point _count number of items
+            const index = mod(this.point - offset, this.size)
+            if (predicate(this.data[index]!)) return true
+        }
+        return false
+    }
+
+    forAll(predicate: (value: T) => boolean): boolean {
+        for (let offset = 0; offset < this._count; offset++) {
+            // Traverse backward starting from point _count number of items
+            const index = mod(this.point - offset, this.size)
+            if (!predicate(this.data[index]!)) return false
+        }
+        return true
+    }
+
+    push(value: T): T | undefined {
         if (value === undefined || value === null) {
             throw new Error("SizedStack doesn't support null or undefined values")
         }
         this.increase()
+        const oldValue = this.data[this.point]
         this.data[this.point] = value
+        return (oldValue !== null ? oldValue : undefined)
     }
 
     pop(): T | undefined {
@@ -57,6 +77,17 @@ export class SizedStack<T> {
             // Traverse backward starting from point _count number of items
             const index = mod(this.point - offset, this.size)
             result[this._count - offset - 1] = f(this.data[index]!)
+        }
+        return result
+    }
+
+    static from<U>(source: Array<U>, size?: number): SizedStack<U> {
+        const maxSize = size ?? source.length
+        const result = new SizedStack<U>(maxSize)
+        const start = Math.max(0, source.length - maxSize)
+        for (let i = start; i < source.length; i++) {
+            const value = source[i]
+            if (value !== null || value !== undefined) result.push(value)
         }
         return result
     }

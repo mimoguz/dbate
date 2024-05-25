@@ -1,13 +1,14 @@
 import { makeAutoObservable } from "mobx";
 import pako from "pako";
-import { SizedStack } from "../common";
+import { SizedStack, clamp } from "../common";
 import * as Data from "../database/db";
 
 const MAX_HISTORY = 8
 const MAX_SWATCHES = 16
 const MAX_COLORS = 3
+const MAX_BRUSH_SIZE = 10
 
-const compare = (a: string, b: string): number => (
+const compareStr = (a: string, b: string): number => (
     a.toLocaleLowerCase("en").localeCompare(b.toLocaleLowerCase("en"), "en")
 )
 
@@ -37,6 +38,7 @@ export class DataStore {
     color: string = "#0000ff"
     gridOverlay: Data.GridOverlayVisibility = "hidden"
     toolId: number = 0
+    editorStateTimeout: NodeJS.Timeout | undefined
 
     // Hero Methods
 
@@ -60,26 +62,8 @@ export class DataStore {
         this.selectedHistory.clear()
     }
 
-    updateSelectedLogo(bmp: Data.Bitmap) {
+    setSelectedLogo(bmp: Data.Bitmap) {
         this.selectedLogo = bmp
-    }
-
-    async createHero(name: string, logo: Data.Bitmap): Promise<string | undefined> {
-        const encodedLogo = DataStore.encodeBitmap(logo)
-        const hero = { name, encodedLogo }
-        try {
-            await this.db.heroes.add(hero)
-            this.heroes.push(hero)
-            this.heroes.sort((a, b) => compare(a.name, b.name))
-            return undefined
-        } catch (error) {
-            console.error(error)
-            return (
-                error instanceof Error
-                    ? `Can't add hero: ${error.message}`
-                    : "Can't add hero: reason unknown"
-            )
-        }
     }
 
     async writeLogo() {
@@ -113,6 +97,24 @@ export class DataStore {
                 hero.thumbnail = undefined
             })
         })
+    }
+
+    async createHero(name: string, logo: Data.Bitmap): Promise<string | undefined> {
+        const encodedLogo = DataStore.encodeBitmap(logo)
+        const hero = { name, encodedLogo }
+        try {
+            await this.db.heroes.add(hero)
+            this.heroes.push(hero)
+            this.heroes.sort((a, b) => compareStr(a.name, b.name))
+            return undefined
+        } catch (error) {
+            console.error(error)
+            return (
+                error instanceof Error
+                    ? `Can't add hero: ${error.message}`
+                    : "Can't add hero: reason unknown"
+            )
+        }
     }
 
     // Color collection methods
@@ -151,8 +153,38 @@ export class DataStore {
     setColor(color: string) {
         if (color === this.color) return
         this.color = color
-        this.writeEditorState()
         this.addQuickColor(color)
+        this.writeEditorStateDeferred()
+    }
+
+    setBrushSize(value: number) {
+        const brushSize = clamp(1, MAX_BRUSH_SIZE, value)
+        if (brushSize === this.brushSize) return
+        this.brushSize = brushSize
+        this.writeEditorStateDeferred()
+    }
+
+    setToolId(value: number) {
+        if (value === this.toolId) return
+        this.toolId = value
+        this.writeEditorStateDeferred()
+    }
+
+    setCanvasBackground(value: Data.CanvasBackground) {
+        if (value === this.canvasBackground) return
+        this.canvasBackground = value
+        this.writeEditorStateDeferred()
+    }
+
+    setGridOverlay(value: Data.GridOverlayVisibility) {
+        if (value === this.gridOverlay) return
+        this.gridOverlay = value
+        this.writeEditorStateDeferred()
+    }
+
+    private writeEditorStateDeferred() {
+        if (this.editorStateTimeout) clearTimeout(this.editorStateTimeout)
+        this.editorStateTimeout = setTimeout(async () => { await this.writeEditorState() }, 1000)
     }
 
     private async writeEditorState() {
@@ -169,7 +201,7 @@ export class DataStore {
     // General
 
     async load(): Promise<void> {
-        this.heroes = (await this.db.heroes.toArray()).sort((a, b) => compare(a.name, b.name))
+        this.heroes = (await this.db.heroes.toArray()).sort((a, b) => compareStr(a.name, b.name))
         this.swatches = SizedStack.from((await this.db.swatches.toArray()).map(it => it.color), MAX_SWATCHES)
         this.quickColors = SizedStack.from((await this.db.quickColors.toArray()).map(it => it.color), MAX_SWATCHES)
         const state = await this.db.editorState.where("id").equals(0).first()

@@ -1,8 +1,7 @@
-import { Point } from "../common";
-import { RGBA, bitmap, flood, rgba } from "../drawing";
-import { Bitmap } from "../data";
-import { ToolBase } from "./tool-base";
-import { ToolResult, resultBitmap } from "./tool-result";
+import { Point } from "../common"
+import { Bitmap, RGBA, bitmap, flood, rgba } from "../drawing"
+import { ToolBase } from "./tool-base"
+import { ToolResult, resultBitmap } from "./tool-result"
 
 export class FloodTool extends ToolBase {
     constructor(fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void) {

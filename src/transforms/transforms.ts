@@ -1,6 +1,5 @@
 import { Point } from "../common";
-import { bitmap, rgba } from "../drawing";
-import { Bitmap } from "../data";
+import { Bitmap, bitmap, rgba } from "../drawing";
 import { Transform } from "./transform";
 
 const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color => {
@@ -17,8 +16,8 @@ const transformation = (transformPt: (source: Bitmap, pt: Point) => void, initia
     (source: Bitmap): Bitmap => {
         const result = initialize
             ? bitmap.empty(source.width, source.height)
-            : bitmap.emptyUninitialized(source.width, source.height)
-        source.colorBuffer.forEach((color, index) => {
+            : bitmap.empty(source.width, source.height)
+        bitmap.foreach(source, (color, index) => {
             const pt = bitmap.toPoint(source, index)
             transformPt(source, pt)
             bitmap.putPixelMut(result, pt, color)

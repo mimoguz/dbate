@@ -1,7 +1,6 @@
 import { Point } from "../common"
-import { Bitmap } from "../data"
-import { bitmap } from "./bitmap-ops"
-import { RGBA, rgba } from "./rgba-ops"
+import { Bitmap, bitmap } from "./bitmap"
+import { RGBA, rgba } from "./rgba"
 
 const canSpread = (pt: Point, sampleColor: RGBA, bmp: Bitmap): boolean => (
     bitmap.contains(bmp, pt)

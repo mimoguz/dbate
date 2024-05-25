@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { bitmap } from "./bitmap-ops";
-import { flood } from "./flood-ops";
-import { rgba } from "./rgba-ops";
+import { bitmap } from "./bitmap";
+import { flood } from "./flood";
+import { rgba } from "./rgba";
 
 describe("fill", () => {
     it("should not alter the bitmap when start point color matches fill color", () => {

@@ -1,7 +1,6 @@
 import { Point } from "../common"
-import { Bitmap } from "../data"
-import { bitmap } from "./bitmap-ops"
-import { RGBA } from "./rgba-ops"
+import { Bitmap, bitmap } from "./bitmap"
+import { RGBA } from "./rgba"
 
 const drawLine = (
     ctx: CanvasRenderingContext2D,

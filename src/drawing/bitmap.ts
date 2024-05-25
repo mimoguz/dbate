@@ -1,7 +1,11 @@
-import pako from "pako"
 import { Point, Rect, clamp, point } from "../common"
-import { Bitmap, EncodedBitmap } from "../data"
-import { RGBA, rgba } from "./rgba-ops"
+import { RGBA, rgba } from "./rgba"
+
+export interface Bitmap {
+    width: number
+    height: number
+    colorBuffer: Uint8ClampedArray
+}
 
 const empty = (width: number, height: number): Bitmap => ({
     width,
@@ -105,6 +109,17 @@ const map = (bmp: Bitmap, mutator: (color: RGBA, index: number) => void): Bitmap
     return cloned
 }
 
+const foreach = (bmp: Bitmap, f: (color: RGBA, pixelIndex: number) => void): void => {
+    const pixels = bmp.width * bmp.height
+    const sample = rgba.zero()
+    const pt = point.zero()
+    for (let index = 0; index < pixels; index++) {
+        toPoint(bmp, index, pt)
+        readPixel(bmp, pt, sample)
+        f(sample, index)
+    }
+}
+
 const fillRectMut = (bmp: Bitmap, rect: Rect, color: RGBA) => {
     const right = clamp(0, bmp.width, rect.x + rect.w)
     const bottom = clamp(0, bmp.height, rect.y + rect.h)
@@ -134,31 +149,6 @@ const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
     y >= 0 && y < bmp.height
 )
 
-
-const encodeBitmap = (bmp: Bitmap): string => {
-    const base64 = Buffer.from(pako.deflate(bmp.colorBuffer)).toString("base64")
-    return JSON.stringify({
-        width: bmp.width,
-        height: bmp.height,
-        data: base64
-    })
-}
-
-const decodeBitmap = (source: string): Bitmap | undefined => {
-    try {
-        const json: EncodedBitmap = JSON.parse(source)
-        const inflated = pako.inflate(Buffer.from(json.data, "base64"))
-        return ({
-            width: json.width,
-            height: json.height,
-            colorBuffer: new Uint8ClampedArray(inflated)
-        })
-    } catch (error) {
-        console.debug(error)
-        return undefined
-    }
-}
-
 /**
  * Bitmap functions. None of them check if their inputs are valid, the onus is on the caller.
  */
@@ -166,11 +156,10 @@ export const bitmap = {
     clone,
     contains,
     copy,
-    decodeBitmap,
     draw,
     empty,
-    encodeBitmap,
     fillRectMut,
+    foreach,
     getPixel,
     map,
     mapMut,

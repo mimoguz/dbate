@@ -1,4 +1,4 @@
-import { Bitmap } from "../data"
+import { Bitmap } from "../drawing"
 
 export interface ToolOptions {
     color: string

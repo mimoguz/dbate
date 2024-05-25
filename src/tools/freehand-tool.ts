@@ -1,8 +1,7 @@
-import { Point, Rect } from "../common";
-import { RGBA, bitmap, rgba } from "../drawing";
-import { Bitmap } from "../data";
-import { ToolBase } from "./tool-base";
-import { ToolResult, resultBitmap } from "./tool-result";
+import { Point, Rect } from "../common"
+import { Bitmap, RGBA, bitmap, rgba } from "../drawing"
+import { ToolBase } from "./tool-base"
+import { ToolResult, resultBitmap } from "./tool-result"
 
 export class FreehandTool extends ToolBase {
     constructor(
@@ -73,7 +72,7 @@ export class FreehandTool extends ToolBase {
 }
 
 const fillStroke = (bmp: Bitmap, stroke: Array<Rect>, color: RGBA) => {
-    for (const rect of stroke) bitmap.fillRect(bmp, rect, color)
+    for (const rect of stroke) bitmap.fillRectMut(bmp, rect, color)
 }
 
 const getShift = (brushSize: number): number => Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)

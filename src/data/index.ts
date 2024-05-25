@@ -1,4 +1,4 @@
-export { type Bitmap, type EncodedBitmap } from "./bitmap"
+export { type EncodedBitmap, encodedBitmap } from "./encoded-bitmap"
 export { type ColorItem } from "./color-item"
 export { type HistoryItem } from "./history-item"
 export { type Hero } from "./hero"

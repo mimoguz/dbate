@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import { bitmap } from "./bitmap-ops"
-import { rgba } from "./rgba-ops"
+import { bitmap } from "./bitmap"
+import { rgba } from "./rgba"
 
 describe("getPixel, readPixel, putPixel", () => {
     it("should get the correct value for points within bitmap bounds", () => {

@@ -1,8 +1,7 @@
-import { Point, point } from "../common";
-import { RGBA, bitmap, drawShape, putShape, rgba } from "../drawing";
-import { Bitmap } from "../data";
-import { ToolBase } from "./tool-base";
-import { ToolResult, resultBitmap } from "./tool-result";
+import { Point, point } from "../common"
+import { ToolBase } from "./tool-base"
+import { ToolResult, resultBitmap } from "./tool-result"
+import { Bitmap, RGBA, bitmap, drawShape, putShape, rgba } from "../drawing"
 
 export class BoundedTool extends ToolBase {
     constructor(

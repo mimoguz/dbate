@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { rgba, RGBA } from "./rgba-ops"
+import { rgba, RGBA } from "./rgba"
 
 describe("toString", () => {
     it("should return a hexadecimal color string when format is hex", () => {
-        const rgba = rgba.pack(255, 165, 0, 128)
-        const result = rgba.toString(rgba as RGBA, "hex")
+        const color = rgba.pack(255, 165, 0, 128)
+        const result = rgba.toString(color, "hex")
         expect(result).toBe("#ffa50080")
     })
 
@@ -15,8 +15,8 @@ describe("toString", () => {
     })
 
     it("should return an rgba color string when format is rgba", () => {
-        const rgba = rgba.pack(255, 165, 0, 128)
-        const result = rgba.toString(rgba as RGBA, "rgba")
+        const color = rgba.pack(255, 165, 0, 128)
+        const result = rgba.toString(color, "rgba")
         expect(result).toBe("rgba(255, 165, 0, 128)")
     })
 })

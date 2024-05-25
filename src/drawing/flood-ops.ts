@@ -1,11 +1,11 @@
 import { Point } from "../common"
-import { Bitmap } from "../schema"
+import { Bitmap } from "../data"
 import { bitmap } from "./bitmap-ops"
 import { RGBA, rgba } from "./rgba-ops"
 
 const canSpread = (pt: Point, sampleColor: RGBA, bmp: Bitmap): boolean => (
     bitmap.contains(bmp, pt)
-    && bitmap.getPixel(bmp, pt) === sampleColor
+    && rgba.equals(bitmap.getPixel(bmp, pt), sampleColor)
 )
 
 const spread = (
@@ -23,7 +23,7 @@ const spread = (
 
 const fill = (bmp: Bitmap, start: Point, fillColor: RGBA): void => {
     const sampleColor = bitmap.getPixel(bmp, start)
-    if (sampleColor === fillColor) return
+    if (rgba.equals(sampleColor, fillColor)) return
     const stack: Array<Point> = []
     spread(start, sampleColor, fillColor, bmp, stack)
     while (stack.length > 0) {

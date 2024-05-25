@@ -27,6 +27,11 @@ export class SizedStack<T> {
         return this._count
     }
 
+    at(index: number): T | undefined {
+        const i = (this.point + index) % this.size
+        return this.data[i] ?? undefined
+    }
+
     clear() {
         this.data.fill(null)
         this.point = -1
@@ -69,14 +74,14 @@ export class SizedStack<T> {
         return result
     }
 
-    mapToArray<U>(f: (value: T) => U): Array<U> {
+    mapToArray<U>(f: (value: T, index: number) => U): Array<U> {
         if (this._count === 0) return []
-        if (this._count === 1) return [f(this.data[this.point]!)]
+        if (this._count === 1) return [f(this.data[this.point]!, 0)]
         const result = new Array(this._count)
         for (let offset = 0; offset < this._count; offset++) {
             // Traverse backward starting from point _count number of items
             const index = mod(this.point - offset, this.size)
-            result[this._count - offset - 1] = f(this.data[index]!)
+            result[this._count - offset - 1] = f(this.data[index]!, offset)
         }
         return result
     }

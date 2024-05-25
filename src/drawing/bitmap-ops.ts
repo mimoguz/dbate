@@ -1,23 +1,18 @@
+import pako from "pako"
 import { Point, Rect, clamp, point } from "../common"
-import { Bitmap } from "../schema/bitmap-schema"
+import { Bitmap, EncodedBitmap } from "../data"
 import { RGBA, rgba } from "./rgba-ops"
 
 const empty = (width: number, height: number): Bitmap => ({
     width,
     height,
-    colorBuffer: new Array<RGBA>(width * height).fill(rgba.transparent),
+    colorBuffer: new Uint8ClampedArray(width * height * 4),
 })
 
-const emptyUninitialized = (width: number, height: number): Bitmap => ({
-    width,
-    height,
-    colorBuffer: new Array<RGBA>(width * height),
-})
-
-const clone = (bmp: Bitmap): Bitmap => ({
-    width: bmp.width,
-    height: bmp.height,
-    colorBuffer: bmp.colorBuffer.slice(),
+const clone = (source: Bitmap): Bitmap => ({
+    width: source.width,
+    height: source.height,
+    colorBuffer: new Uint8ClampedArray(source.colorBuffer)
 })
 
 const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: Point) => {
@@ -32,16 +27,16 @@ const copy = (source: Bitmap, target: Bitmap, sourceRect?: Rect, targetOffset?: 
     const bottom = rect.y + rect.h
     const sourcePt = point.zero()
     const targetPt = point.zero()
-    for (let y = rect.y; y < bottom; y++) {
-        if (y > target.height) break
-        for (let x = rect.x; x < right; x++) {
-            if (x > target.width) break
-            sourcePt.x = x
-            sourcePt.y = y
+    const sample = rgba.zero()
+    for (sourcePt.y = rect.y; sourcePt.y < bottom; sourcePt.y++) {
+        if (sourcePt.y > target.height) break
+        for (sourcePt.x = rect.x; sourcePt.x < right; sourcePt.x++) {
+            if (sourcePt.x > target.width) break
             targetPt.x = sourcePt.x + offset.x
             targetPt.y = sourcePt.y + offset.y
-            if (bitmap.contains(target, targetPt)) {
-                bitmap.putPixelMut(target, targetPt, bitmap.getPixel(source, sourcePt))
+            if (contains(source, sourcePt) && contains(target, targetPt)) {
+                readPixel(source, sourcePt, sample)
+                putPixelMut(target, targetPt, sample)
             }
         }
     }
@@ -53,23 +48,37 @@ const draw = (
     colorTransform: (color: RGBA) => RGBA = color => color,
 ) => {
     context.save()
-    let lastColor = rgba.transparent
-    context.fillStyle = rgba.toString(colorTransform(lastColor))
-    bmp.colorBuffer.forEach((color, index) => {
-        const { x, y } = bitmap.toPoint(bmp, index)
-        if (color != lastColor) {
-            lastColor = color
-            context.fillStyle = rgba.toString(colorTransform(lastColor))
+    const lastSample = rgba.transparent
+    context.fillStyle = rgba.toString(colorTransform(lastSample))
+    const pixels = bmp.width * bmp.height
+    const sample = rgba.zero()
+    const pt = { x: 0, y: 0 }
+    for (let index = 0; index < pixels; index++) {
+        toPoint(bmp, index, pt)
+        readPixel(bmp, pt, sample)
+        if (!rgba.equals(sample, lastSample)) {
+            rgba.copy(sample, lastSample)
+            context.fillStyle = rgba.toString(colorTransform(lastSample))
         }
-        context.fillRect(x, y, 1, 1)
-    })
+        context.fillRect(pt.x, pt.y, 1, 1)
+    }
     context.restore()
 }
 
-const getPixel = (bmp: Bitmap, point: Point): RGBA => bmp.colorBuffer[point.y * bmp.width + point.x]
+const getPixel = (bmp: Bitmap, point: Point): RGBA => {
+    const offset = toPixelOffset(bmp, point.x, point.y)
+    return bmp.colorBuffer.slice(offset, offset + 4) as RGBA
+}
+
+const readPixel = (bmp: Bitmap, point: Point, target: RGBA): void => {
+    const offset = toPixelOffset(bmp, point.x, point.y)
+    for (let channel = 0; channel < 4; channel++) {
+        target[channel] = bmp.colorBuffer[offset + channel]
+    }
+}
 
 const putPixelMut = (bmp: Bitmap, point: Point, color: RGBA) => {
-    bmp.colorBuffer[point.y * bmp.width + point.x] = color
+    bmp.colorBuffer.set(color, toPixelOffset(bmp, point.x, point.y))
 }
 
 const putPixel = (bmp: Bitmap, point: Point, color: RGBA): Bitmap => {
@@ -78,42 +87,77 @@ const putPixel = (bmp: Bitmap, point: Point, color: RGBA): Bitmap => {
     return cloned
 }
 
-const mapMut = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA) => {
+const mapMut = (bmp: Bitmap, mutator: (color: RGBA, index: number) => void) => {
     const pixels = bmp.width * bmp.height
+    const sample = new Uint8ClampedArray(4) as RGBA
+    const pt = { x: 0, y: 0 }
     for (let index = 0; index < pixels; index++) {
-        bmp.colorBuffer[index] = f(bmp.colorBuffer[index], index)
+        toPoint(bmp, index, pt)
+        readPixel(bmp, pt, sample)
+        mutator(sample, index)
+        putPixelMut(bmp, pt, sample)
     }
 }
 
-const map = (bmp: Bitmap, f: (color: RGBA, index: number) => RGBA): Bitmap => {
+const map = (bmp: Bitmap, mutator: (color: RGBA, index: number) => void): Bitmap => {
     const cloned = clone(bmp)
-    mapMut(cloned, f)
+    mapMut(cloned, mutator)
     return cloned
 }
 
-const fillRect = (bmp: Bitmap, rect: Rect, color: RGBA) => {
+const fillRectMut = (bmp: Bitmap, rect: Rect, color: RGBA) => {
     const right = clamp(0, bmp.width, rect.x + rect.w)
     const bottom = clamp(0, bmp.height, rect.y + rect.h)
     const left = clamp(0, right, rect.x)
     const top = clamp(0, bottom, rect.y)
-    for (let y = top; y < bottom; y++) {
-        for (let x = left; x < right; x++) {
-            bitmap.putPixelMut(bmp, { x, y }, color)
+    const pt = { x: 0, y: 0 }
+    for (pt.y = top; pt.y < bottom; pt.y++) {
+        for (pt.x = left; pt.x < right; pt.x++) {
+            putPixelMut(bmp, pt, color)
         }
     }
 }
 
-const toIndex = (bmp: Bitmap, x: number, y: number): number => x + y * bmp.width
+const toPixelIndex = (bmp: Bitmap, x: number, y: number): number => x + y * bmp.width
 
-const toPoint = (bmp: Bitmap, flatIndex: number): Point => ({
-    x: flatIndex % bmp.width,
-    y: Math.floor(flatIndex / bmp.height)
-})
+const toPixelOffset = (bmp: Bitmap, x: number, y: number): number => (x + y * bmp.width) * 4
+
+const toPoint = (bmp: Bitmap, flatIndex: number, target?: Point): Point => {
+    const result = target ?? { x: 0, y: 0 }
+    result.x = flatIndex % bmp.width
+    result.y = Math.floor(flatIndex / bmp.height)
+    return result
+}
 
 const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
     x >= 0 && x < bmp.width &&
     y >= 0 && y < bmp.height
 )
+
+
+const encodeBitmap = (bmp: Bitmap): string => {
+    const base64 = Buffer.from(pako.deflate(bmp.colorBuffer)).toString("base64")
+    return JSON.stringify({
+        width: bmp.width,
+        height: bmp.height,
+        data: base64
+    })
+}
+
+const decodeBitmap = (source: string): Bitmap | undefined => {
+    try {
+        const json: EncodedBitmap = JSON.parse(source)
+        const inflated = pako.inflate(Buffer.from(json.data, "base64"))
+        return ({
+            width: json.width,
+            height: json.height,
+            colorBuffer: new Uint8ClampedArray(inflated)
+        })
+    } catch (error) {
+        console.debug(error)
+        return undefined
+    }
+}
 
 /**
  * Bitmap functions. None of them check if their inputs are valid, the onus is on the caller.
@@ -122,15 +166,18 @@ export const bitmap = {
     clone,
     contains,
     copy,
+    decodeBitmap,
     draw,
     empty,
-    emptyUninitialized,
-    fillRect,
+    encodeBitmap,
+    fillRectMut,
     getPixel,
     map,
     mapMut,
     putPixel,
     putPixelMut,
-    toIndex,
-    toPoint
+    readPixel,
+    toPixelIndex,
+    toPixelOffset,
+    toPoint,
 } as const

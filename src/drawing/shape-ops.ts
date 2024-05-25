@@ -1,5 +1,5 @@
 import { Point } from "../common"
-import { Bitmap } from "../schema"
+import { Bitmap } from "../data"
 import { bitmap } from "./bitmap-ops"
 import { RGBA } from "./rgba-ops"
 

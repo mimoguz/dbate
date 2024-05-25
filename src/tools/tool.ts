@@ -1,5 +1,5 @@
 import { Point } from "../common"
-import { Bitmap } from "../schema"
+import { Bitmap } from "../data"
 import { ToolOptions, ToolResult } from "./tool-result"
 
 export interface Tool {

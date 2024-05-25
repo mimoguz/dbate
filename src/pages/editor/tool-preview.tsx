@@ -1,6 +1,6 @@
 import React from "react"
 import { Point } from "../../common"
-import { Bitmap } from "../../schema"
+import { Bitmap } from "../../data"
 import { Tool, ToolOptions, ToolResult } from "../../tools"
 
 interface ViewProps {

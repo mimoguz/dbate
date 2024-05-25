@@ -1,4 +1,4 @@
-import { Bitmap } from "../schema"
+import { Bitmap } from "../data"
 
 export interface ToolOptions {
     color: string

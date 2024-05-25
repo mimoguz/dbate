@@ -1,6 +1,6 @@
 import { Point } from "../common";
 import { bitmap, rgba } from "../drawing";
-import { Bitmap } from "../schema";
+import { Bitmap } from "../data";
 import { Transform } from "./transform";
 
 const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color => {

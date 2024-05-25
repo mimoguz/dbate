@@ -1,6 +1,6 @@
 import { Point, Rect } from "../common";
 import { RGBA, bitmap, rgba } from "../drawing";
-import { Bitmap } from "../schema";
+import { Bitmap } from "../data";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
 

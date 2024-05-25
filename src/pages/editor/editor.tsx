@@ -19,9 +19,9 @@ import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
+import { Bitmap } from "../../data"
 import * as i from "../../icons"
-import { Bitmap } from "../../schema"
-import { EditorContext, EditorStore } from "../../stores"
+import { DataContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
 import { Transform } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
@@ -33,14 +33,14 @@ import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
-const brushSizeTooltip = `1,2…${EditorStore.MAX_BRUSH_SIZE > 9 ? 0 : EditorStore.MAX_BRUSH_SIZE}`
+const brushSizeTooltip = `1,2…${constants.maxBrushSize > 9 ? 0 : constants.maxBrushSize}`
 
 export const Editor = observer(() => {
-    const store = React.useContext(EditorContext)
-    const tool = useMemo(() => createTool(store.toolIndex), [store.toolIndex])
+    const store = React.useContext(DataContext)
+    const tool = useMemo(() => createTool(store.toolId), [store.toolId])
 
     React.useEffect(
-        () => store.selectHero("Bob"),
+        () => { store.selectHero("Bob") },
         [store]
     )
 
@@ -49,7 +49,7 @@ export const Editor = observer(() => {
             if (!result) return
             switch (result.tag) {
                 case "affects-bitmap":
-                    store.updateLogo(result.value)
+                    store.setSelectedLogo(result.value)
                     break
                 case "affects-options":
                     store.setColor(result.value.color)
@@ -61,7 +61,7 @@ export const Editor = observer(() => {
     )
 
     const applyTransform = useCallback(
-        (transform: Transform) => () => { if (store.selectedLogo) store.updateLogo(transform(store.selectedLogo as Bitmap)) },
+        (transform: Transform) => () => { if (store.selectedLogo) store.setSelectedLogo(transform(store.selectedLogo as Bitmap)) },
         [store]
     )
 
@@ -91,13 +91,13 @@ export const Editor = observer(() => {
         ["8", () => store.setBrushSize(8)],
         ["9", () => store.setBrushSize(9)],
         ["0", () => store.setBrushSize(10)],
-        ["mod+1", () => store.quickColors.at(0) && store.setColor(store.quickColors[0])],
-        ["mod+2", () => store.quickColors.at(1) && store.setColor(store.quickColors[1])],
-        ["mod+3", () => store.quickColors.at(2) && store.setColor(store.quickColors[2])],
-        ["mod+4", () => store.quickColors.at(3) && store.setColor(store.quickColors[3])],
-        ["mod+Z", () => store.undoLogoUpdate()],
-        ["D", () => store.toggleDarkBackground()],
-        ["O", () => store.toggleCheckerboardOverlay()],
+        ["mod+1", () => store.setColor("transparent")],
+        ["mod+2", () => store.quickColors.at(1) && store.setColor(store.quickColors.at(1)!)],
+        ["mod+3", () => store.quickColors.at(2) && store.setColor(store.quickColors.at(2)!)],
+        ["mod+4", () => store.quickColors.at(3) && store.setColor(store.quickColors.at(3)!)],
+        ["mod+Z", () => store.undoLogo()],
+        ["D", () => store.toggleCanvasBackground()],
+        ["O", () => store.toggleGridOverlay()],
     ])
 
     useHotkeys(
@@ -105,7 +105,7 @@ export const Editor = observer(() => {
             .filter(it => it.shortcut)
             .map(({ shortcut }, i) => [
                 hotkey(shortcut!),
-                () => store.setToolIndex(i)
+                () => store.setToolId(i)
             ])
     )
 
@@ -141,7 +141,7 @@ export const Editor = observer(() => {
                                 <Slider
                                     w={160}
                                     min={1}
-                                    max={EditorStore.MAX_BRUSH_SIZE}
+                                    max={constants.maxBrushSize}
                                     value={store.brushSize ?? 1}
                                     onChange={store.setBrushSize}
                                 />
@@ -163,15 +163,15 @@ export const Editor = observer(() => {
                     <Toolbar
                         toolItems={editorTools}
                         transformItems={editorTransforms}
-                        toolIndex={store.toolIndex}
-                        onChange={store.setToolIndex}
+                        toolIndex={store.toolId}
+                        onChange={store.setToolId}
                         hasUndo={store.canUndo}
-                        onUndo={store.undoLogoUpdate}
+                        onUndo={store.undoLogo}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
                         <SimpleGrid cols={2} spacing={6} verticalSpacing={6}>
-                            {store.quickColors.map((color, index) => (
+                            {store.quickColors.mapToArray((color, index) => (
                                 <Tooltip
                                     label={(
                                         <Group>
@@ -199,7 +199,7 @@ export const Editor = observer(() => {
                             <div
                                 style={{
                                     display: "grid",
-                                    backgroundColor: store.showDarkBackground ? "black" : "white"
+                                    backgroundColor: store.canvasBackground === "dark" ? "black" : "white"
                                 }}
                                 className={classes.editor__canvas__stack}
                             >
@@ -245,7 +245,7 @@ export const Editor = observer(() => {
                                         zIndex: 4,
                                         opacity: 0.1,
                                         pointerEvents: "none",
-                                        visibility: store.showCheckerboardOverlay ? "visible" : "collapse",
+                                        visibility: store.gridOverlay,
                                     }}
                                 />
                             </div>
@@ -258,18 +258,18 @@ export const Editor = observer(() => {
                     <Group gap={6}>
                         <Tooltip label={<Group>Toggle dark background <ShortcutGroup sKey="D" /></Group>}>
                             <ActionIcon
-                                variant={store.showDarkBackground ? "filled" : "subtle"}
-                                color={store.showDarkBackground ? "green" : undefined}
-                                onClick={store.toggleDarkBackground}
+                                variant={store.canvasBackground === "dark" ? "filled" : "subtle"}
+                                color={store.canvasBackground === "dark" ? "green" : undefined}
+                                onClick={store.toggleCanvasBackground}
                             >
                                 <i.ColorSchemeMd />
                             </ActionIcon>
                         </Tooltip>
                         <Tooltip label={<Group>Toggle checkerboard overlay <ShortcutGroup sKey="O" /></Group>}>
                             <ActionIcon
-                                variant={store.showCheckerboardOverlay ? "filled" : "subtle"}
-                                color={store.showCheckerboardOverlay ? "green" : undefined}
-                                onClick={store.toggleCheckerboardOverlay}
+                                variant={store.gridOverlay === "visible" ? "filled" : "subtle"}
+                                color={store.gridOverlay === "visible" ? "green" : undefined}
+                                onClick={store.toggleGridOverlay}
                             >
                                 <i.CheckerboardMd />
                             </ActionIcon>
@@ -280,7 +280,7 @@ export const Editor = observer(() => {
                         <Slider
                             w={310}
                             min={1}
-                            max={EditorStore.MAX_ZOOM}
+                            max={constants.maxZoom}
                             value={store.scale}
                             onChange={store.setZoom}
                         />

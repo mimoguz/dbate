@@ -2,10 +2,10 @@ import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, SimpleGri
 import { observer } from "mobx-react-lite"
 import React from "react"
 import { PlusMd, TrashMd } from "../../icons"
-import { EditorContext } from "../../stores"
+import { DataContext } from "../../stores"
 
 export const ColorPalette = observer(() => {
-    const store = React.useContext(EditorContext)
+    const store = React.useContext(DataContext)
     const [currentValue, setCurrentValue] = React.useState(store.color)
 
     return (
@@ -28,7 +28,7 @@ export const ColorPalette = observer(() => {
                 <ActionIcon onClick={() => store.removeSwatch(currentValue)} color="red" size="lg"><TrashMd /></ActionIcon>
             </Group>
             <SimpleGrid cols={6} spacing={6} verticalSpacing={12}>
-                {store.swatches.map(color => (
+                {store.swatches.mapToArray(color => (
                     <ColorSwatch
                         key={color}
                         color={color}

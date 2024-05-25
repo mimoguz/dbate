@@ -1,6 +1,6 @@
 import { ActionGroupItem } from "../../common/components";
 import * as i from "../../icons";
-import { Bitmap } from "../../schema";
+import { Bitmap } from "../../data";
 import { transforms } from "../../transforms";
 
 type Item = Omit<ActionGroupItem, "action">

@@ -1,6 +1,6 @@
 import React from "react";
-import { bitmap } from "../../drawing";
-import { Bitmap } from "../../schema";
+import { Bitmap } from "../../data";
+import { bitmap } from "../../drawing/bitmap-ops";
 
 interface Props {
     bmp?: Bitmap

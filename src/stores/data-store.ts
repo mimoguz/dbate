@@ -2,8 +2,9 @@ import { makeAutoObservable } from "mobx"
 import React from "react"
 import { SizedStack, clamp } from "../common"
 import * as Data from "../data"
+import { encodedBitmap } from "../data"
 import * as DB from "../database"
-import { bitmap8888 } from "../drawing"
+import { Bitmap, bitmap } from "../drawing"
 import { constants } from "./constants"
 
 const compareStr = (a: string, b: string): number => (
@@ -23,12 +24,12 @@ export class DataStore {
     heroes: Array<Data.Hero> = []
     selectedHero?: Data.Hero
     selectedName?: string
-    selectedLogo?: Data.Bitmap
-    selectedHistory: SizedStack<Data.Bitmap> = new SizedStack(constants.maxHistory)
+    selectedLogo?: Bitmap
+    selectedHistory: SizedStack<Bitmap> = new SizedStack(constants.maxHistory)
 
     // Color collections
     quickColors: SizedStack<string> = new SizedStack(constants.maxColors)
-    swatches: SizedStack<string> = new SizedStack(constants.maxSwatches)
+    swatches: Array<string> = []
 
     // Editor state properties
     brushSize: number = 1
@@ -44,12 +45,12 @@ export class DataStore {
     async selectHero(name: string): Promise<void> {
         const hero = this.heroes.find(hero => hero.name === name)
         this.selectedHero = hero
-        this.selectedLogo = hero ? bitmap8888.decodeBitmap(hero.encodedLogo) : undefined
+        this.selectedLogo = hero ? encodedBitmap.toBitmap(hero.encodedLogo) : undefined
         // Restore the history if the hero is the last edited one
-        this.selectedHistory = SizedStack.from<Data.Bitmap>(
+        this.selectedHistory = SizedStack.from<Bitmap>(
             (await this.db.history.where("heroName").equals(name).toArray())
-                .map(it => bitmap8888.decodeBitmap(it.encodedLogo))
-                .filter(it => it) as Array<Data.Bitmap>,
+                .map(it => encodedBitmap.toBitmap(it.encodedLogo))
+                .filter(it => it) as Array<Bitmap>,
             constants.maxHistory
         )
     }
@@ -61,7 +62,7 @@ export class DataStore {
         this.selectedHistory.clear()
     }
 
-    setSelectedLogo(bmp: Data.Bitmap) {
+    setSelectedLogo(bmp: Bitmap) {
         this.selectedLogo = bmp
     }
 
@@ -79,7 +80,7 @@ export class DataStore {
         const history = this.selectedHistory
 
         currentHero.thumbnail = undefined
-        currentHero.encodedLogo = bitmap8888.encodeBitmap(currentLogo)
+        currentHero.encodedLogo = encodedBitmap.fromBitmap(currentLogo)
 
         // Update database
         await db.transaction("rw", this.db.heroes, this.db.history, async () => {
@@ -89,7 +90,7 @@ export class DataStore {
 
             const historyItems = history.mapToArray(hist => ({
                 heroName: hero.name,
-                encodedLogo: bitmap8888.encodeBitmap(hist)
+                encodedLogo: encodedBitmap.fromBitmap(hist)
             }))
 
             // Only keep the last edited hero's history
@@ -103,8 +104,8 @@ export class DataStore {
         })
     }
 
-    async createHero(name: string, logo: Data.Bitmap): Promise<string | undefined> {
-        const encodedLogo = bitmap8888.encodeBitmap(logo)
+    async createHero(name: string, logo: Bitmap): Promise<string | undefined> {
+        const encodedLogo = encodedBitmap.fromBitmap(logo)
         const hero = { name, encodedLogo }
         try {
             await this.db.heroes.add(hero)
@@ -125,28 +126,37 @@ export class DataStore {
 
     async addSwatch(color: string) {
         const newColor = color.toLowerCase()
-        if (this.swatches.exists(s => s === newColor)) return
+        if (
+            newColor === "transparent"
+            || newColor === "#00000000"
+            || this.swatches.some(s => s === newColor)
+            || this.swatches.length >= constants.maxSwatches
+        ) return
         const droppedColor = this.swatches.push(newColor)
         const db = this.db
-        await this.db.transaction("r", this.db.swatches, async () => {
+        await this.db.transaction("rw", this.db.swatches, async () => {
             if (droppedColor) await db.swatches.where("color").equals(droppedColor).delete()
             await db.swatches.add({ color: newColor })
         })
     }
 
     async removeSwatch(color: string) {
-        const removedColor = color.toLowerCase()
-        const swatches = this.swatches.mapToArray(s => s).filter(c => c !== removedColor)
-        this.swatches = SizedStack.from<string>(swatches, constants.maxColors)
-        await this.db.swatches.where("color").equals(removedColor).delete()
+        const colorToRemove = color.toLowerCase()
+        const index = this.swatches.indexOf(colorToRemove)
+        this.swatches.splice(index, 1)
+        await this.db.swatches.where("color").equals(colorToRemove).delete()
     }
 
     async addQuickColor(color: string) {
         const newColor = color.toLowerCase()
-        if (this.quickColors.exists(s => s === newColor)) return
+        if (
+            newColor === "transparent"
+            || newColor === "#00000000"
+            || this.quickColors.exists(s => s === newColor)
+        ) return
         const droppedColor = this.quickColors.push(newColor)
         const db = this.db
-        await db.transaction("r", db.quickColors, async () => {
+        await db.transaction("rw", db.quickColors, async () => {
             if (droppedColor) await db.quickColors.where("color").equals(droppedColor.toLowerCase()).delete()
             await db.quickColors.add({ color: newColor })
         })
@@ -234,8 +244,11 @@ export class DataStore {
 
     async load(): Promise<void> {
         this.heroes = (await this.db.heroes.toArray()).sort((a, b) => compareStr(a.name, b.name))
-        this.swatches = SizedStack.from((await this.db.swatches.toArray()).map(it => it.color), constants.maxSwatches)
-        this.quickColors = SizedStack.from((await this.db.quickColors.toArray()).map(it => it.color), constants.maxSwatches)
+        if (this.heroes.length === 0) {
+            await this.createHero("bob", bitmap.empty(24, 24))
+        }
+        this.swatches = (await this.db.swatches.toArray()).map(it => it.color).slice(0, constants.maxSwatches)
+        this.quickColors = SizedStack.from((await this.db.quickColors.toArray()).map(it => it.color), constants.maxColors)
         const state = await this.db.editorState.where("id").equals(0).first()
         if (state) {
             this.color = state.color
@@ -245,13 +258,15 @@ export class DataStore {
             this.canvasBackground = state.canvasBackground
             this.gridOverlay = state.gridOverlay
         }
+        console.debug(this)
+        this.selectHero("bob")
     }
 
     // Helpers
 
     static async getThumbnail(hero: Data.Hero): Promise<ImageBitmap> {
         if (hero.thumbnail) return hero.thumbnail
-        const bmp = bitmap8888.decodeBitmap(hero.encodedLogo)
+        const bmp = encodedBitmap.toBitmap(hero.encodedLogo)
         if (!bmp) throw new Error(`Hero ${hero.name}: Invalid logo image!`)
         const data = new ImageData(bmp.colorBuffer, bmp.width, bmp.height)
         const image = await createImageBitmap(data)

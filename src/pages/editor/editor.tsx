@@ -19,7 +19,7 @@ import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
-import { Bitmap } from "../../data"
+import { Bitmap } from "../../drawing"
 import * as i from "../../icons"
 import { DataContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
@@ -61,7 +61,7 @@ export const Editor = observer(() => {
     )
 
     const applyTransform = useCallback(
-        (transform: Transform) => () => { if (store.selectedLogo) store.setSelectedLogo(transform(store.selectedLogo as Bitmap)) },
+        (transform: Transform) => () => { if (store.selectedLogo) store.setSelectedLogo(transform(store.selectedLogo)) },
         [store]
     )
 
@@ -92,9 +92,9 @@ export const Editor = observer(() => {
         ["9", () => store.setBrushSize(9)],
         ["0", () => store.setBrushSize(10)],
         ["mod+1", () => store.setColor("transparent")],
-        ["mod+2", () => store.quickColors.at(1) && store.setColor(store.quickColors.at(1)!)],
-        ["mod+3", () => store.quickColors.at(2) && store.setColor(store.quickColors.at(2)!)],
-        ["mod+4", () => store.quickColors.at(3) && store.setColor(store.quickColors.at(3)!)],
+        ["mod+2", () => store.quickColors.at(0) && store.setColor(store.quickColors.at(0)!)],
+        ["mod+3", () => store.quickColors.at(1) && store.setColor(store.quickColors.at(1)!)],
+        ["mod+4", () => store.quickColors.at(2) && store.setColor(store.quickColors.at(2)!)],
         ["mod+Z", () => store.undoLogo()],
         ["D", () => store.toggleCanvasBackground()],
         ["O", () => store.toggleGridOverlay()],
@@ -171,14 +171,18 @@ export const Editor = observer(() => {
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
                         <SimpleGrid cols={2} spacing={6} verticalSpacing={6}>
+                            <Tooltip
+                                label={(<Group> Set color transparent <ShortcutGroup mod="mod" sKey={1} /> </Group>)}
+                            >
+                                <ColorSwatch
+                                    color={"transparent"}
+                                    onClick={() => store.setColor("transparent")}
+                                    style={{ cursor: "pointer" }}
+                                />
+                            </Tooltip>
                             {store.quickColors.mapToArray((color, index) => (
                                 <Tooltip
-                                    label={(
-                                        <Group>
-                                            Set color {color}
-                                            <ShortcutGroup mod="mod" sKey={index + 1} />
-                                        </Group>
-                                    )}
+                                    label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={index + 2} /> </Group>)}
                                     key={color}
                                 >
                                     <ColorSwatch
@@ -187,7 +191,7 @@ export const Editor = observer(() => {
                                         style={{ cursor: "pointer" }}
                                     />
                                 </Tooltip>
-                            ))}
+                            )).reverse()}
                         </SimpleGrid>
                     </Center>
                 </Stack>

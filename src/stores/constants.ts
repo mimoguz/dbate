@@ -1,6 +1,6 @@
 export const constants = {
     maxHistory: 8,
-    maxSwatches: 16,
+    maxSwatches: 18,
     maxColors: 3,
     maxBrushSize: 10,
     maxZoom: 32,

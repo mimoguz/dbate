@@ -1,5 +1,6 @@
 import pako from "pako"
 import { Bitmap } from "../drawing"
+import { Buffer } from "buffer"
 
 export interface EncodedBitmap {
     width: number

@@ -1,3 +1,4 @@
+import { makeAutoObservable } from "mobx"
 import { mod } from "./math"
 
 export function* intersperse<T, U>(xs: Array<T>, separator: U): Generator<T | U> {
@@ -12,6 +13,7 @@ export function* intersperse<T, U>(xs: Array<T>, separator: U): Generator<T | U>
 export class SizedStack<T> {
     // This is implemented as a circular array
     constructor(size: number) {
+        makeAutoObservable(this)
         if (size < 1) throw new Error("Size can't be less than one")
         this.size = Math.floor(size)
         this.data = new Array<T | null>(size)
@@ -28,7 +30,7 @@ export class SizedStack<T> {
     }
 
     at(index: number): T | undefined {
-        const i = (this.point + index) % this.size
+        const i = mod(this.point - index, this.size)
         return this.data[i] ?? undefined
     }
 
@@ -36,6 +38,7 @@ export class SizedStack<T> {
         this.data.fill(null)
         this.point = -1
         this._count = 0
+        // this.atom.reportChanged()
     }
 
     exists(predicate: (value: T) => boolean): boolean {
@@ -63,6 +66,7 @@ export class SizedStack<T> {
         this.increase()
         const oldValue = this.data[this.point]
         this.data[this.point] = value
+        // this.atom.reportChanged()
         return (oldValue !== null ? oldValue : undefined)
     }
 
@@ -71,6 +75,7 @@ export class SizedStack<T> {
         const result = this.data[this.point]!
         this.data[this.point] = null
         this.decrease()
+        // this.atom.reportChanged()
         return result
     }
 

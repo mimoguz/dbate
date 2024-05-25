@@ -2,15 +2,14 @@ import { MantineProvider } from "@mantine/core"
 import "@mantine/core/styles.layer.css"
 import { Editor } from "./pages/editor/editor"
 import { theme } from "./theme"
-import { EditorContext, EditorStore } from "./stores"
-import * as DB from "./database"
+import { DataContext, dataStore } from "./stores"
 
 export default function App() {
     return (
         <MantineProvider theme={theme}>
-            <EditorContext.Provider value={new EditorStore(DB.get())}>
+            <DataContext.Provider value={dataStore}>
                 <Editor />
-            </EditorContext.Provider>
+            </DataContext.Provider>
         </MantineProvider>
     )
 }

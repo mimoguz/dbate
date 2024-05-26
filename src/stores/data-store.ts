@@ -4,7 +4,7 @@ import { clamp } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
-import { Bitmap, bitmap } from "../drawing"
+import { Bitmap } from "../drawing"
 import { constants } from "./constants"
 
 const compareStr = (a: string, b: string): number => (
@@ -260,9 +260,6 @@ export class DataStore {
 
     async load(): Promise<void> {
         this.heroes = (await this.db.heroes.toArray()).sort((a, b) => compareStr(a.name, b.name))
-        if (this.heroes.length === 0) {
-            await this.createHero("bob", bitmap.empty(24, 24))
-        }
         this.swatches = (await this.db.swatches.toArray()).map(it => it.color).slice(0, constants.maxSwatches)
         this.quickColors = (await this.db.quickColors.toArray()).map(it => it.color)
         const state = await this.db.editorState.where("id").equals(0).first()

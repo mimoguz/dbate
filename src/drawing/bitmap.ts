@@ -153,9 +153,9 @@ const toPixelIndex = (bmp: Bitmap, x: number, y: number): number => x + y * bmp.
 const toPixelOffset = (bmp: Bitmap, x: number, y: number): number => (x + y * bmp.width) * 4
 
 const toPoint = (bmp: Bitmap, flatIndex: number, target?: Point): Point => {
-    const result = target ?? { x: 0, y: 0 }
+    const result = target ?? point.zero()
     result.x = flatIndex % bmp.width
-    result.y = Math.floor(flatIndex / bmp.height)
+    result.y = Math.floor(flatIndex / bmp.width)
     return result
 }
 

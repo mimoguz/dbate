@@ -6,14 +6,14 @@
 
 ## Transforms
 - [x] ~~Definition~~
-- [x] ~~Invert transform~~
+- [-] Invert transform (Bugged?)
 - [x] ~~Flip transforms~~
 - [x] ~~Rotate transforms~~
 
 ## General editing
 - [x] ~~History~~
 - [ ] Clipboard
-- [-] Keyboard shortcuts (transform, canvas, and undo missing)
+- [x] ~~Keyboard shortcuts~~
 
 ## Database
 - [ ] Export/import

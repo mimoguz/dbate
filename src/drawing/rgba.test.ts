@@ -45,10 +45,10 @@ describe("shift", () => {
         const initialColor = rgba.pack(100, 150, 220, 255)
         const offset = 50
         const result = rgba.shift(initialColor, offset)
-        expect(result[0]).toBe(150)
-        expect(result[1]).toBe(200)
-        expect(result[2]).toBe(255)
-        expect(result[3]).toBe(255)
+        expect(result.r).toBe(150)
+        expect(result.g).toBe(200)
+        expect(result.b).toBe(255)
+        expect(result.a).toBe(255)
     })
 
     // Check decrement of each color component separately
@@ -56,10 +56,10 @@ describe("shift", () => {
         const initialColor = rgba.pack(20, 200, 250, 255)
         const offset = -50
         const result = rgba.shift(initialColor, offset, offset)
-        expect(result[0]).toBe(0)
-        expect(result[1]).toBe(150)
-        expect(result[2]).toBe(200)
-        expect(result[3]).toBe(205)
+        expect(result.r).toBe(0)
+        expect(result.g).toBe(150)
+        expect(result.b).toBe(200)
+        expect(result.a).toBe(205)
     })
 })
 

@@ -1,22 +1,16 @@
 import { Point } from "../common";
-import { Bitmap, bitmap, rgba } from "../drawing";
+import { Bitmap, bitmap } from "../drawing";
 import { Transform } from "./transform";
 
 const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color => {
-    const { r, g, b, a } = rgba.split(color)
-    return rgba.pack(
-        255 - r,
-        255 - g,
-        255 - b,
-        a
-    )
+    color.r = 255 - color.r
+    color.g = 255 - color.g
+    color.b = 255 - color.b
 })
 
-const transformation = (transformPt: (source: Bitmap, pt: Point) => void, initialize: boolean = true) =>
+const transformation = (transformPt: (source: Bitmap, pt: Point) => void) =>
     (source: Bitmap): Bitmap => {
-        const result = initialize
-            ? bitmap.empty(source.width, source.height)
-            : bitmap.empty(source.width, source.height)
+        const result = bitmap.empty(source.width, source.height)
         bitmap.foreach(source, (color, index) => {
             const pt = bitmap.toPoint(source, index)
             transformPt(source, pt)
@@ -28,15 +22,13 @@ const transformation = (transformPt: (source: Bitmap, pt: Point) => void, initia
 const flipHorizontal: Transform = transformation(
     (source, pt) => {
         pt.x = source.width - pt.x - 1
-    },
-    false
+    }
 )
 
 const flipVertical: Transform = transformation(
     (source, pt) => {
         pt.y = source.height - pt.y - 1
-    },
-    false
+    }
 )
 
 const rotateClockwise: Transform = transformation((source, pt) => {

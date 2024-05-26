@@ -7,6 +7,35 @@ const clamp = (min: number, max: number, n: number) => Math.max(min, Math.min(ma
 
 const asUByte = (n: number) => clamp(0, 255, Math.floor(n))
 
+declare global {
+    interface Uint8ClampedArray {
+        r: number
+        g: number
+        b: number
+        a: number
+    }
+}
+
+Object.defineProperty(Uint8ClampedArray.prototype, "r", {
+    get(this) { return this[0] },
+    set(this, value: number) { this[0] = asUByte(value) }
+})
+
+Object.defineProperty(Uint8ClampedArray.prototype, "g", {
+    get(this) { return this[1] },
+    set(this, value: number) { this[1] = asUByte(value) }
+})
+
+Object.defineProperty(Uint8ClampedArray.prototype, "b", {
+    get(this) { return this[2] },
+    set(this, value: number) { this[2] = asUByte(value) }
+})
+
+Object.defineProperty(Uint8ClampedArray.prototype, "a", {
+    get(this) { return this[3] },
+    set(this, value: number) { this[3] = asUByte(value) }
+})
+
 const split = (value: RGBA): {
     r: number
     g: number
@@ -22,16 +51,15 @@ const pack = (
     g: number,
     b: number,
     a: number = 255
-): RGBA => Uint8ClampedArray.of(r, g, b, a) as RGBA
+): RGBA => Uint8ClampedArray.of(asUByte(r), asUByte(g), asUByte(b), asUByte(a)) as RGBA
 
 const hex = (n: number): string => n.toString(16).padStart(2, "0")
 
 const toString = (value: RGBA, format: "hex" | "rgba" = "hex"): string => {
-    const { r, g, b, a } = split(value)
     return (
         format === "hex"
-            ? `#${hex(r)}${hex(g)}${hex(b)}${a !== 255 ? hex(a) : ""}`
-            : `rgba(${r}, ${g}, ${b}, ${a})`
+            ? `#${hex(value.r)}${hex(value.g)}${hex(value.b)}${value.a !== 255 ? hex(value.a) : ""}`
+            : `rgba(${value.r}, ${value.g}, ${value.b}, ${value.a})`
     )
 }
 
@@ -42,26 +70,26 @@ const fromString = (colorStr: string): RGBA => {
 }
 
 const shift = (value: RGBA, offset: number, alphaOffset: number = 0): RGBA => {
-    const { r, g, b, a } = split(value)
     return pack(
-        asUByte(r + offset),
-        asUByte(g + offset),
-        asUByte(b + offset),
-        asUByte(a + alphaOffset),
+        asUByte(value.r + offset),
+        asUByte(value.g + offset),
+        asUByte(value.b + offset),
+        asUByte(value.a + alphaOffset),
     )
 }
 
-const equals = (color1: RGBA, color2: RGBA): boolean => {
-    for (let i = 0; i < 4; i++) {
-        if (color1[i] !== color2[i]) return false
-    }
-    return true
-}
+const equals = (color1: RGBA, color2: RGBA): boolean => (
+    color1.r === color2.r
+    && color1.g === color2.g
+    && color1.b === color2.b
+    && color1.a === color2.a
+)
 
 const copy = (source: RGBA, target: RGBA) => {
-    for (let i = 0; i < 4; i++) {
-        target[i] = source[i]
-    }
+    target.r = source.r
+    target.g = source.g
+    target.b = source.b
+    target.a = source.a
 }
 
 export const rgba = {

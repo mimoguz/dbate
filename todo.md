@@ -6,7 +6,7 @@
 
 ## Transforms
 - [x] ~~Definition~~
-- [-] Invert transform (Bugged?)
+- [x] ~~Invert transform~~
 - [x] ~~Flip transforms~~
 - [x] ~~Rotate transforms~~
 

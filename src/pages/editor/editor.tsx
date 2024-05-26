@@ -1,6 +1,5 @@
 import {
     ActionIcon,
-    Button,
     Center,
     ColorSwatch,
     Divider,
@@ -19,7 +18,6 @@ import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
-import { bitmap } from "../../drawing"
 import * as i from "../../icons"
 import { DataContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
@@ -30,7 +28,7 @@ import { ColorPalette } from "./color-palette"
 import { createTool, editorTools } from "./editor-tools"
 import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
-import { HeroSelector } from "./hero-selector"
+import { Header } from "./header"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
 
@@ -41,33 +39,6 @@ export const Editor = observer(() => {
     const tool = useMemo(() => createTool(store.toolId), [store.toolId])
 
     React.useEffect(() => { store.selectHero("bob") }, [store])
-
-    const handleChange = React.useCallback(
-        (name: string | undefined) => {
-            if (name) {
-                store.selectHero(name)
-            } else {
-                store.deselectHero()
-            }
-        },
-        [store])
-
-    const download = React.useCallback(
-        () => {
-            const hero = store.currentHero
-            if (!hero) return
-            bitmap.dataURL(hero.logo).then(dataURL => {
-                const elem = document.createElement("a")
-                elem.href = dataURL
-                elem.download = `${hero.name}.png`
-                document.body.appendChild(elem)
-                elem.click()
-                document.body.removeChild(elem)
-            })
-
-        },
-        [store.currentHero]
-    )
 
     const handleToolResult = useCallback(
         (result: ToolResult | undefined) => {
@@ -146,22 +117,7 @@ export const Editor = observer(() => {
     return (
         <div onWheel={handleWheel} className={classes.editor}>
             <header className={classes.editor__header}>
-
-                <Group p="md" justify="space-between">
-                    <HeroSelector
-                        value={store.currentHero?.name}
-                        onChange={handleChange}
-                    />
-                    <Group>
-                        <Button
-                            onClick={() => store.writeLogo()}
-                            disabled={store.currentHero === undefined || !store.currentHero.edited}
-                        >
-                            Apply changes
-                        </Button>
-                        <Button disabled={store.currentHero === undefined} onClick={download}>Download logo</Button>
-                    </Group>
-                </Group>
+                <Header />
             </header>
             <div className={classes.editor__sidebar}>
                 <Stack gap="sm" px={6} py="xs">

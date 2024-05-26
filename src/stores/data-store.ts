@@ -70,12 +70,16 @@ export class DataStore {
         this.currentHero = hero
     }
 
+    private setEdited(value: boolean) {
+        if (this.currentHero) this.currentHero.edited = value
+    }
+
     updateLogo(bmp: Bitmap) {
         if (this.currentHero) {
             this.currentHero.history.push(this.currentHero.logo)
             if (this.currentHero.history.length > constants.maxHistory) this.currentHero.history.shift()
             this.currentHero.logo = bmp
-            this.currentHero.edited = true
+            this.setEdited(true)
         }
     }
 
@@ -96,7 +100,7 @@ export class DataStore {
 
         currentItem.thumbnail = undefined
         currentItem.encodedLogo = encodedBitmap.fromBitmap(currentHero.logo)
-        currentHero.edited = false
+        this.setEdited(false)
 
         // Update database
         await this.db.transaction("rw", this.db.heroes, this.db.history, async () => {

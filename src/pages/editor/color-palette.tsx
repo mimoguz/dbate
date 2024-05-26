@@ -40,7 +40,7 @@ export const ColorPalette = observer(() => {
                     <TrashMd />
                 </ActionIcon>
             </Group>
-            <SimpleGrid cols={6} spacing={6} verticalSpacing={12}>
+            <SimpleGrid cols={6} spacing={12} verticalSpacing={12}>
                 {store.swatches.map(color => (
                     <ColorSwatch
                         key={color}

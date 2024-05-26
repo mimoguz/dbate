@@ -164,6 +164,19 @@ const contains = (bmp: Bitmap, { x, y }: Point): boolean => (
     y >= 0 && y < bmp.height
 )
 
+const dataURL = async (bmp: Bitmap): Promise<string> => {
+    const canvas = new OffscreenCanvas(bmp.width, bmp.height)
+    draw(bmp, canvas.getContext("2d")!)
+    const blob = await canvas.convertToBlob()
+    return await new Promise((callback: (value: string) => void) => {
+        const reader = new FileReader()
+        reader.addEventListener("load", () => {
+            if (typeof reader.result === "string") callback(reader.result)
+        })
+        reader.readAsDataURL(blob)
+    })
+}
+
 /**
  * Bitmap functions. None of them check if their inputs are valid, the onus is on the caller.
  */
@@ -171,6 +184,8 @@ export const bitmap = {
     clone,
     contains,
     copy,
+    /** Returns a promise with the data url. */
+    dataURL,
     draw,
     drawImage,
     empty,

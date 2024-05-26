@@ -17,7 +17,7 @@
 
 ## Database
 - [ ] Export/import
-- [ ] Export images
+- [-] Export images (Can export single image)
 
 ## General
 [ ] TESTS!!!

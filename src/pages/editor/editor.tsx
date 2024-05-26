@@ -32,6 +32,7 @@ import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
+import { bitmap } from "../../drawing"
 
 const brushSizeTooltip = `1,2…${constants.maxBrushSize > 9 ? 0 : constants.maxBrushSize}`
 
@@ -40,6 +41,23 @@ export const Editor = observer(() => {
     const tool = useMemo(() => createTool(store.toolId), [store.toolId])
 
     React.useEffect(() => { store.selectHero("bob") }, [store])
+
+    const download = React.useCallback(
+        () => {
+            const hero = store.currentHero
+            if (!hero) return
+            bitmap.dataURL(hero.logo).then(dataURL => {
+                const elem = document.createElement("a")
+                elem.href = dataURL
+                elem.download = `${hero.name}.png`
+                document.body.appendChild(elem)
+                elem.click()
+                document.body.removeChild(elem)
+            })
+
+        },
+        [store.currentHero]
+    )
 
     const handleToolResult = useCallback(
         (result: ToolResult | undefined) => {
@@ -129,6 +147,7 @@ export const Editor = observer(() => {
                         >
                             Apply changes
                         </Button>
+                        <Button disabled={store.currentHero === undefined} onClick={download}>Download logo</Button>
                     </Group>
                 </Group>
             </header>

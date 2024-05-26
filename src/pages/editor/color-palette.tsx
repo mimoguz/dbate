@@ -1,4 +1,4 @@
-import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, SimpleGrid, Stack } from "@mantine/core"
+import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, Paper, SimpleGrid, Stack } from "@mantine/core"
 import { observer } from "mobx-react-lite"
 import React from "react"
 import { PlusMd, TrashMd } from "../../icons"
@@ -11,10 +11,12 @@ export const ColorPalette = observer(() => {
     return (
         <Stack>
             <Group justify="space-between">
-                <Group gap={0}>
-                    <ColorSwatch color={store.color} radius="4px 0 0 4px" withShadow={false} size={35} />
-                    <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
-                </Group>
+                <Paper withBorder>
+                    <Group gap={0}>
+                        <ColorSwatch color={store.color} radius="4px 0 0 4px" withShadow={false} size={35} />
+                        <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
+                    </Group>
+                </Paper>
                 <Button onClick={() => store.setColor(currentValue)}>Select</Button>
             </Group>
             <ColorPicker

@@ -13,13 +13,13 @@ import {
     Space,
     Stack,
     Text,
-    Title,
     Tooltip
 } from "@mantine/core"
 import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
+import { bitmap } from "../../drawing"
 import * as i from "../../icons"
 import { DataContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
@@ -30,9 +30,9 @@ import { ColorPalette } from "./color-palette"
 import { createTool, editorTools } from "./editor-tools"
 import { editorTransformItems } from "./editor-transforms"
 import classes from "./editor.module.css"
+import { HeroSelector } from "./hero-selector"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-import { bitmap } from "../../drawing"
 
 const brushSizeTooltip = `1,2…${constants.maxBrushSize > 9 ? 0 : constants.maxBrushSize}`
 
@@ -41,6 +41,16 @@ export const Editor = observer(() => {
     const tool = useMemo(() => createTool(store.toolId), [store.toolId])
 
     React.useEffect(() => { store.selectHero("bob") }, [store])
+
+    const handleChange = React.useCallback(
+        (name: string | undefined) => {
+            if (name) {
+                store.selectHero(name)
+            } else {
+                store.deselectHero()
+            }
+        },
+        [store])
 
     const download = React.useCallback(
         () => {
@@ -138,9 +148,11 @@ export const Editor = observer(() => {
             <header className={classes.editor__header}>
 
                 <Group p="md" justify="space-between">
-                    <Title order={2}>{store.currentHero?.name}</Title>
+                    <HeroSelector
+                        value={store.currentHero?.name}
+                        onChange={handleChange}
+                    />
                     <Group>
-                        <Button onClick={() => store.selectHero("bob")} >Bob</Button>
                         <Button
                             onClick={() => store.writeLogo()}
                             disabled={store.currentHero === undefined || !store.currentHero.edited}

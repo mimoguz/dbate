@@ -67,11 +67,12 @@ const copy = (source: RGBA, target: RGBA) => {
 export const rgba = {
     copy,
     equals,
-    zero: () => Uint8ClampedArray.of(0, 0, 0, 0) as RGBA,
+    zero: () => pack(0, 0, 0, 0),
     fromString,
     pack,
     shift,
     split,
     toString,
-    transparent: Uint8ClampedArray.of(0, 0, 0, 0) as RGBA,
+    /**  Some functions mutate the passed color. Use this only for comparison. */
+    transparent: pack(0, 0, 0, 0),
 } as const

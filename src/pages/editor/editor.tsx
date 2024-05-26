@@ -1,5 +1,6 @@
 import {
     ActionIcon,
+    Button,
     Center,
     ColorSwatch,
     Divider,
@@ -19,7 +20,6 @@ import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
-import { Bitmap } from "../../drawing"
 import * as i from "../../icons"
 import { DataContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
@@ -39,17 +39,14 @@ export const Editor = observer(() => {
     const store = React.useContext(DataContext)
     const tool = useMemo(() => createTool(store.toolId), [store.toolId])
 
-    React.useEffect(
-        () => { store.selectHero("Bob") },
-        [store]
-    )
+    React.useEffect(() => { store.selectHero("bob") }, [store])
 
     const handleToolResult = useCallback(
         (result: ToolResult | undefined) => {
             if (!result) return
             switch (result.tag) {
                 case "affects-bitmap":
-                    store.setSelectedLogo(result.value)
+                    store.updateLogo(result.value)
                     break
                 case "affects-options":
                     store.setColor(result.value.color)
@@ -61,7 +58,7 @@ export const Editor = observer(() => {
     )
 
     const applyTransform = useCallback(
-        (transform: Transform) => () => { if (store.selectedLogo) store.setSelectedLogo(transform(store.selectedLogo)) },
+        (transform: Transform) => () => store.modifyLogo(transform),
         [store]
     )
 
@@ -92,9 +89,9 @@ export const Editor = observer(() => {
         ["9", () => store.setBrushSize(9)],
         ["0", () => store.setBrushSize(10)],
         ["mod+1", () => store.setColor("transparent")],
-        ["mod+2", () => store.quickColors.at(0) && store.setColor(store.quickColors.at(0)!)],
+        ["mod+2", () => store.quickColors.at(2) && store.setColor(store.quickColors.at(2)!)],
         ["mod+3", () => store.quickColors.at(1) && store.setColor(store.quickColors.at(1)!)],
-        ["mod+4", () => store.quickColors.at(2) && store.setColor(store.quickColors.at(2)!)],
+        ["mod+4", () => store.quickColors.at(0) && store.setColor(store.quickColors.at(0)!)],
         ["mod+Z", () => store.undoLogo()],
         ["D", () => store.toggleCanvasBackground()],
         ["O", () => store.toggleGridOverlay()],
@@ -121,9 +118,19 @@ export const Editor = observer(() => {
     return (
         <div onWheel={handleWheel} className={classes.editor}>
             <header className={classes.editor__header}>
-                <Center p="md">
-                    <Title order={2}>{store.selectedName}</Title>
-                </Center>
+
+                <Group p="md" justify="space-between">
+                    <Title order={2}>{store.currentHero?.name}</Title>
+                    <Group>
+                        <Button onClick={() => store.selectHero("bob")} >Bob</Button>
+                        <Button
+                            onClick={() => store.writeLogo()}
+                            disabled={store.currentHero === undefined || !store.currentHero.edited}
+                        >
+                            Apply changes
+                        </Button>
+                    </Group>
+                </Group>
             </header>
             <div className={classes.editor__sidebar}>
                 <Stack gap="sm" px={6} py="xs">
@@ -180,9 +187,9 @@ export const Editor = observer(() => {
                                     style={{ cursor: "pointer" }}
                                 />
                             </Tooltip>
-                            {store.quickColors.mapToArray((color, index) => (
+                            {store.quickColors.map((color, index) => (
                                 <Tooltip
-                                    label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={index + 2} /> </Group>)}
+                                    label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={constants.maxColors - index + 1} /> </Group>)}
                                     key={color}
                                 >
                                     <ColorSwatch
@@ -197,7 +204,7 @@ export const Editor = observer(() => {
                 </Stack>
             </div>
             <main className={classes.editor__main}>
-                {store.selectedLogo
+                {store.currentHero?.logo
                     ? (
                         <Center p="xl" h="100%">
                             <div
@@ -208,8 +215,8 @@ export const Editor = observer(() => {
                                 className={classes.editor__canvas__stack}
                             >
                                 <Checkerboard
-                                    width={store.selectedLogo.width}
-                                    height={store.selectedLogo.height}
+                                    width={store.currentHero.logo.width}
+                                    height={store.currentHero.logo.height}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",
@@ -219,7 +226,7 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <BitmapView
-                                    bmp={store.selectedLogo as Bitmap}
+                                    bmp={store.currentHero.logo}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",
@@ -227,7 +234,7 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <ToolPreview
-                                    bmp={store.selectedLogo as Bitmap}
+                                    bmp={store.currentHero.logo}
                                     tool={tool}
                                     color={store.color}
                                     brushSize={store.brushSize}
@@ -241,8 +248,8 @@ export const Editor = observer(() => {
                                     }}
                                 />
                                 <Checkerboard
-                                    width={store.selectedLogo.width}
-                                    height={store.selectedLogo.height}
+                                    width={store.currentHero.logo.width}
+                                    height={store.currentHero.logo.height}
                                     zoom={store.scale}
                                     style={{
                                         gridArea: "1 / 1",

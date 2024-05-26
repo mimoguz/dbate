@@ -72,11 +72,12 @@ export class SizedStack<T> {
 
     pop(): T | undefined {
         if (this.count <= 0) return undefined
-        const result = this.data[this.point]!
+        const result = this.data[this.point]
         this.data[this.point] = null
         this.decrease()
         // this.atom.reportChanged()
-        return result
+        console.debug(this.data)
+        return result ?? undefined
     }
 
     mapToArray<U>(f: (value: T, index: number) => U): Array<U> {
@@ -108,7 +109,7 @@ export class SizedStack<T> {
     }
 
     private decrease() {
-        this.point = mod(this.point - 1, this.size)
         this._count = Math.max(0, this.count - 1)
+        this.point = this._count === 0 ? -1 : mod(this.point - 1, this.size)
     }
 }

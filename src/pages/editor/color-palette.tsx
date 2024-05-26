@@ -1,17 +1,12 @@
 import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, SimpleGrid, Stack } from "@mantine/core"
 import { observer } from "mobx-react-lite"
-import React, { useEffect } from "react"
+import React from "react"
 import { PlusMd, TrashMd } from "../../icons"
 import { DataContext, constants } from "../../stores"
 
 export const ColorPalette = observer(() => {
     const store = React.useContext(DataContext)
     const [currentValue, setCurrentValue] = React.useState(store.color)
-
-    useEffect(
-        () => console.log("Quick:", store.quickColors.count),
-        [store.quickColors]
-    )
 
     return (
         <Stack>
@@ -32,13 +27,15 @@ export const ColorPalette = observer(() => {
                 <ActionIcon
                     onClick={() => store.addSwatch(currentValue)}
                     size="lg"
-                    disabled={store.swatches.length === constants.maxSwatches}>
+                    disabled={store.swatches.length === constants.maxSwatches
+                        || store.swatches.includes(currentValue)}>
                     <PlusMd />
                 </ActionIcon>
                 <ActionIcon
                     onClick={() => store.removeSwatch(currentValue)}
                     color="red"
                     size="lg"
+                    disabled={!store.swatches.includes(currentValue)}
                 >
                     <TrashMd />
                 </ActionIcon>

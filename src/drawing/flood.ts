@@ -34,7 +34,7 @@ const fill = (bmp: Bitmap, start: Point, fillColor: RGBA): void => {
     }
 }
 
-const erase = (bmp: Bitmap, start: Point): void => fill(bmp, start, rgba.transparent)
+const erase = (bmp: Bitmap, start: Point): void => fill(bmp, start, rgba.zero())
 
 export const flood = {
     fill,

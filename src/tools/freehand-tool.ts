@@ -18,7 +18,7 @@ export class FreehandTool extends ToolBase {
 
     private readonly stroke: Array<Rect> = []
 
-    private color: RGBA = rgba.transparent
+    private color: RGBA = rgba.zero()
 
     private getRect: (pt: Point) => Rect
 
@@ -118,7 +118,7 @@ export const freehandTools = {
     ),
 
     eraser: () => new FreehandTool(
-        (target, stroke) => fillStroke(target, stroke, rgba.transparent),
+        (target, stroke) => fillStroke(target, stroke, rgba.zero()),
         brushSize => {
             const shift = getShift(brushSize)
             return ((pt: Point) => ({

@@ -52,7 +52,7 @@ const draw = (
     colorTransform: (color: RGBA) => RGBA = color => color,
 ) => {
     context.save()
-    const lastSample = rgba.transparent
+    const lastSample = rgba.zero()
     context.fillStyle = rgba.toString(colorTransform(lastSample))
     const pixels = bmp.width * bmp.height
     const sample = rgba.zero()
@@ -69,6 +69,17 @@ const draw = (
     context.restore()
 }
 
+const drawImage = (
+    bmp: Bitmap,
+    context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+) => {
+    context.save()
+    const data = new ImageData(bmp.colorBuffer, bmp.width, bmp.height)
+    createImageBitmap(data).then((image) => {
+        context.drawImage(image, 0, 0, bmp.width, bmp.height)
+    })
+}
+
 const getPixel = (bmp: Bitmap, point: Point): RGBA => {
     const offset = toPixelOffset(bmp, point.x, point.y)
     return bmp.colorBuffer.slice(offset, offset + 4) as RGBA
@@ -82,6 +93,10 @@ const readPixel = (bmp: Bitmap, point: Point, target: RGBA): void => {
 }
 
 const putPixelMut = (bmp: Bitmap, point: Point, color: RGBA) => {
+    // const offset = toPixelOffset(bmp, point.x, point.y)
+    // for (let i = 0; i < 4; i++) {
+    //     bmp.colorBuffer[offset + i] = color[i]
+    // }
     bmp.colorBuffer.set(color, toPixelOffset(bmp, point.x, point.y))
 }
 
@@ -93,7 +108,7 @@ const putPixel = (bmp: Bitmap, point: Point, color: RGBA): Bitmap => {
 
 const mapMut = (bmp: Bitmap, mutator: (color: RGBA, index: number) => void) => {
     const pixels = bmp.width * bmp.height
-    const sample = new Uint8ClampedArray(4) as RGBA
+    const sample = rgba.zero()
     const pt = { x: 0, y: 0 }
     for (let index = 0; index < pixels; index++) {
         toPoint(bmp, index, pt)
@@ -157,6 +172,7 @@ export const bitmap = {
     contains,
     copy,
     draw,
+    drawImage,
     empty,
     fillRectMut,
     foreach,

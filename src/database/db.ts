@@ -14,7 +14,7 @@ export class Database extends Dexie {
         });
     }
 
-    heroes!: Table<Data.Hero>
+    heroes!: Table<Data.HeroItem>
     history!: Table<Data.HistoryItem>
     swatches!: Table<Data.ColorItem>
     quickColors!: Table<Data.ColorItem>

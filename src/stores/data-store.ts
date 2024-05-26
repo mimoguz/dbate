@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx"
 import React from "react"
-import { SizedStack, clamp } from "../common"
+import { clamp } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
@@ -13,22 +13,25 @@ const compareStr = (a: string, b: string): number => (
 
 export class DataStore {
     constructor(db: DB.Database) {
-        this.db = db
         makeAutoObservable(this, {}, { autoBind: true, deep: true })
-        this.load()
+        this.db = db
+        this.load().then(() => {
+            if (this.currentName !== undefined && this.currentItem?.name !== this.currentName) {
+                this.selectHero(this.currentName)
+            }
+        })
     }
 
     private readonly db: DB.Database
 
     // Hero properties
-    heroes: Array<Data.Hero> = []
-    selectedHero?: Data.Hero
-    selectedName?: string
-    selectedLogo?: Bitmap
-    selectedHistory: SizedStack<Bitmap> = new SizedStack(constants.maxHistory)
+    private currentName?: string
+    private currentItem?: Data.HeroItem
+    heroes: Array<Data.HeroItem> = []
+    currentHero?: Data.Hero
 
     // Color collections
-    quickColors: SizedStack<string> = new SizedStack(constants.maxColors)
+    quickColors: Array<string> = []
     swatches: Array<string> = []
 
     // Editor state properties
@@ -43,63 +46,78 @@ export class DataStore {
     // Hero Methods
 
     async selectHero(name: string): Promise<void> {
+        this.currentName = name
         const hero = this.heroes.find(hero => hero.name === name)
-        this.selectedHero = hero
-        this.selectedLogo = hero ? encodedBitmap.toBitmap(hero.encodedLogo) : undefined
-        // Restore the history if the hero is the last edited one
-        this.selectedHistory = SizedStack.from<Bitmap>(
-            (await this.db.history.where("heroName").equals(name).toArray())
-                .map(it => encodedBitmap.toBitmap(it.encodedLogo))
-                .filter(it => it) as Array<Bitmap>,
-            constants.maxHistory
-        )
+        this.setCurrentHeroItem(hero)
     }
 
     deselectHero() {
-        this.selectedHero = undefined
-        this.selectedLogo = undefined
-        this.selectedName = undefined
-        this.selectedHistory.clear()
+        this.setCurrentHeroItem(undefined)
     }
 
-    setSelectedLogo(bmp: Bitmap) {
-        this.selectedLogo = bmp
+    private async setCurrentHeroItem(heroItem?: Data.HeroItem) {
+        this.currentItem = heroItem
+        this.currentName = heroItem?.name
+        if (heroItem) {
+            const history = await this.db.history.where("heroName").equals(heroItem.name).toArray()
+            this.setCurrentHero(Data.heroItem.decode(heroItem, history))
+        } else {
+            this.setCurrentHero(undefined)
+        }
+    }
+
+    private setCurrentHero(hero?: Data.Hero) {
+        this.currentHero = hero
+    }
+
+    updateLogo(bmp: Bitmap) {
+        if (this.currentHero) {
+            this.currentHero.history.push(this.currentHero.logo)
+            if (this.currentHero.history.length > constants.maxHistory) this.currentHero.history.shift()
+            this.currentHero.logo = bmp
+            this.currentHero.edited = true
+        }
+    }
+
+    modifyLogo(f: (bmp: Bitmap) => Bitmap) {
+        if (this.currentHero) this.updateLogo(f(this.currentHero.logo))
     }
 
     undoLogo() {
-        const previous = this.selectedHistory.pop()
-        if (previous) this.setSelectedLogo(previous)
+        if (!this.currentHero) return
+        const previous = this.currentHero.history.pop()
+        if (previous) this.currentHero.logo = previous
     }
 
     async writeLogo() {
-        const currentHero = this.selectedHero
-        const currentLogo = this.selectedLogo
-        if (!(currentHero && currentLogo)) return
+        const currentHero = this.currentHero
+        const currentItem = this.currentItem
+        if (!(currentHero && currentItem)) return
 
-        const db = this.db
-        const history = this.selectedHistory
-
-        currentHero.thumbnail = undefined
-        currentHero.encodedLogo = encodedBitmap.fromBitmap(currentLogo)
+        currentItem.thumbnail = undefined
+        currentItem.encodedLogo = encodedBitmap.fromBitmap(currentHero.logo)
+        currentHero.edited = false
 
         // Update database
-        await db.transaction("rw", this.db.heroes, this.db.history, async () => {
-            const heroQuery = db.heroes.where("name").equals("name")
+        await this.db.transaction("rw", this.db.heroes, this.db.history, async () => {
+            const heroQuery = this.db.heroes.where("name").equals(currentItem.name)
             const hero = await heroQuery.first()
-            if (!hero) return
+            if (!hero) {
+                console.debug(`Hero ${currentItem.name}: Can't update logo, hero doesn't exist`)
+                return
+            }
 
-            const historyItems = history.mapToArray(hist => ({
+            const historyItems = currentHero.history.map(hist => ({
                 heroName: hero.name,
                 encodedLogo: encodedBitmap.fromBitmap(hist)
             }))
 
             // Only keep the last edited hero's history
-            await db.history.clear()
-            await db.history.bulkAdd(historyItems)
+            await this.db.history.clear()
+            await this.db.history.bulkAdd(historyItems)
 
-            await db.heroes.where("name").equals(currentHero.name).modify(hero => {
-                hero.encodedLogo = currentHero.encodedLogo
-                hero.thumbnail = undefined
+            await this.db.heroes.where("name").equals(currentHero.name).modify(hero => {
+                hero.encodedLogo = currentItem.encodedLogo
             })
         })
     }
@@ -132,12 +150,8 @@ export class DataStore {
             || this.swatches.some(s => s === newColor)
             || this.swatches.length >= constants.maxSwatches
         ) return
-        const droppedColor = this.swatches.push(newColor)
-        const db = this.db
-        await this.db.transaction("rw", this.db.swatches, async () => {
-            if (droppedColor) await db.swatches.where("color").equals(droppedColor).delete()
-            await db.swatches.add({ color: newColor })
-        })
+        this.swatches.push(newColor)
+        await this.db.swatches.add({ color: newColor })
     }
 
     async removeSwatch(color: string) {
@@ -152,20 +166,22 @@ export class DataStore {
         if (
             newColor === "transparent"
             || newColor === "#00000000"
-            || this.quickColors.exists(s => s === newColor)
+            || this.quickColors.some(s => s === newColor)
         ) return
-        const droppedColor = this.quickColors.push(newColor)
-        const db = this.db
-        await db.transaction("rw", db.quickColors, async () => {
-            if (droppedColor) await db.quickColors.where("color").equals(droppedColor.toLowerCase()).delete()
-            await db.quickColors.add({ color: newColor })
+        this.quickColors.push(newColor)
+        const droppedColor = this.quickColors.length > constants.maxColors
+            ? this.quickColors.shift()
+            : undefined
+        await this.db.transaction("rw", this.db.quickColors, async () => {
+            if (droppedColor) await this.db.quickColors.where("color").equals(droppedColor.toLowerCase()).delete()
+            await this.db.quickColors.add({ color: newColor })
         })
     }
 
     // Editor state methods
 
     get canUndo(): boolean {
-        return this.selectedHistory.count > 0
+        return (this.currentHero ? this.currentHero.history.length > 0 : false)
     }
 
     get scale(): number {
@@ -248,7 +264,7 @@ export class DataStore {
             await this.createHero("bob", bitmap.empty(24, 24))
         }
         this.swatches = (await this.db.swatches.toArray()).map(it => it.color).slice(0, constants.maxSwatches)
-        this.quickColors = SizedStack.from((await this.db.quickColors.toArray()).map(it => it.color), constants.maxColors)
+        this.quickColors = (await this.db.quickColors.toArray()).map(it => it.color)
         const state = await this.db.editorState.where("id").equals(0).first()
         if (state) {
             this.color = state.color
@@ -258,13 +274,11 @@ export class DataStore {
             this.canvasBackground = state.canvasBackground
             this.gridOverlay = state.gridOverlay
         }
-        console.debug(this)
-        this.selectHero("bob")
     }
 
     // Helpers
 
-    static async getThumbnail(hero: Data.Hero): Promise<ImageBitmap> {
+    static async getThumbnail(hero: Data.HeroItem): Promise<ImageBitmap> {
         if (hero.thumbnail) return hero.thumbnail
         const bmp = encodedBitmap.toBitmap(hero.encodedLogo)
         if (!bmp) throw new Error(`Hero ${hero.name}: Invalid logo image!`)

@@ -8,6 +8,6 @@ export interface EditorState {
     brushSize: number
     zoom: number
     toolId: number
-    canvasBackground: "light" | "dark"
-    gridOverlay: "visible" | "hidden"
+    canvasBackground: CanvasBackground
+    gridOverlay: GridOverlayVisibility
 }

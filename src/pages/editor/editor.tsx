@@ -176,7 +176,7 @@ export const Editor = observer(() => {
                             </Tooltip>
                             {store.quickColors.map((color, index) => (
                                 <Tooltip
-                                    label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={constants.maxColors - index + 1} /> </Group>)}
+                                    label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={constants.maxQuickColors - index + 1} /> </Group>)}
                                     key={color}
                                 >
                                     <ColorSwatch

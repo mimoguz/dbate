@@ -178,7 +178,7 @@ export class DataStore {
             || this.quickColors.some(s => s === newColor)
         ) return
         this.quickColors.push(newColor)
-        const droppedColor = this.quickColors.length > constants.maxColors
+        const droppedColor = this.quickColors.length > constants.maxQuickColors
             ? this.quickColors.shift()
             : undefined
         await this.db.transaction("rw", this.db.quickColors, async () => {

@@ -15,11 +15,7 @@ export const HeroSelector = (): JSX.Element => {
 
     const handleHeroChange = (name: string | null | undefined) => {
         if (!store.currentHero?.edited) {
-            if (name) {
-                store.selectHero(name)
-            } else {
-                store.deselectHero()
-            }
+            store.selectHero(name ?? undefined)
         } else {
             if (name) {
                 target.current = name
@@ -50,11 +46,7 @@ export const HeroSelector = (): JSX.Element => {
     const confirmLoad = React.useCallback(
         () => {
             confirmClose()
-            if (target.current) {
-                store.selectHero(target.current)
-            } else {
-                store.deselectHero()
-            }
+            store.selectHero(target.current)
         },
         [confirmClose, store, target]
     )
@@ -62,20 +54,13 @@ export const HeroSelector = (): JSX.Element => {
     const saveThenLoad = React.useCallback(
         () => {
             confirmClose()
-            store.writeLogo().then(() => {
-                if (target.current) {
-                    store.selectHero(target.current)
-                } else {
-                    store.deselectHero()
-                }
-            })
+            store.writeLogo().then(() => { store.selectHero(target.current) })
         },
         [confirmClose, store, target]
     )
 
     return (
         <>
-
             <Group>
                 <Select
                     data={store.heroes.map(it => it.name)}
@@ -129,7 +114,6 @@ export const HeroSelector = (): JSX.Element => {
                     </Group>
                 </Stack>
             </Modal>
-
         </>
     )
 }

@@ -1,6 +1,5 @@
 import { Bitmap } from "../drawing"
 import { encodedBitmap } from "./encoded-bitmap"
-import { HistoryItem } from "./history-item"
 
 export interface HeroItem {
     name: string
@@ -11,19 +10,16 @@ export interface HeroItem {
 export interface Hero {
     name: string
     logo: Bitmap
-    history: Array<Bitmap>
     edited: boolean
 }
 
 export const heroItem = {
-    decode: (heroItem: HeroItem, historyItems: Array<HistoryItem> = []): Hero => {
+    decode: (heroItem: HeroItem): Hero => {
         const logo = encodedBitmap.toBitmap(heroItem.encodedLogo)
-        const history = historyItems.map(it => encodedBitmap.toBitmap(it.encodedLogo)).filter(it => it) as Array<Bitmap>
         if (!logo) throw new Error(`Hero ${heroItem.name}: invalid logo`)
         return ({
             name: heroItem.name,
             logo,
-            history,
             edited: false
         })
     }

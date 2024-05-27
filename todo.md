@@ -20,4 +20,6 @@
 - [-] Export images (Can export single image)
 
 ## General
-[ ] TESTS!!!
+- [-] TESTS!!!
+- [ ] Consider splitting the data store
+- [ ] Consistent error handling 

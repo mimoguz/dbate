@@ -11,6 +11,7 @@ const compareStr = (a: string, b: string): number => (
     a.toLocaleLowerCase("en").localeCompare(b.toLocaleLowerCase("en"), "en")
 )
 
+// TODO: Consider splitting this class 
 export class DataStore {
     constructor(db: DB.Database) {
         makeAutoObservable(this, {}, { autoBind: true, deep: true })
@@ -29,6 +30,7 @@ export class DataStore {
     private currentItem?: Data.HeroItem
     heroes: Array<Data.HeroItem> = []
     currentHero?: Data.Hero
+    history: Array<Data.Hero> = []
 
     // Color collections
     quickColors: Array<string> = []
@@ -45,41 +47,41 @@ export class DataStore {
 
     // Hero Methods
 
-    async selectHero(name: string): Promise<void> {
+    async selectHero(name?: string): Promise<void> {
+        if (!name) {
+            this.setCurrentHeroItem(undefined)
+            return
+        }
         this.currentName = name
         const hero = this.heroes.find(hero => hero.name === name)
         this.setCurrentHeroItem(hero)
-    }
-
-    deselectHero() {
-        this.setCurrentHeroItem(undefined)
     }
 
     private async setCurrentHeroItem(heroItem?: Data.HeroItem) {
         this.currentItem = heroItem
         this.currentName = heroItem?.name
         if (heroItem) {
-            const history = await this.db.history.where("heroName").equals(heroItem.name).toArray()
-            this.setCurrentHero(Data.heroItem.decode(heroItem, history))
+            // TODO: Error handling?
+            this.history = (await this.db.history.where("heroName").equals(heroItem.name).toArray()).map(hist => ({
+                name: hist.heroName,
+                logo: encodedBitmap.toBitmap(hist.encodedLogo)!,
+                edited: true
+            }))
+            this.currentHero = Data.heroItem.decode(heroItem)
         } else {
-            this.setCurrentHero(undefined)
+            this.currentHero = undefined
         }
-    }
-
-    private setCurrentHero(hero?: Data.Hero) {
-        this.currentHero = hero
-    }
-
-    private setEdited(value: boolean) {
-        if (this.currentHero) this.currentHero.edited = value
     }
 
     updateLogo(bmp: Bitmap) {
         if (this.currentHero) {
-            this.currentHero.history.push(this.currentHero.logo)
-            if (this.currentHero.history.length > constants.maxHistory) this.currentHero.history.shift()
-            this.currentHero.logo = bmp
-            this.setEdited(true)
+            this.history.push(this.currentHero)
+            if (this.history.length > constants.maxHistory) this.history.shift()
+            this.currentHero = {
+                name: this.currentHero.name,
+                logo: bmp,
+                edited: true
+            }
         }
     }
 
@@ -89,8 +91,8 @@ export class DataStore {
 
     undoLogo() {
         if (!this.currentHero) return
-        const previous = this.currentHero.history.pop()
-        if (previous) this.currentHero.logo = previous
+        const previous = this.history.pop()
+        if (previous) this.currentHero = previous
     }
 
     async writeLogo() {
@@ -100,12 +102,10 @@ export class DataStore {
 
         currentItem.thumbnail = undefined
         currentItem.encodedLogo = encodedBitmap.fromBitmap(currentHero.logo)
-        this.setCurrentHero(
-            {
-                ...currentHero,
-                edited: false,
-            }
-        )
+        this.currentHero = {
+            ...currentHero,
+            edited: false,
+        }
 
         // Update database
         await this.db.transaction("rw", this.db.heroes, this.db.history, async () => {
@@ -116,9 +116,9 @@ export class DataStore {
                 return
             }
 
-            const historyItems = currentHero.history.map(hist => ({
-                heroName: hero.name,
-                encodedLogo: encodedBitmap.fromBitmap(hist)
+            const historyItems = this.history.map(hist => ({
+                heroName: hist.name,
+                encodedLogo: encodedBitmap.fromBitmap(hist.logo)
             }))
 
             // Only keep the last edited hero's history
@@ -190,7 +190,7 @@ export class DataStore {
     // Editor state methods
 
     get canUndo(): boolean {
-        return (this.currentHero ? this.currentHero.history.length > 0 : false)
+        return (this.currentHero ? this.history.length > 0 : false)
     }
 
     get scale(): number {

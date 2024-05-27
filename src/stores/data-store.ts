@@ -100,7 +100,12 @@ export class DataStore {
 
         currentItem.thumbnail = undefined
         currentItem.encodedLogo = encodedBitmap.fromBitmap(currentHero.logo)
-        this.setEdited(false)
+        this.setCurrentHero(
+            {
+                ...currentHero,
+                edited: false,
+            }
+        )
 
         // Update database
         await this.db.transaction("rw", this.db.heroes, this.db.history, async () => {

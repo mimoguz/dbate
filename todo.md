@@ -1,7 +1,7 @@
 # TO DO
 
 ## Tools
-- [x] ~~Tools need cleaning.~~
+- [x] ~~Tools need cleaning~~
 - [x] ~~Move tool~~
 
 ## Transforms
@@ -17,9 +17,9 @@
 
 ## Database
 - [ ] Export/import
-- [-] Export images (Can export single image)
+- [ ] Export images (Can export current image now)
 
 ## General
-- [-] TESTS!!!
+- [ ] TESTS!!! (In progress)
 - [ ] Consider splitting the data store
-- [ ] Consistent error handling 
+- [ ] Consistent error handling?

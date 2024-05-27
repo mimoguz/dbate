@@ -4,9 +4,9 @@ import * as Data from "../data"
 import { rgba } from "../drawing"
 import { constants } from "./constants"
 
-type EditorState = Omit<Data.EditorState, "id">
+export type EditorProperties = Omit<Data.EditorState, "id">
 
-export class EnvironmentStore {
+export class EditorStore {
     constructor(db: DB.Database) {
         makeAutoObservable(this, {}, { autoBind: true, deep: true })
         this.db = db
@@ -17,7 +17,7 @@ export class EnvironmentStore {
 
     private editorStateTimeout: NodeJS.Timeout | undefined
 
-    state: EditorState = {
+    state: EditorProperties = {
         brushSize: 1,
         canvasBackground: "light",
         color: "#0000ff",
@@ -30,7 +30,7 @@ export class EnvironmentStore {
 
     swatches: Array<string> = []
 
-    setEditorState(stateUpdate: Partial<EditorState>) {
+    setEditorState(stateUpdate: Partial<EditorProperties>) {
         this.setLocalEditorState(stateUpdate)
         this.writeEditorStateDeferred()
         if (stateUpdate.color) {
@@ -71,7 +71,7 @@ export class EnvironmentStore {
         this.swatches = (await this.db.swatches.toArray()).map(qc => qc.color)
     }
 
-    private setLocalEditorState(stateUpdate: Partial<EditorState>) {
+    private setLocalEditorState(stateUpdate: Partial<EditorProperties>) {
         this.state = {
             ...stateUpdate,
             ...this.state

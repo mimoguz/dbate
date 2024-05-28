@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx"
+import { action, makeAutoObservable } from "mobx"
 import * as DB from "../database"
 import * as Data from "../data"
 import { rgba } from "../drawing"
@@ -54,25 +54,19 @@ export class EditorStore {
         return this.canvasBackground === "dark"
     }
 
-    // Remove duplication workaround
     async setColor(value: string) {
         const color = value.toLowerCase()
         if (color === this.color) return
         this.color = color
 
-        //let dropped: string | undefined
         if (rgba.fromString(color).a !== 0 && !this.quickColors.includes(color)) {
-            console.debug(color)
-            this.quickColors.push(color)
-            // if (this.quickColors.length > constants.maxQuickColors) dropped = this.quickColors.shift()
+            this.quickColors = [color, ...this.quickColors.slice(0, constants.maxQuickColors - 1)]
         }
 
         await this.db.transaction("rw", this.db.quickColors, async () => {
             await this.db.quickColors.clear()
             await this.db.quickColors.bulkAdd(this.quickColors.map(color => ({ color })))
         })
-        //if (dropped) await this.db.quickColors.where("color").equals(dropped).delete()
-        // await this.db.quickColors.add({ color })
     }
 
     setGridOverlay(value: Data.GridOverlayVisibility) {
@@ -128,21 +122,27 @@ export class EditorStore {
         }
     }
 
-    async load(): Promise<void> {
-        this.quickColors = (await this.db.quickColors.toArray()).map(qc => qc.color)
-        this.swatches = (await this.db.swatches.toArray()).map(qc => qc.color)
+    load() {
+        this.db.quickColors.toArray().then(action("fetchQuickColors", colors => {
+            this.quickColors = colors.map(qc => qc.color)
+        }))
 
-        const state = await this.db.editorState.where("id").equals(0).first()
-        if (!state) {
-            console.log("Couldn't load editor state")
-            return
-        }
-        this.brushSize = state.brushSize
-        this.canvasBackground = state.canvasBackground
-        this.color = state.color
-        this.gridOverlay = state.gridOverlay
-        this.toolId = state.toolId
-        this.zoom = state.zoom
+        this.db.swatches.toArray().then(action("fetchSwatches", colors => {
+            this.swatches = colors.map(qc => qc.color)
+        }))
+
+        this.db.editorState.where("id").equals(0).first().then(action("fetchEditorState", state => {
+            if (!state) {
+                console.log("Couldn't load editor state")
+                return
+            }
+            this.brushSize = state.brushSize
+            this.canvasBackground = state.canvasBackground
+            this.color = state.color
+            this.gridOverlay = state.gridOverlay
+            this.toolId = state.toolId
+            this.zoom = state.zoom
+        }))
     }
 
     private writeEditorStateDeferred() {

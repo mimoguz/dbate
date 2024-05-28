@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx"
+import { action, makeAutoObservable } from "mobx"
 import React from "react"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
@@ -15,11 +15,7 @@ export class HeroStore {
     constructor(db: DB.Database) {
         makeAutoObservable(this, {}, { autoBind: true, deep: true })
         this.db = db
-        this.load().then(() => {
-            if (this.currentName !== undefined && this.currentItem?.name !== this.currentName) {
-                this.selectHero(this.currentName)
-            }
-        })
+        this.load()
     }
 
     private readonly db: DB.Database
@@ -139,19 +135,25 @@ export class HeroStore {
         }
     }
 
-    async load(): Promise<void> {
-        this.heroes = (await this.db.heroes.toArray()).sort((a, b) => compareStr(a.name, b.name))
+    load() {
+        this.db.heroes.toArray().then(action("fetchHeroes", heroes => {
+            this.heroes = heroes.sort((a, b) => compareStr(a.name, b.name))
+            if (this.currentName !== undefined && this.currentItem?.name !== this.currentName) {
+                this.selectHero(this.currentName)
+            }
+        }))
     }
 
-    private async setCurrentHeroItem(heroItem?: Data.HeroItem) {
+    private setCurrentHeroItem(heroItem?: Data.HeroItem) {
         this.currentItem = heroItem
         this.currentName = heroItem?.name
         if (heroItem) {
-            // TODO: Error handling?
-            this.history = (await this.db.history.where("heroName").equals(heroItem.name).toArray()).map(hist => ({
-                name: hist.heroName,
-                logo: encodedBitmap.toBitmap(hist.encodedLogo)!,
-                edited: true
+            this.db.history.where("heroName").equals(heroItem.name).toArray().then(action("fetchHistory", history => {
+                this.history = history.map(hist => ({
+                    name: hist.heroName,
+                    logo: encodedBitmap.toBitmap(hist.encodedLogo)!,
+                    edited: true
+                }))
             }))
             this.future = []
             this.currentHero = Data.heroItem.decode(heroItem)

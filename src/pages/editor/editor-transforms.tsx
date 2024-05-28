@@ -8,24 +8,6 @@ type Item = Omit<ActionGroupItem, "action">
 export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bitmap) => Bitmap }> = [
     {
         item: {
-            icon: <i.CopyMd />,
-            accessibleLabel: "Copy",
-            key: "copy",
-            shortcut: { mod: "mod", sKey: "C" },
-        },
-        transformAction: transforms.invert,
-    },
-    {
-        item: {
-            icon: <i.PasteMd />,
-            accessibleLabel: "Paste",
-            key: "paste",
-            shortcut: { mod: "mod", sKey: "C" },
-        },
-        transformAction: transforms.invert,
-    },
-    {
-        item: {
             icon: <i.FlipHorizontalMd />,
             accessibleLabel: "Flip horizontal",
             key: "flip-horizontal",

@@ -1,7 +1,12 @@
-export const copyToClipboard = async (json: string): Promise<void> => {
-    await navigator.clipboard.writeText(json)
+const copyToClipboard = async (text: string): Promise<void> => {
+    await navigator.clipboard.writeText(text)
 }
 
-export const pasteFromClipboard = async (): Promise<string> => {
+const pasteFromClipboard = async (): Promise<string> => {
     return await navigator.clipboard.readText()
 }
+
+export const clipboard = {
+    copy: copyToClipboard,
+    paste: pasteFromClipboard
+} as const

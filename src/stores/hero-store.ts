@@ -1,5 +1,6 @@
 import { action, makeAutoObservable } from "mobx"
 import React from "react"
+import { clipboard } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
@@ -143,6 +144,27 @@ export class HeroStore {
                 this.selectHero(this.currentName)
             }
         }))
+    }
+
+    copy() {
+        if (!this.currentHero) return
+        const json = JSON.stringify(encodedBitmap.fromBitmap(this.currentHero.logo))
+        clipboard.copy(json).then(
+            () => { },
+            (reason) => { console.debug(`Can't copy to clipboard: ${reason}`) }
+        )
+    }
+
+    paste() {
+        const hero = this.currentHero
+        const update = this.updateLogo
+        clipboard.paste().then(text => {
+            const bmp = encodedBitmap.toBitmap(text)
+            return bmp
+        }).then(
+            bmp => { if (hero && bmp) update(bmp) },
+            (reason) => { console.debug(`Can't paste: ${reason}`) }
+        )
     }
 
     private setCurrentHeroItem(heroItem?: Data.HeroItem) {

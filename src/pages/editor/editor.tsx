@@ -167,10 +167,12 @@ export const Editor = observer(() => {
                         onUndo={heroStore.undoLogo}
                         hasRedo={heroStore.canRedo}
                         onRedo={heroStore.redoLogo}
+                        onCopy={heroStore.copy}
+                        onPaste={heroStore.paste}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
-                        <SimpleGrid cols={4} spacing={6} verticalSpacing={6}>
+                        <SimpleGrid cols={4} spacing={12} verticalSpacing={6}>
                             <Tooltip
                                 label={(<Group> Set color transparent <ShortcutGroup mod="mod" sKey={1} /> </Group>)}
                             >

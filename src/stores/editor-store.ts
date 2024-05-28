@@ -30,6 +30,9 @@ export class EditorStore {
 
     swatches: Array<string> = []
 
+    get scale(): number {
+        return Math.floor(this.state.zoom)
+    }
     setEditorState(stateUpdate: Partial<EditorProperties>) {
         this.setLocalEditorState(stateUpdate)
         this.writeEditorStateDeferred()

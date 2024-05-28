@@ -6,24 +6,26 @@ import { EditorContext, constants } from "../../stores"
 
 export const ColorPalette = observer(() => {
     const editorStore = React.useContext(EditorContext)
-    const [currentValue, setCurrentValue] = React.useState(editorStore.state.color)
+    const [currentValue, setCurrentValue] = React.useState(editorStore.color)
 
     return (
         <Stack>
             <Group justify="space-between">
                 <Paper withBorder>
                     <Group gap={0}>
-                        <ColorSwatch color={editorStore.state.color} radius="4px 0 0 4px" withShadow={false} size={35} />
+                        <ColorSwatch color={editorStore.color} radius="4px 0 0 4px" withShadow={false} size={35} />
                         <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
                     </Group>
                 </Paper>
-                <Button onClick={() => editorStore.setEditorState({ color: currentValue })}>Select</Button>
+                <Button onClick={() => editorStore.setColor(currentValue)}>Select</Button>
             </Group>
+
             <ColorPicker
                 value={currentValue}
                 onChange={setCurrentValue}
                 format="hex"
             />
+
             <Divider label="Swatches" />
             <Group gap={6}>
                 <ActionIcon

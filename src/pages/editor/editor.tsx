@@ -17,9 +17,10 @@ import {
 import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
+import { clamp } from "../../common"
 import { ShortcutGroup, hotkey } from "../../common/components"
 import * as i from "../../icons"
-import { DataContext, EditorContext, HeroContext, constants } from "../../stores"
+import { EditorContext, HeroContext, constants } from "../../stores"
 import { ToolResult } from "../../tools"
 import { Transform } from "../../transforms"
 import { BitmapView } from "./bitmap-view"
@@ -31,14 +32,13 @@ import classes from "./editor.module.css"
 import { Header } from "./header"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
-import { clamp } from "../../common"
 
 const brushSizeTooltip = `1,2…${constants.maxBrushSize > 9 ? 0 : constants.maxBrushSize}`
 
 export const Editor = observer(() => {
     const heroStore = React.useContext(HeroContext)
     const editorStore = React.useContext(EditorContext)
-    const tool = useMemo(() => createTool(editorStore.state.toolId), [editorStore.state])
+    const tool = useMemo(() => createTool(editorStore.toolId), [editorStore.toolId])
 
     React.useEffect(() => { heroStore.selectHero("bob") }, [heroStore])
 
@@ -50,16 +50,12 @@ export const Editor = observer(() => {
                     heroStore.updateLogo(result.value)
                     break
                 case "affects-options":
-                    editorStore.setEditorState(result.value)
+                    editorStore.setColor(result.value.color)
+                    editorStore.setBrushSize(result.value.brushSize)
                     break
             }
         },
         [heroStore, editorStore]
-    )
-
-    const handleBrushSizeChange = useCallback(
-        (value: number) => editorStore.setEditorState({ brushSize: clamp(1, constants.maxBrushSize, value }),
-        [editorStore]
     )
 
     const applyTransform = useCallback(
@@ -78,25 +74,25 @@ export const Editor = observer(() => {
     const handleWheel: React.WheelEventHandler = e => {
         if (e.shiftKey) {
             e.stopPropagation()
-            editorStore.changeZoom(e.deltaY * -0.01)
+            editorStore.updateZoom(e.deltaY * -0.01)
         }
     }
 
     useHotkeys([
-        ["1", () => editorStore.setEditorState({ brushSize: 1 })],
-        ["2", () => editorStore.setEditorState({ brushSize: 2 })],
-        ["3", () => editorStore.setEditorState({ brushSize: 3 })],
-        ["4", () => editorStore.setEditorState({ brushSize: 4 })],
-        ["5", () => editorStore.setEditorState({ brushSize: 5 })],
-        ["6", () => editorStore.setEditorState({ brushSize: 6 })],
-        ["7", () => editorStore.setEditorState({ brushSize: 7 })],
-        ["8", () => editorStore.setEditorState({ brushSize: 8 })],
-        ["9", () => editorStore.setEditorState({ brushSize: 9 })],
-        ["0", () => editorStore.setEditorState({ brushSize: 10 })],
-        ["mod+1", () => editorStore.setEditorState({ color: "transparent" })],
-        ["mod+2", () => editorStore.quickColors.at(2) && editorStore.setEditorState({ color: editorStore.quickColors[2] })],
-        ["mod+3", () => editorStore.quickColors.at(1) && editorStore.setEditorState({ color: editorStore.quickColors[1] })],
-        ["mod+4", () => editorStore.quickColors.at(0) && editorStore.setEditorState({ color: editorStore.quickColors[0] })],
+        ["1", () => editorStore.setBrushSize(1)],
+        ["2", () => editorStore.setBrushSize(2)],
+        ["3", () => editorStore.setBrushSize(3)],
+        ["4", () => editorStore.setBrushSize(4)],
+        ["5", () => editorStore.setBrushSize(5)],
+        ["6", () => editorStore.setBrushSize(6)],
+        ["7", () => editorStore.setBrushSize(7)],
+        ["8", () => editorStore.setBrushSize(8)],
+        ["9", () => editorStore.setBrushSize(9)],
+        ["0", () => editorStore.setBrushSize(10)],
+        ["mod+1", () => editorStore.setColor("transparent")],
+        ["mod+2", () => editorStore.quickColors.at(2) && editorStore.setColor(editorStore.quickColors[2])],
+        ["mod+3", () => editorStore.quickColors.at(1) && editorStore.setColor(editorStore.quickColors[1])],
+        ["mod+4", () => editorStore.quickColors.at(0) && editorStore.setColor(editorStore.quickColors[0])],
         ["mod+Z", () => heroStore.undoLogo()],
         ["D", () => editorStore.toggleCanvasBackground()],
         ["O", () => editorStore.toggleGridOverlay()],
@@ -107,7 +103,7 @@ export const Editor = observer(() => {
             .filter(it => it.shortcut)
             .map(({ shortcut }, i) => [
                 hotkey(shortcut!),
-                () => editorStore.setEditorState({ toolId: i })
+                () => editorStore.setToolId(i)
             ])
     )
 
@@ -133,7 +129,7 @@ export const Editor = observer(() => {
                             <PopoverTarget>
                                 <Tooltip label={<Group>Brush size <ShortcutGroup sKey={brushSizeTooltip} /></Group>}>
                                     <ActionIcon size="lg" variant="outline">
-                                        <Text size="sm" fw={600}>{editorStore.state.brushSize}</Text><Text size="0.6667em">px</Text>
+                                        <Text size="sm" fw={600}>{editorStore.brushSize}</Text><Text size="0.6667em">px</Text>
                                     </ActionIcon>
                                 </Tooltip>
                             </PopoverTarget>
@@ -142,8 +138,8 @@ export const Editor = observer(() => {
                                     w={160}
                                     min={1}
                                     max={constants.maxBrushSize}
-                                    value={editorStore.state.brushSize}
-                                    onChange={handleBrushSizeChange}
+                                    value={editorStore.brushSize}
+                                    onChange={editorStore.setBrushSize}
                                 />
                             </PopoverDropdown>
                         </Popover>
@@ -151,7 +147,7 @@ export const Editor = observer(() => {
                             <PopoverTarget>
                                 <Tooltip label="Tool color">
                                     <ActionIcon size="lg" variant="outline">
-                                        <ColorSwatch color={editorStore.state.color} size={20} />
+                                        <ColorSwatch color={editorStore.color} size={20} />
                                     </ActionIcon>
                                 </Tooltip>
                             </PopoverTarget>
@@ -163,10 +159,10 @@ export const Editor = observer(() => {
                     <Toolbar
                         toolItems={editorTools}
                         transformItems={editorTransforms}
-                        toolIndex={editorStore.state.toolId}
-                        onChange={editorStore.state.setToolId}
-                        hasUndo={editorStore.state.canUndo}
-                        onUndo={editorStore.state.undoLogo}
+                        toolIndex={editorStore.toolId}
+                        onChange={editorStore.setToolId}
+                        hasUndo={heroStore.canUndo}
+                        onUndo={heroStore.undoLogo}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
@@ -176,18 +172,18 @@ export const Editor = observer(() => {
                             >
                                 <ColorSwatch
                                     color={"transparent"}
-                                    onClick={() => heroStore.setColor("transparent")}
+                                    onClick={() => editorStore.setColor("transparent")}
                                     style={{ cursor: "pointer" }}
                                 />
                             </Tooltip>
-                            {heroStore.quickColors.map((color, index) => (
+                            {editorStore.quickColors.map((color, index) => (
                                 <Tooltip
                                     label={(<Group> Set color {color} <ShortcutGroup mod="mod" sKey={constants.maxQuickColors - index + 1} /> </Group>)}
                                     key={color}
                                 >
                                     <ColorSwatch
                                         color={color}
-                                        onClick={() => heroStore.setColor(color)}
+                                        onClick={() => editorStore.setColor(color)}
                                         style={{ cursor: "pointer" }}
                                     />
                                 </Tooltip>
@@ -203,14 +199,14 @@ export const Editor = observer(() => {
                             <div
                                 style={{
                                     display: "grid",
-                                    backgroundColor: heroStore.canvasBackground === "dark" ? "black" : "white"
+                                    backgroundColor: editorStore.canvasBackground === "dark" ? "black" : "white"
                                 }}
                                 className={classes.editor__canvas__stack}
                             >
                                 <Checkerboard
                                     width={heroStore.currentHero.logo.width}
                                     height={heroStore.currentHero.logo.height}
-                                    zoom={heroStore.scale}
+                                    zoom={editorStore.scale}
                                     style={{
                                         gridArea: "1 / 1",
                                         zIndex: 1,
@@ -220,7 +216,7 @@ export const Editor = observer(() => {
                                 />
                                 <BitmapView
                                     bmp={heroStore.currentHero.logo}
-                                    zoom={heroStore.scale}
+                                    zoom={editorStore.scale}
                                     style={{
                                         gridArea: "1 / 1",
                                         zIndex: 2,
@@ -229,9 +225,9 @@ export const Editor = observer(() => {
                                 <ToolPreview
                                     bmp={heroStore.currentHero.logo}
                                     tool={tool}
-                                    color={heroStore.color}
-                                    brushSize={heroStore.brushSize}
-                                    zoom={heroStore.scale}
+                                    color={editorStore.color}
+                                    brushSize={editorStore.brushSize}
+                                    zoom={editorStore.scale}
                                     onDone={handleToolResult}
                                     style={{
                                         gridArea: "1 / 1",
@@ -243,13 +239,13 @@ export const Editor = observer(() => {
                                 <Checkerboard
                                     width={heroStore.currentHero.logo.width}
                                     height={heroStore.currentHero.logo.height}
-                                    zoom={heroStore.scale}
+                                    zoom={editorStore.scale}
                                     style={{
                                         gridArea: "1 / 1",
                                         zIndex: 4,
                                         opacity: 0.1,
                                         pointerEvents: "none",
-                                        visibility: heroStore.gridOverlay,
+                                        visibility: editorStore.gridOverlay,
                                     }}
                                 />
                             </div>
@@ -262,18 +258,18 @@ export const Editor = observer(() => {
                     <Group gap={6}>
                         <Tooltip label={<Group>Toggle dark background <ShortcutGroup sKey="D" /></Group>}>
                             <ActionIcon
-                                variant={heroStore.canvasBackground === "dark" ? "filled" : "subtle"}
-                                color={heroStore.canvasBackground === "dark" ? "green" : undefined}
-                                onClick={heroStore.toggleCanvasBackground}
+                                variant={editorStore.canvasBackground === "dark" ? "filled" : "subtle"}
+                                color={editorStore.canvasBackground === "dark" ? "green" : undefined}
+                                onClick={editorStore.toggleCanvasBackground}
                             >
                                 <i.ColorSchemeMd />
                             </ActionIcon>
                         </Tooltip>
                         <Tooltip label={<Group>Toggle checkerboard overlay <ShortcutGroup sKey="O" /></Group>}>
                             <ActionIcon
-                                variant={heroStore.gridOverlay === "visible" ? "filled" : "subtle"}
-                                color={heroStore.gridOverlay === "visible" ? "green" : undefined}
-                                onClick={heroStore.toggleGridOverlay}
+                                variant={editorStore.gridOverlay === "visible" ? "filled" : "subtle"}
+                                color={editorStore.gridOverlay === "visible" ? "green" : undefined}
+                                onClick={editorStore.toggleGridOverlay}
                             >
                                 <i.CheckerboardMd />
                             </ActionIcon>
@@ -285,8 +281,8 @@ export const Editor = observer(() => {
                             w={310}
                             min={1}
                             max={constants.maxZoom}
-                            value={heroStore.scale}
-                            onChange={heroStore.setZoom}
+                            value={editorStore.scale}
+                            onChange={editorStore.setZoom}
                         />
                     </Group>
                     <Space w={100} />

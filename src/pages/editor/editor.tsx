@@ -17,7 +17,6 @@ import {
 import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React, { useCallback, useMemo } from "react"
-import { clamp } from "../../common"
 import { ShortcutGroup, hotkey } from "../../common/components"
 import * as i from "../../icons"
 import { EditorContext, HeroContext, constants } from "../../stores"
@@ -125,38 +124,40 @@ export const Editor = observer(() => {
             <div className={classes.editor__sidebar}>
                 <Stack gap="sm" px={6} py="xs">
                     <Divider orientation="horizontal" label="Brush" />
-                    <Group gap={6} px="xs">
-                        <Popover position="bottom-start" withArrow shadow="md">
-                            <PopoverTarget>
-                                <Tooltip label={<Group>Brush size <ShortcutGroup sKey={brushSizeTooltip} /></Group>}>
-                                    <ActionIcon size="lg" variant="outline">
-                                        <Text size="sm" fw={600}>{editorStore.brushSize}</Text><Text size="0.6667em">px</Text>
-                                    </ActionIcon>
-                                </Tooltip>
-                            </PopoverTarget>
-                            <PopoverDropdown>
-                                <Slider
-                                    w={160}
-                                    min={1}
-                                    max={constants.maxBrushSize}
-                                    value={editorStore.brushSize}
-                                    onChange={editorStore.setBrushSize}
-                                />
-                            </PopoverDropdown>
-                        </Popover>
-                        <Popover position="right-start" withArrow shadow="md">
-                            <PopoverTarget>
-                                <Tooltip label="Tool color">
-                                    <ActionIcon size="lg" variant="outline">
-                                        <ColorSwatch color={editorStore.color} size={20} />
-                                    </ActionIcon>
-                                </Tooltip>
-                            </PopoverTarget>
-                            <PopoverDropdown>
-                                <ColorPalette />
-                            </PopoverDropdown>
-                        </Popover>
-                    </Group>
+                    <Center>
+                        <Group gap={6} px="xs">
+                            <Popover position="bottom-start" withArrow shadow="md">
+                                <PopoverTarget>
+                                    <Tooltip label={<Group>Brush size <ShortcutGroup sKey={brushSizeTooltip} /></Group>}>
+                                        <ActionIcon size="lg" variant="outline">
+                                            <Text size="sm" fw={600}>{editorStore.brushSize}</Text><Text size="0.6667em">px</Text>
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </PopoverTarget>
+                                <PopoverDropdown>
+                                    <Slider
+                                        w={160}
+                                        min={1}
+                                        max={constants.maxBrushSize}
+                                        value={editorStore.brushSize}
+                                        onChange={editorStore.setBrushSize}
+                                    />
+                                </PopoverDropdown>
+                            </Popover>
+                            <Popover position="right-start" withArrow shadow="md">
+                                <PopoverTarget>
+                                    <Tooltip label="Tool color">
+                                        <ActionIcon size="lg" variant="outline">
+                                            <ColorSwatch color={editorStore.color} size={20} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </PopoverTarget>
+                                <PopoverDropdown>
+                                    <ColorPalette />
+                                </PopoverDropdown>
+                            </Popover>
+                        </Group>
+                    </Center>
                     <Toolbar
                         toolItems={editorTools}
                         transformItems={editorTransforms}
@@ -169,7 +170,7 @@ export const Editor = observer(() => {
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>
-                        <SimpleGrid cols={2} spacing={6} verticalSpacing={6}>
+                        <SimpleGrid cols={4} spacing={6} verticalSpacing={6}>
                             <Tooltip
                                 label={(<Group> Set color transparent <ShortcutGroup mod="mod" sKey={1} /> </Group>)}
                             >

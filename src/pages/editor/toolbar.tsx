@@ -1,4 +1,4 @@
-import { ActionIcon, Divider, Group, Stack, Tooltip } from "@mantine/core"
+import { ActionIcon, Center, Divider, Group, Stack, Tooltip } from "@mantine/core"
 import { ActionGroup, ActionGroupItem, ShortcutGroup, ToolGroup, ToolGroupItem } from "../../common/components"
 import { RedoMd, UndoMd } from "../../icons"
 
@@ -18,7 +18,7 @@ export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, hasRedo
     <Stack gap="sm" p={0}>
         <Divider orientation="horizontal" label="Tools" />
         <ToolGroup
-            cols={2}
+            cols={4}
             items={toolItems}
             value={toolIndex}
             onChange={onChange}
@@ -26,32 +26,34 @@ export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, hasRedo
         />
         <Divider orientation="horizontal" label="Actions" />
         <ActionGroup
-            cols={2}
+            cols={4}
             items={transformItems}
             px="xs"
         />
         <Divider orientation="horizontal" label="History" />
-        <Group px="xs" gap={6}>
-            <Tooltip label={<Group>Undo <ShortcutGroup mod="mod" sKey="Z" /></Group>}>
-                <ActionIcon
-                    size="lg"
-                    variant="subtle"
-                    disabled={!hasUndo}
-                    onClick={onUndo}
-                >
-                    <UndoMd />
-                </ActionIcon>
-            </Tooltip>
-            <Tooltip label={<Group>Redo <ShortcutGroup mod="mod" sKey="Y" /></Group>}>
-                <ActionIcon
-                    size="lg"
-                    variant="subtle"
-                    disabled={!hasRedo}
-                    onClick={onRedo}
-                >
-                    <RedoMd />
-                </ActionIcon>
-            </Tooltip>
-        </Group>
+        <Center>
+            <Group px="xs" gap={6}>
+                <Tooltip label={<Group>Undo <ShortcutGroup mod="mod" sKey="Z" /></Group>}>
+                    <ActionIcon
+                        size="lg"
+                        variant="subtle"
+                        disabled={!hasUndo}
+                        onClick={onUndo}
+                    >
+                        <UndoMd />
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip label={<Group>Redo <ShortcutGroup mod="mod" sKey="Y" /></Group>}>
+                    <ActionIcon
+                        size="lg"
+                        variant="subtle"
+                        disabled={!hasRedo}
+                        onClick={onRedo}
+                    >
+                        <RedoMd />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+        </Center>
     </Stack>
 )

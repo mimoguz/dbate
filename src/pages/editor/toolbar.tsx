@@ -13,6 +13,7 @@ interface Props {
     onRedo?: () => void
 }
 
+// TODO: Toolbar can use editor store
 export const Toolbar = ({ toolItems, toolIndex, transformItems, hasUndo, hasRedo, onChange, onUndo, onRedo }: Props): JSX.Element => (
     <Stack gap="sm" p={0}>
         <Divider orientation="horizontal" label="Tools" />

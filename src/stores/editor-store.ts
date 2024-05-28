@@ -54,6 +54,7 @@ export class EditorStore {
         return this.canvasBackground === "dark"
     }
 
+    // Remove duplication workaround
     async setColor(value: string) {
         const color = value.toLowerCase()
         if (color === this.color) return

@@ -3,6 +3,8 @@ import * as DB from "../database"
 import * as Data from "../data"
 import { rgba } from "../drawing"
 import { constants } from "./constants"
+import React from "react"
+import { clamp } from "../common"
 
 export type EditorProperties = Omit<Data.EditorState, "id">
 
@@ -33,12 +35,27 @@ export class EditorStore {
     get scale(): number {
         return Math.floor(this.state.zoom)
     }
+
     setEditorState(stateUpdate: Partial<EditorProperties>) {
+        if (stateUpdate.zoom) stateUpdate.zoom = clamp(1, constants.maxZoom, stateUpdate.zoom)
         this.setLocalEditorState(stateUpdate)
         this.writeEditorStateDeferred()
         if (stateUpdate.color) {
             this.updateQuickColors(stateUpdate.color)
         }
+    }
+
+    changeZoom(delta: number) {
+        const zoom = this.state.zoom + delta
+        this.setEditorState({ zoom })
+    }
+
+    toggleCanvasBackground() {
+        this.setEditorState({ canvasBackground: this.state.canvasBackground === "light" ? "dark" : "light" })
+    }
+
+    toggleGridOverlay() {
+        this.setEditorState({ gridOverlay: this.state.gridOverlay === "visible" ? "hidden" : "visible" })
     }
 
     async addSwatch(value: string) {
@@ -108,3 +125,7 @@ export class EditorStore {
         })
     }
 }
+
+export const editorStore = new EditorStore(DB.db)
+
+export const EditorContext = React.createContext(editorStore)

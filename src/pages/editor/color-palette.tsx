@@ -2,22 +2,22 @@ import { ActionIcon, Button, ColorPicker, ColorSwatch, Divider, Group, Paper, Si
 import { observer } from "mobx-react-lite"
 import React from "react"
 import { PlusMd, TrashMd } from "../../icons"
-import { DataContext, constants } from "../../stores"
+import { EditorContext, constants } from "../../stores"
 
 export const ColorPalette = observer(() => {
-    const store = React.useContext(DataContext)
-    const [currentValue, setCurrentValue] = React.useState(store.color)
+    const editorStore = React.useContext(EditorContext)
+    const [currentValue, setCurrentValue] = React.useState(editorStore.state.color)
 
     return (
         <Stack>
             <Group justify="space-between">
                 <Paper withBorder>
                     <Group gap={0}>
-                        <ColorSwatch color={store.color} radius="4px 0 0 4px" withShadow={false} size={35} />
+                        <ColorSwatch color={editorStore.state.color} radius="4px 0 0 4px" withShadow={false} size={35} />
                         <ColorSwatch color={currentValue} radius="0 4px 4px 0" withShadow={false} size={35} />
                     </Group>
                 </Paper>
-                <Button onClick={() => store.setColor(currentValue)}>Select</Button>
+                <Button onClick={() => editorStore.setEditorState({ color: currentValue })}>Select</Button>
             </Group>
             <ColorPicker
                 value={currentValue}
@@ -27,23 +27,23 @@ export const ColorPalette = observer(() => {
             <Divider label="Swatches" />
             <Group gap={6}>
                 <ActionIcon
-                    onClick={() => store.addSwatch(currentValue)}
+                    onClick={() => editorStore.addSwatch(currentValue)}
                     size="lg"
-                    disabled={store.swatches.length === constants.maxSwatches
-                        || store.swatches.includes(currentValue)}>
+                    disabled={editorStore.swatches.length === constants.maxSwatches
+                        || editorStore.swatches.includes(currentValue)}>
                     <PlusMd />
                 </ActionIcon>
                 <ActionIcon
-                    onClick={() => store.removeSwatch(currentValue)}
+                    onClick={() => editorStore.removeSwatch(currentValue)}
                     color="red"
                     size="lg"
-                    disabled={!store.swatches.includes(currentValue)}
+                    disabled={!editorStore.swatches.includes(currentValue)}
                 >
                     <TrashMd />
                 </ActionIcon>
             </Group>
             <SimpleGrid cols={6} spacing={12} verticalSpacing={12}>
-                {store.swatches.map(color => (
+                {editorStore.swatches.map(color => (
                     <ColorSwatch
                         key={color}
                         color={color}

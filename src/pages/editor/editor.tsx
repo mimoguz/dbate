@@ -94,6 +94,7 @@ export const Editor = observer(() => {
         ["mod+3", () => editorStore.quickColors.at(1) && editorStore.setColor(editorStore.quickColors[1])],
         ["mod+4", () => editorStore.quickColors.at(0) && editorStore.setColor(editorStore.quickColors[0])],
         ["mod+Z", () => heroStore.undoLogo()],
+        ["mod+Y", () => heroStore.redoLogo()],
         ["D", () => editorStore.toggleCanvasBackground()],
         ["O", () => editorStore.toggleGridOverlay()],
     ])
@@ -163,6 +164,8 @@ export const Editor = observer(() => {
                         onChange={editorStore.setToolId}
                         hasUndo={heroStore.canUndo}
                         onUndo={heroStore.undoLogo}
+                        hasRedo={heroStore.canRedo}
+                        onRedo={heroStore.redoLogo}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>

@@ -59,16 +59,19 @@ export class EditorStore {
         if (color === this.color) return
         this.color = color
 
-        let dropped: string | undefined
+        //let dropped: string | undefined
         if (rgba.fromString(color).a !== 0 && !this.quickColors.includes(color)) {
+            console.debug(color)
             this.quickColors.push(color)
-            if (this.quickColors.length > constants.maxQuickColors) dropped = this.quickColors.shift()
+            // if (this.quickColors.length > constants.maxQuickColors) dropped = this.quickColors.shift()
         }
 
         await this.db.transaction("rw", this.db.quickColors, async () => {
-            if (dropped) await this.db.quickColors.where("color").equals(dropped).delete()
-            await this.db.quickColors.add({ color })
+            await this.db.quickColors.clear()
+            await this.db.quickColors.bulkAdd(this.quickColors.map(color => ({ color })))
         })
+        //if (dropped) await this.db.quickColors.where("color").equals(dropped).delete()
+        // await this.db.quickColors.add({ color })
     }
 
     setGridOverlay(value: Data.GridOverlayVisibility) {

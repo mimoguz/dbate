@@ -1,3 +1,5 @@
+import React from "react"
+
 const THEME_KEY = "app-theme"
 
 export type Theme = "light" | "dark"
@@ -21,3 +23,7 @@ export class SettingsStore {
         this.theme = theme === "light" || theme === "dark" ? theme : "light"
     }
 }
+
+export const settingsStore = new SettingsStore()
+
+export const SettingsContext = React.createContext(settingsStore)

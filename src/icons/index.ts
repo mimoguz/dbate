@@ -19,6 +19,7 @@ export { SvgMarkerVerticalMd, MarkerVerticalMd, } from "./svg-marker-vertical-md
 export { SvgMoveMd, MoveMd } from "./svg-move-md.tsx"
 export { SvgPencilMd, PencilMd } from "./svg-pencil-md.tsx"
 export { SvgPlusMd, PlusMd } from "./svg-plus-md.tsx"
+export { SvgRedoMd, RedoMd } from "./svg-redo-md.tsx"
 export { SvgRectangleMd, RectangleMd } from "./svg-rectangle-md.tsx"
 export { SvgRotateClockwiseMd, RotateClockwiseMd } from "./svg-rotate-clockwise-md.tsx"
 export { SvgRotateCounterClockwiseMd, RotateCounterClockwiseMd } from "./svg-rotate-counter-clockwise-md.tsx"

@@ -153,6 +153,7 @@ export class HeroStore {
                 logo: encodedBitmap.toBitmap(hist.encodedLogo)!,
                 edited: true
             }))
+            this.future = []
             this.currentHero = Data.heroItem.decode(heroItem)
         } else {
             this.currentHero = undefined

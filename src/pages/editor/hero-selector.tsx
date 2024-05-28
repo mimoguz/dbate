@@ -1,11 +1,12 @@
 import { Button, Group, Input, Modal, Select, Slider, Stack, Text, TextInput } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
+import { observer } from "mobx-react-lite"
 import React from "react"
 import { bitmap } from "../../drawing"
-import { DataContext } from "../../stores"
+import { HeroContext } from "../../stores"
 
-export const HeroSelector = (): JSX.Element => {
-    const store = React.useContext(DataContext)
+export const HeroSelector = observer((): JSX.Element => {
+    const heroStore = React.useContext(HeroContext)
     const [addOpened, { open: addOpen, close: addClose }] = useDisclosure(false)
     const [confirmOpened, { open: confirmOpen, close: confirmClose }] = useDisclosure(false)
     const [name, setName] = React.useState("")
@@ -14,8 +15,8 @@ export const HeroSelector = (): JSX.Element => {
     const target = React.useRef<string | undefined>(undefined)
 
     const handleHeroChange = (name: string | null | undefined) => {
-        if (!store.currentHero?.edited) {
-            store.selectHero(name ?? undefined)
+        if (!heroStore.currentHero?.edited) {
+            heroStore.selectHero(name ?? undefined)
         } else {
             if (name) {
                 target.current = name
@@ -29,42 +30,42 @@ export const HeroSelector = (): JSX.Element => {
     const addHero = React.useCallback(
         () => {
             addClose()
-            store.createHero(name, bitmap.empty(width, height)).then(error => {
+            heroStore.createHero(name, bitmap.empty(width, height)).then(error => {
                 if (error) return
-                if (store.currentHero?.edited) {
+                if (heroStore.currentHero?.edited) {
                     target.current = name
                     confirmOpen()
                 } else {
-                    store.selectHero(name)
+                    heroStore.selectHero(name)
                 }
             })
             setName("")
         },
-        [addClose, confirmOpen, height, name, store, width]
+        [addClose, confirmOpen, height, name, heroStore, width]
     )
 
     const confirmLoad = React.useCallback(
         () => {
             confirmClose()
-            store.selectHero(target.current)
+            heroStore.selectHero(target.current)
         },
-        [confirmClose, store, target]
+        [confirmClose, heroStore, target]
     )
 
     const saveThenLoad = React.useCallback(
         () => {
             confirmClose()
-            store.writeLogo().then(() => { store.selectHero(target.current) })
+            heroStore.writeLogo().then(() => { heroStore.selectHero(target.current) })
         },
-        [confirmClose, store, target]
+        [confirmClose, heroStore, target]
     )
 
     return (
         <>
             <Group>
                 <Select
-                    data={store.heroes.map(it => it.name)}
-                    value={store.currentHero?.name}
+                    data={heroStore.heroes.map(it => it.name)}
+                    value={heroStore.currentHero?.name}
                     onChange={handleHeroChange}
                     placeholder="Select hero to edit"
                     comboboxProps={{ shadow: 'md' }}
@@ -93,12 +94,12 @@ export const HeroSelector = (): JSX.Element => {
             <Modal title="Confirm Hero Change" opened={confirmOpened} withCloseButton onClose={confirmClose} size="lg">
                 <Stack>
                     {target.current
-                        ? <Text>Hero {store.currentHero?.name} has unsaved changes. Do you want to load {target.current} anyway?</Text>
-                        : <Text>Hero {store.currentHero?.name} has unsaved changes. Do you want to leave anyway?</Text>
+                        ? <Text>Hero {heroStore.currentHero?.name} has unsaved changes. Do you want to load {target.current} anyway?</Text>
+                        : <Text>Hero {heroStore.currentHero?.name} has unsaved changes. Do you want to leave anyway?</Text>
                     }
                     <Text fw={600}>Unsaved changes will be lost.</Text>
                     <Group>
-                        <Button onClick={confirmClose}>No, keep {store.currentHero?.name}</Button>
+                        <Button onClick={confirmClose}>No, keep {heroStore.currentHero?.name}</Button>
                         <Button onClick={saveThenLoad}>
                             {target.current
                                 ? <>Save first, then load {target.current}</>
@@ -116,4 +117,4 @@ export const HeroSelector = (): JSX.Element => {
             </Modal>
         </>
     )
-}
+})

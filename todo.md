@@ -18,6 +18,7 @@
 ## Database
 - [ ] Export/import
 - [ ] Export images (Can export current image now)
+- [ ] Clean store code
 
 ## General
 - [ ] TESTS!!! (In progress)

@@ -10,7 +10,6 @@ const compareStr = (a: string, b: string): number => (
     a.toLocaleLowerCase("en").localeCompare(b.toLocaleLowerCase("en"), "en")
 )
 
-// TODO: Consider splitting this class 
 export class HeroStore {
     constructor(db: DB.Database) {
         makeAutoObservable(this, {}, { autoBind: true, deep: true })

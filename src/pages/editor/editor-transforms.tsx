@@ -1,11 +1,29 @@
 import { ActionGroupItem } from "../../common/components";
+import { Bitmap } from "../../drawing";
 import * as i from "../../icons";
-import { Bitmap } from "../../data";
 import { transforms } from "../../transforms";
 
 type Item = Omit<ActionGroupItem, "action">
 
 export const editorTransformItems: Array<{ item: Item, transformAction: (bmp: Bitmap) => Bitmap }> = [
+    {
+        item: {
+            icon: <i.CopyMd />,
+            accessibleLabel: "Copy",
+            key: "copy",
+            shortcut: { mod: "mod", sKey: "C" },
+        },
+        transformAction: transforms.invert,
+    },
+    {
+        item: {
+            icon: <i.PasteMd />,
+            accessibleLabel: "Paste",
+            key: "paste",
+            shortcut: { mod: "mod", sKey: "C" },
+        },
+        transformAction: transforms.invert,
+    },
     {
         item: {
             icon: <i.FlipHorizontalMd />,

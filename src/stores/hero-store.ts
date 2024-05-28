@@ -54,6 +54,8 @@ export class HeroStore {
                 logo: bmp,
                 edited: true
             }
+            // Purge future
+            if (this.future.length > 0) this.future = []
         }
     }
 

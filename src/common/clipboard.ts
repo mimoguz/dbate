@@ -1,12 +1,26 @@
-const copyToClipboard = async (text: string): Promise<void> => {
-    await navigator.clipboard.writeText(text)
+import React from "react"
+import { Bitmap } from "../drawing"
+
+export interface ClipboardOps {
+    copyImage(bmp: Bitmap): void
+    pasteImage(): Bitmap | undefined
+    get hasImage(): boolean
 }
 
-const pasteFromClipboard = async (): Promise<string> => {
-    return await navigator.clipboard.readText()
+export class InternalClipboard implements ClipboardOps {
+
+    private image?: Bitmap
+
+    get hasImage(): boolean {
+        return this.image !== undefined
+    }
+
+    copyImage(bmp: Bitmap): void {
+        this.image = bmp
+    }
+    pasteImage(): Bitmap | undefined {
+        return this.image
+    }
 }
 
-export const clipboard = {
-    copy: copyToClipboard,
-    paste: pasteFromClipboard
-} as const
+export const ClipboardContext = React.createContext<ClipboardOps>(new InternalClipboard())

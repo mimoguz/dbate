@@ -16,7 +16,7 @@ import {
 } from "@mantine/core"
 import { useHotkeys } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
-import React, { useCallback, useMemo } from "react"
+import React from "react"
 import { ShortcutGroup, hotkey } from "../../common/components"
 import * as i from "../../icons"
 import { EditorContext, HeroContext, constants } from "../../stores"
@@ -31,17 +31,19 @@ import classes from "./editor.module.css"
 import { Header } from "./header"
 import { ToolPreview } from "./tool-preview"
 import { Toolbar } from "./toolbar"
+import { ClipboardContext } from "../../common"
 
 const brushSizeTooltip = `1,2…${constants.maxBrushSize > 9 ? 0 : constants.maxBrushSize}`
 
 export const Editor = observer(() => {
     const heroStore = React.useContext(HeroContext)
     const editorStore = React.useContext(EditorContext)
-    const tool = useMemo(() => createTool(editorStore.toolId), [editorStore.toolId])
+    const clipboardOps = React.useContext(ClipboardContext)
+    const tool = React.useMemo(() => createTool(editorStore.toolId), [editorStore.toolId])
 
     React.useEffect(() => { heroStore.selectHero("bob") }, [heroStore])
 
-    const handleToolResult = useCallback(
+    const handleToolResult = React.useCallback(
         (result: ToolResult | undefined) => {
             if (!result) return
             switch (result.tag) {
@@ -57,7 +59,7 @@ export const Editor = observer(() => {
         [heroStore, editorStore]
     )
 
-    const applyTransform = useCallback(
+    const applyTransform = React.useCallback(
         (transform: Transform) => () => heroStore.modifyLogo(transform),
         [heroStore]
     )
@@ -76,6 +78,11 @@ export const Editor = observer(() => {
             editorStore.updateZoom(e.deltaY * -0.01)
         }
     }
+
+    const handleCopy = React.useCallback(() => heroStore.copy(clipboardOps), [clipboardOps, heroStore])
+
+    const handlePaste = React.useCallback(() => heroStore.paste(clipboardOps), [clipboardOps, heroStore])
+
 
     useHotkeys([
         ["1", () => editorStore.setBrushSize(1)],
@@ -167,8 +174,8 @@ export const Editor = observer(() => {
                         onUndo={heroStore.undoLogo}
                         hasRedo={heroStore.canRedo}
                         onRedo={heroStore.redoLogo}
-                        onCopy={heroStore.copy}
-                        onPaste={heroStore.paste}
+                        onCopy={handleCopy}
+                        onPaste={handlePaste}
                     />
                     <Divider orientation="horizontal" label="Quick colors" />
                     <Center>

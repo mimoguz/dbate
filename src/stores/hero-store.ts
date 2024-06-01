@@ -1,10 +1,10 @@
 import { action, makeAutoObservable } from "mobx"
 import React from "react"
-import { clipboard } from "../common"
+import { ClipboardOps } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
-import { Bitmap } from "../drawing"
+import { Bitmap, bitmap } from "../drawing"
 import { constants } from "./constants"
 
 const compareStr = (a: string, b: string): number => (
@@ -146,25 +146,19 @@ export class HeroStore {
         }))
     }
 
-    copy() {
+    copy(clipboard: ClipboardOps) {
         if (!this.currentHero) return
-        const json = JSON.stringify(encodedBitmap.fromBitmap(this.currentHero.logo))
-        clipboard.copy(json).then(
-            () => { },
-            (reason) => { console.debug(`Can't copy to clipboard: ${reason}`) }
-        )
+        clipboard.copyImage(this.currentHero.logo)
     }
 
-    paste() {
-        const hero = this.currentHero
-        const update = this.updateLogo
-        clipboard.paste().then(text => {
-            const bmp = encodedBitmap.toBitmap(text)
-            return bmp
-        }).then(
-            bmp => { if (hero && bmp) update(bmp) },
-            (reason) => { console.debug(`Can't paste: ${reason}`) }
-        )
+    paste(clipboard: ClipboardOps) {
+        const image = clipboard.pasteImage()
+        if (image && this.currentHero) {
+            const logo = this.currentHero.logo
+            const target = bitmap.empty(logo.width, logo.height)
+            bitmap.copy(image, target, { x: 0, y: 0, w: logo.width, h: logo.height })
+            this.updateLogo(target)
+        }
     }
 
     private setCurrentHeroItem(heroItem?: Data.HeroItem) {

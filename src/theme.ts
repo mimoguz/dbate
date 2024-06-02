@@ -1,5 +1,19 @@
-import { createTheme } from "@mantine/core";
+import { ActionIcon, Group, Tooltip, createTheme } from "@mantine/core";
 
 export const theme = createTheme({
-  /* Put your mantine theme override here */
-});
+  components: {
+    ActionIcon: ActionIcon.extend({
+      defaultProps: {
+        variant: "subtle",
+        size: "lg"
+      },
+    }),
+    Tooltip: Tooltip.extend({
+      defaultProps: {
+        openDelay: 300
+      }
+    }),
+    Group: Group.extend({
+    })
+  }
+})

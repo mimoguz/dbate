@@ -1,9 +1,10 @@
 import { action, makeAutoObservable } from "mobx"
 import React from "react"
+import { ClipboardOps } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
-import { Bitmap } from "../drawing"
+import { Bitmap, bitmap } from "../drawing"
 import { constants } from "./constants"
 
 const compareStr = (a: string, b: string): number => (
@@ -143,6 +144,21 @@ export class HeroStore {
                 this.selectHero(this.currentName)
             }
         }))
+    }
+
+    copy(clipboard: ClipboardOps) {
+        if (!this.currentHero) return
+        clipboard.copyImage(this.currentHero.logo)
+    }
+
+    paste(clipboard: ClipboardOps) {
+        const image = clipboard.pasteImage()
+        if (image && this.currentHero) {
+            const logo = this.currentHero.logo
+            const target = bitmap.empty(logo.width, logo.height)
+            bitmap.copy(image, target, { x: 0, y: 0, w: logo.width, h: logo.height })
+            this.updateLogo(target)
+        }
     }
 
     private setCurrentHeroItem(heroItem?: Data.HeroItem) {

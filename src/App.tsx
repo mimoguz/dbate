@@ -3,6 +3,7 @@ import "@mantine/core/styles.layer.css"
 import { Editor } from "./pages/editor/editor"
 import { theme } from "./theme"
 import { DataContext, EditorContext, HeroContext, SettingsContext, dataStore, editorStore, heroStore, settingsStore } from "./stores"
+import { ClipboardContext, InternalClipboard } from "./common"
 
 export default function App() {
     return (
@@ -10,9 +11,11 @@ export default function App() {
             <DataContext.Provider value={dataStore}>
                 <SettingsContext.Provider value={settingsStore}>
                     <EditorContext.Provider value={editorStore}>
-                        <HeroContext.Provider value={heroStore}>
-                            <Editor />
-                        </HeroContext.Provider>
+                        <ClipboardContext.Provider value={new InternalClipboard()}>
+                            <HeroContext.Provider value={heroStore}>
+                                <Editor />
+                            </HeroContext.Provider>
+                        </ClipboardContext.Provider>
                     </EditorContext.Provider>
                 </SettingsContext.Provider>
             </DataContext.Provider>

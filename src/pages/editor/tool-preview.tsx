@@ -1,7 +1,7 @@
 import React from "react"
 import { Point } from "../../common"
-import { Bitmap } from "../../data"
 import { Tool, ToolOptions, ToolResult } from "../../tools"
+import { Bitmap } from "../../drawing"
 
 interface ViewProps {
     bmp: Bitmap

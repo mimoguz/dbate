@@ -47,7 +47,7 @@ export class EditorStore {
     }
 
     toggleCanvasBackground() {
-        this.setCanvasBackground(this.canvasBackground === "light" ? "light" : "dark")
+        this.setCanvasBackground(this.canvasBackground === "light" ? "dark" : "light")
     }
 
     get isDarkBackground(): boolean {

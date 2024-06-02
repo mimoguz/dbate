@@ -1,7 +1,7 @@
 import { Group, Kbd } from "@mantine/core"
 import { Shortcut } from "./shortcut"
 
-export const ShortcutGroup = ({ mod, shift, sKey }: Shortcut) => (
+export const KbdGroup = ({ mod, shift, sKey }: Shortcut) => (
     (mod || shift)
         ? (
             <Group gap={4}>

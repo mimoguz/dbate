@@ -7,7 +7,7 @@ import { ClipboardContext, InternalClipboard } from "./common"
 
 export default function App() {
     return (
-        <MantineProvider theme={theme}>
+        <MantineProvider theme={theme} forceColorScheme="dark">
             <DataContext.Provider value={dataStore}>
                 <SettingsContext.Provider value={settingsStore}>
                     <EditorContext.Provider value={editorStore}>

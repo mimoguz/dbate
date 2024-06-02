@@ -22,7 +22,6 @@ import { Header } from "./header"
 import { ToolPreview } from "./tool-preview"
 import { ClipboardContext } from "../../common"
 
-
 export const Editor = observer(() => {
     const heroStore = React.useContext(HeroContext)
     const editorStore = React.useContext(EditorContext)
@@ -64,9 +63,9 @@ export const Editor = observer(() => {
         ["9", () => editorStore.setBrushSize(9)],
         ["0", () => editorStore.setBrushSize(10)],
         ["mod+1", () => editorStore.setColor("transparent")],
-        ["mod+2", () => editorStore.quickColors.at(2) && editorStore.setColor(editorStore.quickColors[2])],
+        ["mod+2", () => editorStore.quickColors.at(0) && editorStore.setColor(editorStore.quickColors[0])],
         ["mod+3", () => editorStore.quickColors.at(1) && editorStore.setColor(editorStore.quickColors[1])],
-        ["mod+4", () => editorStore.quickColors.at(0) && editorStore.setColor(editorStore.quickColors[0])],
+        ["mod+4", () => editorStore.quickColors.at(2) && editorStore.setColor(editorStore.quickColors[2])],
         ["mod+Z", () => heroStore.undoLogo()],
         ["mod+Y", () => heroStore.redoLogo()],
         ["mod+C", () => heroStore.copy(clipboard)],
@@ -175,12 +174,14 @@ export const Editor = observer(() => {
                             selected={editorStore.isDarkBackground}
                             onChange={editorStore.toggleCanvasBackground}
                             tooltip={<KbdTip label="Toggle dark background" sKey="D" />}
+                            size="md"
                         />
                         <ToggleAction
                             icon={<i.CheckerboardMd />}
                             selected={editorStore.isGridVisible}
                             onChange={editorStore.toggleGridOverlay}
                             tooltip={<KbdTip label="Toggle grid overlay" sKey="O" />}
+                            size="md"
                         />
                     </Group>
                     <Group>

@@ -136,7 +136,7 @@ export const SideBar = observer((): JSX.Element => {
                     <Action
                         disabled={!heroStore.canRedo}
                         onAction={heroStore.redoLogo}
-                        tooltip={<KbdTip label="Undo" sKey="Y" mod="mod" />}
+                        tooltip={<KbdTip label="Redo" sKey="Y" mod="mod" />}
                         icon={<i.RedoMd />}
                     />
                     <Action
@@ -167,7 +167,7 @@ export const SideBar = observer((): JSX.Element => {
                         const id = `tip${index}`
                         return (
                             <Tooltip
-                                label={<KbdTip label={`Set color ${color}`} mod="mod" sKey={constants.maxQuickColors - index + 1} />}
+                                label={<KbdTip label={`Set color ${color}`} mod="mod" sKey={index + 2} />}
                                 id={id}
                                 key={color}
                             >
@@ -179,7 +179,7 @@ export const SideBar = observer((): JSX.Element => {
                                 />
                             </Tooltip>
                         )
-                    }).reverse()}
+                    })}
                 </SimpleGrid>
             </Center>
         </Stack>

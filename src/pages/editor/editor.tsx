@@ -29,8 +29,6 @@ export const Editor = observer(() => {
     const clipboard = React.useContext(ClipboardContext)
     const tool = React.useMemo(() => createTool(editorStore.toolId), [editorStore.toolId])
 
-    React.useEffect(() => { heroStore.selectHero("bob") }, [heroStore])
-
     const handleToolResult = React.useCallback(
         (result: ToolResult | undefined) => {
             if (!result) return

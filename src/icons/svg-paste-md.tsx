@@ -14,7 +14,7 @@ export function SvgPasteMd({ width = 20, height = 20, color }: IconProps) {
                 fillOpacity="0.5"
                 d="M15 4a2 2 0 0 1 2 2v4.5L14.5 8H8v10H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10Zm-2 5h1l3 3v1h-4V9Z"
             />
-            <path fill={color ?? "currentColor"} d="M8 3a2 2 0 0 1 4 0v4H8V3Zm2-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM17 12v7H9V9h5v3h3Z" />
+            <path fill={color ?? "currentColor"} d="M14 7H6V5h2V3a2 2 0 0 1 4 0v2h2v2Zm-4-5a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm7 10v6H9V9h5v3h3Z" />
         </svg>
     )
 }

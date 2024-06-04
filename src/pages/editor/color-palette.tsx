@@ -30,7 +30,6 @@ export const ColorPalette = observer(() => {
             <Group gap={6}>
                 <ActionIcon
                     onClick={() => editorStore.addSwatch(currentValue)}
-                    size="lg"
                     disabled={editorStore.swatches.length === constants.maxSwatches
                         || editorStore.swatches.includes(currentValue)}>
                     <PlusMd />
@@ -38,7 +37,6 @@ export const ColorPalette = observer(() => {
                 <ActionIcon
                     onClick={() => editorStore.removeSwatch(currentValue)}
                     color="red"
-                    size="lg"
                     disabled={!editorStore.swatches.includes(currentValue)}
                 >
                     <TrashMd />

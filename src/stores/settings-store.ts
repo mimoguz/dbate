@@ -1,12 +1,14 @@
+import { makeAutoObservable } from "mobx"
 import React from "react"
 
 const THEME_KEY = "app-theme"
 
-export type Theme = "light" | "dark"
+export type Theme = "auto" | "light" | "dark"
 
 export class SettingsStore {
     constructor() {
         this.load()
+        makeAutoObservable(this, {}, { autoBind: true })
     }
 
     theme: Theme = "light"
@@ -20,7 +22,17 @@ export class SettingsStore {
 
     private load() {
         const theme = localStorage.getItem(THEME_KEY)
-        this.theme = theme === "light" || theme === "dark" ? theme : "light"
+        switch (theme) {
+            case "auto":
+                this.setTheme("auto")
+                break
+            case "dark":
+                this.setTheme("dark")
+                break
+            default:
+                this.setTheme("light")
+                break
+        }
     }
 }
 

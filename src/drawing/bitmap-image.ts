@@ -55,13 +55,13 @@ export class BitmapImage {
 
     fill(rect: Rect, color: Color, mix: boolean = false) {
         const method = mix ? color.mix : color.write
-        const right = rect.x + rect.w
-        const bottom = rect.y + rect.h
-        for (let y = rect.y; y < bottom; y++) {
-            if (y >= this.height) break
-            for (let x = rect.x; x < right; x++) {
-                if (x >= this.width) break
-                if (this.contains(x, y)) method(this.bytes, this.offset(x, y))
+        const left = Math.max(rect.x, 0)
+        const right = Math.min(rect.x + rect.w, this.width)
+        const top = Math.max(rect.y, 0)
+        const bottom = Math.min(rect.y + rect.h, this.height)
+        for (let y = top; y <= bottom; y++) {
+            for (let x = left; x <= right; x++) {
+                method(this.bytes, this.offset(x, y))
             }
         }
     }

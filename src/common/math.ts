@@ -30,3 +30,5 @@ export const clamp = (min: number, max: number, value: number): number => Math.m
 
 /// Positive modulo
 export const mod = (dividend: number, divisor: number): number => (dividend % divisor + divisor) % divisor
+
+export const u8 = (n: number) => clamp(0, 255, n) & 0xff

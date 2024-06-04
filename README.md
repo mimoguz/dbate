@@ -1,5 +1,5 @@
 A learning exercise for multiple front-end technologies at once.
 
-Currently looks like that:
+Currently looks like this:
 
-![Screenshot](./.github/dbate-2024-06-02b.png "Screenshot")
+![Screenshot](./.github/dbate-2024-06-04.png "Screenshot")

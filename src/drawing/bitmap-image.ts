@@ -141,7 +141,7 @@ export class BitmapImage {
                 this.sample(x, y, sample)
                 if (sample.ne(lastSample)) {
                     sample.copy(lastSample)
-                    context.fillStyle = colorTransform(sample).hex
+                    context.fillStyle = colorTransform(sample).premultiply().hex
                 }
                 context.fillRect(x, y, 1, 1)
             }

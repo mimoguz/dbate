@@ -114,6 +114,14 @@ export class Color {
         return this
     }
 
+    premultiply(): Color {
+        const alpha = this.alpha / 255
+        this.bytes[0] = u8(this.bytes[0] * alpha)
+        this.bytes[1] = u8(this.bytes[1] * alpha)
+        this.bytes[2] = u8(this.bytes[2] * alpha)
+        return this
+    }
+
     static pack(r: number, g: number, b: number, a: number): Color {
         return new Color(Uint8ClampedArray.of(u8(r), u8(g), u8(b), u8(a)))
     }

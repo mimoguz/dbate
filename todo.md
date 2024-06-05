@@ -17,6 +17,7 @@
 - [x] ~~Clipboard~~
 - [x] ~~Keyboard shortcuts~~
 - [ ] Rethink color mixing algorithm
+- [ ] Premultiplied alpha?
 
 ## Database
 - [ ] Export/import

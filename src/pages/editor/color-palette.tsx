@@ -23,7 +23,7 @@ export const ColorPalette = observer(() => {
             <ColorPicker
                 value={currentValue}
                 onChange={setCurrentValue}
-                format="hex"
+                format="hexa"
             />
 
             <Divider label="Swatches" />

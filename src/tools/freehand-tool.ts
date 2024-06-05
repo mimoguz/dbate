@@ -71,8 +71,8 @@ export class FreehandTool extends ToolBase {
     }
 }
 
-const fillStroke = (bmp: BitmapImage, stroke: Array<Rect>, color: Color) => {
-    for (const rect of stroke) bmp.fill(rect, color)
+const fillStroke = (bmp: BitmapImage, stroke: Array<Rect>, color: Color, mix: boolean = true) => {
+    for (const rect of stroke) bmp.fill(rect, color, mix)
 }
 
 const getShift = (brushSize: number): number => Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
@@ -118,7 +118,7 @@ export const freehandTools = {
     ),
 
     eraser: () => new FreehandTool(
-        (target, stroke) => fillStroke(target, stroke, Color.zero()),
+        (target, stroke) => fillStroke(target, stroke, Color.zero(), false),
         brushSize => {
             const shift = getShift(brushSize)
             return ((pt: Point) => ({

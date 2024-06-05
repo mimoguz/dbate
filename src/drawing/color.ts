@@ -81,11 +81,10 @@ export class Color {
             this.write(dest, offset)
             return
         }
-        const destWeight = dest[offset + 3] / 255.0
         const weight = this.alpha / 255.0
-        dest[offset] = u8(dest[offset] * destWeight + this.bytes[0] * weight)
-        dest[offset + 1] = u8(dest[offset + 1] * destWeight + this.bytes[1] * weight)
-        dest[offset + 2] = u8(dest[offset + 2] * destWeight + this.bytes[2] * weight)
+        dest[offset] = u8(dest[offset] * (1 - weight) + this.bytes[0] * weight)
+        dest[offset + 1] = u8(dest[offset + 1] * (1 - weight) + this.bytes[1] * weight)
+        dest[offset + 2] = u8(dest[offset + 2] * (1 - weight) + this.bytes[2] * weight)
         dest[offset + 3] = u8(dest[offset + 3] + this.bytes[3])
     }
 

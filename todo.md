@@ -3,6 +3,7 @@
 ## Tools
 - [x] ~~Tools need cleaning~~
 - [x] ~~Move tool~~
+- [ ] Fix brush stroke to support semi-transparent brushes
 
 ## Transforms
 - [x] ~~Definition~~
@@ -14,6 +15,7 @@
 - [x] ~~History~~
 - [ ] Clipboard
 - [x] ~~Keyboard shortcuts~~
+- [ ] Rethink color mixing algorithm
 
 ## Database
 - [ ] Export/import

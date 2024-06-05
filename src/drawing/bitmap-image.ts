@@ -83,11 +83,11 @@ export class BitmapImage {
 
         if (rw <= 0 || rh <= 0) return
 
-        const bufferLength = rw * 4
+        const rowLength = rw * 4
         for (let row = 0; row < rh; row++) {
             const srcOffset = this.offset(sx, sy + row)
             const destOffset = dest.offset(dx, dy + row)
-            dest.bytes.set(this.bytes.subarray(srcOffset, srcOffset + bufferLength), destOffset)
+            dest.bytes.set(this.bytes.subarray(srcOffset, srcOffset + rowLength), destOffset)
         }
     }
 

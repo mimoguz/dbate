@@ -108,7 +108,11 @@ export class EditorStore {
             && !this.swatches.includes(color)
         ) {
             this.swatches.push(color)
-            await this.db.swatches.add({ color })
+            await this.db.transaction("rw", this.db.swatches, async () => {
+                this.db.swatches.clear()
+                this.db.swatches.bulkAdd(this.swatches.map(color => ({ color })))
+            })
+            // await this.db.swatches.add({ color })
         }
     }
 
@@ -127,7 +131,7 @@ export class EditorStore {
         }))
 
         this.db.swatches.toArray().then(action("fetchSwatches", colors => {
-            this.swatches = colors.map(qc => qc.color)
+            this.swatches = colors.slice(0, constants.maxSwatches).map(qc => qc.color)
         }))
 
         this.db.editorState.where("id").equals(0).first().then(action("fetchEditorState", state => {

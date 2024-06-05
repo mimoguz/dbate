@@ -1,15 +1,15 @@
 import { Point } from "../common"
-import { Bitmap, RGBA, bitmap, flood, rgba } from "../drawing"
+import { BitmapImage, Color, flood, } from "../drawing"
 import { ToolBase } from "./tool-base"
 import { ToolResult, resultBitmap } from "./tool-result"
 
 export class FloodTool extends ToolBase {
-    constructor(fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void) {
+    constructor(fill: (bmp: BitmapImage, start: Point, fillColor: Color) => void) {
         super()
         this.fill = fill
     }
 
-    private fill: (bmp: Bitmap, start: Point, fillColor: RGBA) => void
+    private fill: (bmp: BitmapImage, start: Point, fillColor: Color) => void
 
     protected override handleStart(): void {
         this.handleCursor(this.pt)
@@ -21,8 +21,8 @@ export class FloodTool extends ToolBase {
 
     protected override handleEnd(): ToolResult | undefined {
         if (!this.bmp) return undefined
-        const clone = bitmap.clone(this.bmp)
-        this.fill(clone, this.pt, rgba.fromString(this.options.color))
+        const clone = this.bmp.clone()
+        this.fill(clone, this.pt, Color.fromCSSColor(this.options.color) ?? Color.zero())
         return resultBitmap(clone)
     }
 }

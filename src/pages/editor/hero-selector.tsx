@@ -2,8 +2,8 @@ import { Button, Group, Input, Modal, Select, Slider, Stack, Text, TextInput } f
 import { useDisclosure } from "@mantine/hooks"
 import { observer } from "mobx-react-lite"
 import React from "react"
-import { bitmap } from "../../drawing"
 import { HeroContext } from "../../stores"
+import { BitmapImage } from "../../drawing"
 
 export const HeroSelector = observer((): JSX.Element => {
     const heroStore = React.useContext(HeroContext)
@@ -30,7 +30,7 @@ export const HeroSelector = observer((): JSX.Element => {
     const addHero = React.useCallback(
         () => {
             addClose()
-            heroStore.createHero(name, bitmap.empty(width, height)).then(error => {
+            heroStore.createHero(name, new BitmapImage(width, height)).then(error => {
                 if (error) return
                 if (heroStore.currentHero?.edited) {
                     target.current = name

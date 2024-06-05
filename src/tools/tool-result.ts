@@ -1,4 +1,4 @@
-import { Bitmap } from "../drawing"
+import { BitmapImage } from "../drawing"
 
 export interface ToolOptions {
     color: string
@@ -7,7 +7,7 @@ export interface ToolOptions {
 
 export interface ToolAffectsBitmap {
     tag: "affects-bitmap"
-    value: Bitmap
+    value: BitmapImage
 }
 
 export interface ToolAffectsOptions {
@@ -17,7 +17,7 @@ export interface ToolAffectsOptions {
 
 export type ToolResult = ToolAffectsBitmap | ToolAffectsOptions
 
-export const resultBitmap = (bmp: Bitmap): ToolAffectsBitmap => ({
+export const resultBitmap = (bmp: BitmapImage): ToolAffectsBitmap => ({
     tag: "affects-bitmap",
     value: bmp
 })

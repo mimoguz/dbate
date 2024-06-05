@@ -1,11 +1,11 @@
 import { Button, Group } from "@mantine/core"
 import { observer } from "mobx-react-lite"
 import React from "react"
-import { Bitmap, bitmap } from "../../drawing"
 import { HeroContext } from "../../stores"
+import { BitmapImage } from "../../drawing"
 
-const download = (bmp: Bitmap, name: string) => {
-    bitmap.dataURL(bmp).then(dataURL => {
+const download = (bmp: BitmapImage, name: string) => {
+    bmp.getDataURL().then(dataURL => {
         const element = document.createElement("a")
         element.href = dataURL
         element.download = `${name}.png`

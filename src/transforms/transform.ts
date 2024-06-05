@@ -1,4 +1,4 @@
-import { Bitmap } from "../drawing";
+import { BitmapImage } from "../drawing";
 
 // TODO: Rename this to action
-export type Transform = (source: Bitmap) => Bitmap
+export type Transform = (source: BitmapImage) => BitmapImage

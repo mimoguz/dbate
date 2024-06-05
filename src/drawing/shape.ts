@@ -1,6 +1,6 @@
 import { Point } from "../common"
-import { Bitmap, bitmap } from "./bitmap"
-import { RGBA } from "./rgba"
+import { BitmapImage } from "./bitmap-image"
+import { Color } from "./color"
 
 const drawLine = (
     ctx: CanvasRenderingContext2D,
@@ -9,11 +9,11 @@ const drawLine = (
 ) => line(start, end, ({ x, y }) => ctx.fillRect(x, y, 1, 1))
 
 const putLine = (
-    bmp: Bitmap,
-    color: RGBA,
+    bmp: BitmapImage,
+    color: Color,
     start: Point,
     end: Point
-) => line(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
+) => line(start, end, (pt) => bmp.set(pt.x, pt.y, color))
 
 const drawEllipse = (
     ctx: CanvasRenderingContext2D,
@@ -22,11 +22,11 @@ const drawEllipse = (
 ) => ellipse(start, end, ({ x, y }) => ctx.fillRect(x, y, 1, 1))
 
 const putEllipse = (
-    bmp: Bitmap,
-    color: RGBA,
+    bmp: BitmapImage,
+    color: Color,
     start: Point,
     end: Point
-) => ellipse(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
+) => ellipse(start, end, (pt) => bmp.set(pt.x, pt.y, color))
 
 const drawRectangle = (
     ctx: CanvasRenderingContext2D,
@@ -35,11 +35,11 @@ const drawRectangle = (
 ) => rectangle(start, end, ({ x, y }) => ctx.fillRect(x, y, 1, 1))
 
 const putRectangle = (
-    bmp: Bitmap,
-    color: RGBA,
+    bmp: BitmapImage,
+    color: Color,
     start: Point,
     end: Point
-) => rectangle(start, end, (pt) => bitmap.putPixelMut(bmp, pt, color))
+) => rectangle(start, end, (pt) => bmp.set(pt.x, pt.y, color))
 
 const div = (a: number, b: number): number => Math.floor(a / b)
 

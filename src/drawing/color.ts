@@ -1,9 +1,13 @@
 import rgba from "color-rgba"
 import { u8 } from "../common"
 
+/** RGBA8888 color type.
+ * All instances share the given source array, so it can be a view over a bigger array
+ */
 export class Color {
-    constructor(r: number, g: number, b: number, a: number) {
-        this.bytes = Uint8ClampedArray.of(u8(r), u8(g), u8(b), u8(a))
+    constructor(bytes: Uint8ClampedArray) {
+        if (bytes.length !== 4) throw new Error("Color.constructor: Invalid source array length")
+        this.bytes = bytes
     }
 
     private bytes: Uint8ClampedArray
@@ -35,6 +39,7 @@ export class Color {
         return this.alpha === 255
     }
 
+    /** Check if this color and the parameter are structurally equal */
     eq(that: Color): boolean {
         return this === that || (
             this.bytes[0] === that.bytes[0]
@@ -44,18 +49,33 @@ export class Color {
         )
     }
 
+    /** Check if this color and the parameter are structurally NOT equal */
     ne(that: Color): boolean {
-        return !that.eq(that)
+        return !this.eq(that)
     }
 
-    read(src: Uint8ClampedArray, offset: number) {
+    /** Copy the contents of the source array from offset until offset + 4 to this
+     * @returns this
+     */
+    read(src: Uint8ClampedArray, offset: number): Color {
         this.bytes.set(src.subarray(offset, offset + 4))
+        return this
     }
 
+    /** Creates a view of the source array from offset until offset + 4
+     * @returns this
+     */
+    view(src: Uint8ClampedArray, offset: number): Color {
+        this.bytes = src.subarray(offset, offset + 4)
+        return this
+    }
+
+    /** Copy this to the destination array from offset until offset + 4 */
     write(dest: Uint8ClampedArray, offset: number) {
         dest.set(this.bytes, offset)
     }
 
+    /** Alpha-mix this with the destination array from offset until offset + 4 */
     mix(dest: Uint8ClampedArray, offset: number) {
         if (this.isOpaque) {
             this.write(dest, offset)
@@ -69,20 +89,51 @@ export class Color {
         dest[offset + 3] = u8(dest[offset + 3] + this.bytes[3])
     }
 
-    static zero(): Color {
-        return new Color(0, 0, 0, 0)
+    /** Copy the contents of this to the destination color
+     * @returns dest
+     */
+    copy(dest: Color): Color {
+        dest.bytes.set(this.bytes)
+        return dest
     }
 
+    /** Deep-clone of this
+     * @returns A new color that is structurally equals to this 
+     */
+    clone(): Color {
+        return new Color(this.bytes.slice())
+    }
+
+    /** Shift the channels by the given offset
+     * @returns this
+     */
+    shift(offset: number, alphaOffset: number = 0): Color {
+        this.bytes[0] = u8(this.bytes[0] + offset)
+        this.bytes[1] = u8(this.bytes[1] + offset)
+        this.bytes[2] = u8(this.bytes[2] + offset)
+        this.bytes[3] = u8(this.bytes[3] + alphaOffset)
+        return this
+    }
+
+    static pack(r: number, g: number, b: number, a: number): Color {
+        return new Color(Uint8ClampedArray.of(u8(r), u8(g), u8(b), u8(a)))
+    }
+
+    static zero(): Color {
+        return Color.pack(0, 0, 0, 0)
+    }
+
+    /** Copy the contents of the source array from offset until offset + 4 to a new color
+     * @returns Sampled color
+     */
     static slice(src: Uint8ClampedArray, offset: number) {
-        const result = Color.zero()
-        result.read(src, offset)
-        return result
+        return Color.zero().read(src, offset)
     }
 
     static fromCSSColor(color: string, defaultValue?: Color): Color | undefined {
         const channels = rgba(color)
         if (!channels || channels.length < 4) return defaultValue
-        return new Color(channels[0], channels[1], channels[2], channels[3] * 255)
+        return Color.pack(channels[0], channels[1], channels[2], channels[3] * 255)
     }
 }
 

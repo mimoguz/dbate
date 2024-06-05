@@ -4,7 +4,7 @@ import { ClipboardOps } from "../common"
 import * as Data from "../data"
 import { encodedBitmap } from "../data"
 import * as DB from "../database"
-import { Bitmap, bitmap } from "../drawing"
+import { BitmapImage } from "../drawing"
 import { constants } from "./constants"
 
 const compareStr = (a: string, b: string): number => (
@@ -37,15 +37,15 @@ export class HeroStore {
 
     async selectHero(name?: string): Promise<void> {
         if (!name) {
-            await this.setCurrentHeroItem(undefined)
+            this.setCurrentHeroItem(undefined)
             return
         }
         this.currentName = name
         const hero = this.heroes.find(hero => hero.name === name)
-        await this.setCurrentHeroItem(hero)
+        this.setCurrentHeroItem(hero)
     }
 
-    updateLogo(bmp: Bitmap) {
+    updateLogo(bmp: BitmapImage) {
         if (this.currentHero) {
             this.history.push(this.currentHero)
             if (this.history.length > constants.maxHistory) this.history.shift()
@@ -59,7 +59,7 @@ export class HeroStore {
         }
     }
 
-    modifyLogo(f: (bmp: Bitmap) => Bitmap) {
+    modifyLogo(f: (bmp: BitmapImage) => BitmapImage) {
         if (this.currentHero) this.updateLogo(f(this.currentHero.logo))
     }
 
@@ -89,7 +89,7 @@ export class HeroStore {
         if (!(currentHero && currentItem)) return
 
         currentItem.thumbnail = undefined
-        currentItem.encodedLogo = encodedBitmap.fromBitmap(currentHero.logo)
+        currentItem.encodedLogo = currentHero.logo.toJSON()
         this.currentHero = {
             ...currentHero,
             edited: false,
@@ -106,7 +106,7 @@ export class HeroStore {
 
             const historyItems = this.history.map(hist => ({
                 heroName: hist.name,
-                encodedLogo: encodedBitmap.fromBitmap(hist.logo)
+                encodedLogo: hist.logo.toJSON()
             }))
 
             // Only keep the last edited hero's history
@@ -119,8 +119,8 @@ export class HeroStore {
         })
     }
 
-    async createHero(name: string, logo: Bitmap): Promise<string | undefined> {
-        const encodedLogo = encodedBitmap.fromBitmap(logo)
+    async createHero(name: string, logo: BitmapImage): Promise<string | undefined> {
+        const encodedLogo = logo.toJSON()
         const hero = { name, encodedLogo }
         try {
             await this.db.heroes.add(hero)
@@ -155,8 +155,8 @@ export class HeroStore {
         const image = clipboard.pasteImage()
         if (image && this.currentHero) {
             const logo = this.currentHero.logo
-            const target = bitmap.empty(logo.width, logo.height)
-            bitmap.copy(image, target, { x: 0, y: 0, w: logo.width, h: logo.height })
+            const target = new BitmapImage(logo.width, logo.height)
+            image.copy(target)
             this.updateLogo(target)
         }
     }
@@ -168,7 +168,7 @@ export class HeroStore {
             this.db.history.where("heroName").equals(heroItem.name).toArray().then(action("fetchHistory", history => {
                 this.history = history.map(hist => ({
                     name: hist.heroName,
-                    logo: encodedBitmap.toBitmap(hist.encodedLogo)!,
+                    logo: BitmapImage.fromJSON(hist.encodedLogo)!,
                     edited: true
                 }))
             }))

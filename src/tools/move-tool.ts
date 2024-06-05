@@ -1,5 +1,5 @@
 import { Point, point } from "../common";
-import { bitmap, rgba } from "../drawing";
+import { BitmapImage } from "../drawing";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultBitmap } from "./tool-result";
 
@@ -31,11 +31,11 @@ export class MoveTool extends ToolBase {
         if (!this.bmp) return undefined
         const dx = this.pt.x - this.startPt.x
         const dy = this.pt.y - this.startPt.y
-        const cloned = bitmap.empty(this.bmp.width, this.bmp.height)
-        bitmap.copy(this.bmp, cloned, undefined, { x: dx, y: dy })
+        const dest = new BitmapImage(this.bmp.width, this.bmp.height)
+        this.bmp.copy(dest, undefined, { x: dx, y: dy, w: dest.width, h: dest.height })
         this.clearOffscreen()
         this.startPt = point.outside()
-        return resultBitmap(cloned)
+        return resultBitmap(dest)
     }
 
     protected override handleCancel(): void {
@@ -50,8 +50,8 @@ export class MoveTool extends ToolBase {
         const height = this.bmp.height
 
         if (
-            width != this.offscreenCanvas.width ||
-            height != this.offscreenCanvas.height
+            width !== this.offscreenCanvas.width ||
+            height !== this.offscreenCanvas.height
         ) {
             this.offscreenCanvas = new OffscreenCanvas(width, height)
             this.offscreenContext = this.offscreenCanvas.getContext("2d")!
@@ -59,7 +59,7 @@ export class MoveTool extends ToolBase {
             this.clearOffscreen()
         }
 
-        bitmap.draw(this.bmp, this.offscreenContext, color => rgba.shift(color, 50, -50))
+        this.bmp.draw(this.offscreenContext, color => color.clone().shift(50, -50))
     }
 
     private draw() {

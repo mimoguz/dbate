@@ -1,4 +1,3 @@
-import { bitmap, rgba } from "../drawing";
 import { ToolBase } from "./tool-base";
 import { ToolResult, resultOptions } from "./tool-result";
 
@@ -13,10 +12,10 @@ export class ColorPickerTool extends ToolBase {
 
     protected override handleEnd(): ToolResult | undefined {
         if (!this.bmp) return undefined
-        const sample = bitmap.getPixel(this.bmp, this.pt)
+        const sample = this.bmp.get(this.pt.x, this.pt.y)
         return resultOptions({
             ...this.options,
-            color: rgba.toString(sample) ?? this.options.color,
+            color: sample.hex ?? this.options.color,
         })
     }
 }

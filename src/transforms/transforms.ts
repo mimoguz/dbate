@@ -1,20 +1,28 @@
-import { Point } from "../common";
-import { Bitmap, bitmap } from "../drawing";
+import { Point, point } from "../common";
+import { BitmapImage, Color } from "../drawing";
 import { Transform } from "./transform";
 
-const invert: Transform = (source: Bitmap): Bitmap => bitmap.map(source, color => {
-    color.r = 255 - color.r
-    color.g = 255 - color.g
-    color.b = 255 - color.b
-})
+const invert: Transform = (source: BitmapImage): BitmapImage => {
+    const clone = source.clone()
+    clone.modify((_x, _y, sample) => {
+        sample.red = 255 - sample.red
+        sample.green = 255 - sample.green
+        sample.blue = 255 - sample.blue
+    })
+    return clone
+}
 
-const transformation = (transformPt: (source: Bitmap, pt: Point) => void) =>
-    (source: Bitmap): Bitmap => {
-        const result = bitmap.empty(source.width, source.height)
-        bitmap.foreach(source, (color, index) => {
-            const pt = bitmap.toPoint(source, index)
-            transformPt(source, pt)
-            bitmap.putPixelMut(result, pt, color)
+const transformation = (transformPt: (source: BitmapImage, pt: Point) => void) =>
+    (source: BitmapImage): BitmapImage => {
+        const result = new BitmapImage(source.width, source.height)
+        const sourcePt = point.zero()
+        const sourceSample = Color.zero()
+        result.modify((x, y, destSample) => {
+            sourcePt.x = x
+            sourcePt.y = y
+            transformPt(source, sourcePt)
+            source.sample(sourcePt.x, sourcePt.y, sourceSample)
+            sourceSample.copy(destSample)
         })
         return result
     }

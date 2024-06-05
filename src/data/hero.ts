@@ -1,5 +1,4 @@
-import { Bitmap } from "../drawing"
-import { encodedBitmap } from "./encoded-bitmap"
+import { BitmapImage } from "../drawing"
 
 export interface HeroItem {
     name: string
@@ -9,13 +8,13 @@ export interface HeroItem {
 
 export interface Hero {
     name: string
-    logo: Bitmap
+    logo: BitmapImage
     edited: boolean
 }
 
 export const heroItem = {
     decode: (heroItem: HeroItem): Hero => {
-        const logo = encodedBitmap.toBitmap(heroItem.encodedLogo)
+        const logo = BitmapImage.fromJSON(heroItem.encodedLogo)
         if (!logo) throw new Error(`Hero ${heroItem.name}: invalid logo`)
         return ({
             name: heroItem.name,
@@ -28,6 +27,6 @@ export const heroItem = {
 export const hero = {
     encode: (hero: Hero): HeroItem => ({
         name: hero.name,
-        encodedLogo: encodedBitmap.fromBitmap(hero.logo)
+        encodedLogo: hero.logo.toJSON()
     })
 }

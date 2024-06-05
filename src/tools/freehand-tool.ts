@@ -1,11 +1,11 @@
 import { Point, Rect } from "../common"
-import { Bitmap, RGBA, bitmap, rgba } from "../drawing"
+import { BitmapImage, Color } from "../drawing"
 import { ToolBase } from "./tool-base"
 import { ToolResult, resultBitmap } from "./tool-result"
 
 export class FreehandTool extends ToolBase {
     constructor(
-        put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void,
+        put: (target: BitmapImage, stroke: Array<Rect>, color: Color) => void,
         rectFactory?: (brushSize: number) => (pt: Point) => Rect
     ) {
         super()
@@ -14,11 +14,11 @@ export class FreehandTool extends ToolBase {
         this.getRect = this.rectFactory(this.options.brushSize)
     }
 
-    private readonly put: (target: Bitmap, stroke: Array<Rect>, color: RGBA) => void
+    private readonly put: (target: BitmapImage, stroke: Array<Rect>, color: Color) => void
 
     private readonly stroke: Array<Rect> = []
 
-    private color: RGBA = rgba.zero()
+    private color: Color = Color.zero()
 
     private getRect: (pt: Point) => Rect
 
@@ -26,7 +26,7 @@ export class FreehandTool extends ToolBase {
 
     protected override handleOptionsChanged(): void {
         this.getRect = this.rectFactory(this.options.brushSize)
-        this.color = rgba.fromString(this.options.color)
+        this.color = Color.fromCSSColor(this.options.color) ?? Color.zero()
         if (!this.isDrawing) {
             this.clear()
             this.handleCursor(this.pt)
@@ -43,7 +43,7 @@ export class FreehandTool extends ToolBase {
 
     protected override handleEnd(): ToolResult | undefined {
         if (!this.bmp) return undefined
-        const clone = bitmap.clone(this.bmp)
+        const clone = this.bmp.clone()
         this.put(clone, this.stroke, this.color)
         this.stroke.splice(0)
         return resultBitmap(clone)
@@ -71,8 +71,8 @@ export class FreehandTool extends ToolBase {
     }
 }
 
-const fillStroke = (bmp: Bitmap, stroke: Array<Rect>, color: RGBA) => {
-    for (const rect of stroke) bitmap.fillRectMut(bmp, rect, color)
+const fillStroke = (bmp: BitmapImage, stroke: Array<Rect>, color: Color) => {
+    for (const rect of stroke) bmp.fill(rect, color)
 }
 
 const getShift = (brushSize: number): number => Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)
@@ -118,7 +118,7 @@ export const freehandTools = {
     ),
 
     eraser: () => new FreehandTool(
-        (target, stroke) => fillStroke(target, stroke, rgba.zero()),
+        (target, stroke) => fillStroke(target, stroke, Color.zero()),
         brushSize => {
             const shift = getShift(brushSize)
             return ((pt: Point) => ({

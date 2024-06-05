@@ -1,28 +1,28 @@
 import { Point } from "../common"
-import { Bitmap, bitmap } from "./bitmap"
-import { RGBA, rgba } from "./rgba"
+import { BitmapImage } from "./bitmap-image"
+import { Color } from "./color"
 
-const canSpread = (pt: Point, sampleColor: RGBA, bmp: Bitmap): boolean => (
-    bitmap.contains(bmp, pt)
-    && rgba.equals(bitmap.getPixel(bmp, pt), sampleColor)
+const canSpread = (pt: Point, sampleColor: Color, bmp: BitmapImage): boolean => (
+    bmp.contains(pt.x, pt.y)
+    && bmp.get(pt.x, pt.y).eq(sampleColor)
 )
 
 const spread = (
     pt: Point,
-    sampleColor: RGBA,
-    fillColor: RGBA,
-    bmp: Bitmap,
+    sampleColor: Color,
+    fillColor: Color,
+    bmp: BitmapImage,
     stack: Array<Point>
 ) => {
     if (canSpread(pt, sampleColor, bmp)) {
-        bitmap.putPixelMut(bmp, pt, fillColor)
+        bmp.set(pt.x, pt.y, fillColor)
         stack.push(pt)
     }
 }
 
-const fill = (bmp: Bitmap, start: Point, fillColor: RGBA): void => {
-    const sampleColor = bitmap.getPixel(bmp, start)
-    if (rgba.equals(sampleColor, fillColor)) return
+const fill = (bmp: BitmapImage, start: Point, fillColor: Color): void => {
+    const sampleColor = bmp.get(start.x, start.y)
+    if (sampleColor.eq(fillColor)) return
     const stack: Array<Point> = []
     spread(start, sampleColor, fillColor, bmp, stack)
     while (stack.length > 0) {
@@ -34,7 +34,7 @@ const fill = (bmp: Bitmap, start: Point, fillColor: RGBA): void => {
     }
 }
 
-const erase = (bmp: Bitmap, start: Point): void => fill(bmp, start, rgba.zero())
+const erase = (bmp: BitmapImage, start: Point): void => fill(bmp, start, Color.zero())
 
 export const flood = {
     fill,

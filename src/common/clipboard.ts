@@ -1,10 +1,10 @@
 import React from "react"
-import { Bitmap } from "../drawing"
+import { BitmapImage } from "../drawing"
 import { makeAutoObservable } from "mobx"
 
 export interface ClipboardOps {
-    copyImage(bmp: Bitmap): void
-    pasteImage(): Bitmap | undefined
+    copyImage(bmp: BitmapImage): void
+    pasteImage(): BitmapImage | undefined
     get hasImage(): boolean
 }
 
@@ -13,16 +13,16 @@ export class InternalClipboard implements ClipboardOps {
         makeAutoObservable(this, {}, { autoBind: true })
     }
 
-    private image?: Bitmap
+    private image?: BitmapImage
 
     get hasImage(): boolean {
         return this.image !== undefined
     }
 
-    copyImage(bmp: Bitmap): void {
+    copyImage(bmp: BitmapImage): void {
         this.image = bmp
     }
-    pasteImage(): Bitmap | undefined {
+    pasteImage(): BitmapImage | undefined {
         return this.image
     }
 }

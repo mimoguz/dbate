@@ -1,9 +1,9 @@
 import { Point } from "../common"
-import { Bitmap } from "../drawing"
+import { BitmapImage } from "../drawing"
 import { ToolOptions, ToolResult } from "./tool-result"
 
 export interface Tool {
-    start(pt: Point, bmp: Bitmap): void
+    start(pt: Point, bmp: BitmapImage): void
     moveTo(pt: Point): void
     end(pt: Point): ToolResult | undefined
     cancel(): void

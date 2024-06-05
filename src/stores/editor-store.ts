@@ -1,10 +1,10 @@
 import { action, makeAutoObservable } from "mobx"
-import * as DB from "../database"
-import * as Data from "../data"
-import { rgba } from "../drawing"
-import { constants } from "./constants"
 import React from "react"
 import { clamp } from "../common"
+import * as Data from "../data"
+import * as DB from "../database"
+import { constants } from "./constants"
+import { Color } from "../drawing"
 
 export type EditorProperties = Omit<Data.EditorState, "id">
 
@@ -59,7 +59,7 @@ export class EditorStore {
         if (color === this.color) return
         this.color = color
 
-        if (rgba.fromString(color).a !== 0 && !this.quickColors.includes(color)) {
+        if (Color.fromCSSColor(color)?.isOpaque && !this.quickColors.includes(color)) {
             this.quickColors = [color, ...this.quickColors.slice(0, constants.maxQuickColors - 1)]
         }
 
@@ -105,7 +105,7 @@ export class EditorStore {
         const color = value.toLowerCase()
         if (
             this.swatches.length < constants.maxSwatches
-            && rgba.fromString(color).a !== 0
+            && Color.fromCSSColor(color)?.isOpaque
             && !this.swatches.includes(color)
         ) {
             this.swatches.push(color)

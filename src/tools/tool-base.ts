@@ -1,5 +1,5 @@
 import { Point, point } from "../common";
-import { Bitmap } from "../drawing";
+import { BitmapImage } from "../drawing";
 import { Tool } from "./tool";
 import { ToolOptions, ToolResult } from "./tool-result";
 
@@ -32,7 +32,7 @@ export abstract class ToolBase implements Tool {
 
     protected pt: Point = point.outside()
 
-    protected bmp: Bitmap | undefined = undefined
+    protected bmp: BitmapImage | undefined = undefined
 
     get context(): CanvasRenderingContext2D | undefined {
         return this.ctx
@@ -52,7 +52,7 @@ export abstract class ToolBase implements Tool {
         this.handleOptionsChanged()
     }
 
-    start(pt: Point, bmp: Bitmap) {
+    start(pt: Point, bmp: BitmapImage) {
         this.bmp = bmp
         this.pt = pt
         this.isDrawing = true

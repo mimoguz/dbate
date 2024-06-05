@@ -1,19 +1,19 @@
 import React from "react";
-import { Bitmap, bitmap } from "../../drawing";
+import { BitmapImage } from "../../drawing";
 
 interface Props {
-    bmp?: Bitmap
+    bmp?: BitmapImage
     zoom?: number
     style?: React.CSSProperties
 }
 
 
-const draw = (ctx: CanvasRenderingContext2D, bmp: Bitmap, scale: number) => {
+const draw = (ctx: CanvasRenderingContext2D, bmp: BitmapImage, scale: number) => {
     ctx.save()
     ctx.imageSmoothingEnabled = false
     ctx.setTransform(scale, 0, 0, scale, 0, 0)
     ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight)
-    bitmap.draw(bmp, ctx)
+    bmp.draw(ctx)
     ctx.restore()
 }
 

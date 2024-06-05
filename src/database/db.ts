@@ -11,6 +11,7 @@ export class Database extends Dexie {
             swatches: "color",
             quickColors: "color",
             editorState: "id",
+            colors: "index, value"
         });
     }
 
@@ -19,6 +20,7 @@ export class Database extends Dexie {
     swatches!: Table<Data.ColorItem>
     quickColors!: Table<Data.ColorItem>
     editorState!: Table<Data.EditorState>
+    colors!: Table<Data.IndexedColor>
 }
 
 export const db = new Database();

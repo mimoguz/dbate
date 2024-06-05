@@ -8,7 +8,6 @@ import { Color } from "../drawing"
 
 export type EditorProperties = Omit<Data.EditorState, "id">
 
-// TODO: Individual state fields
 export class EditorStore {
     constructor(db: DB.Database) {
         makeAutoObservable(this, {}, { autoBind: true, deep: true })
@@ -59,7 +58,7 @@ export class EditorStore {
         if (color === this.color) return
         this.color = color
 
-        if (Color.fromCSSColor(color)?.isOpaque && !this.quickColors.includes(color)) {
+        if (!(Color.fromCSSColor(color)?.isTransparent ?? true) && !this.quickColors.includes(color)) {
             this.quickColors = [color, ...this.quickColors.slice(0, constants.maxQuickColors - 1)]
         }
 
@@ -105,7 +104,7 @@ export class EditorStore {
         const color = value.toLowerCase()
         if (
             this.swatches.length < constants.maxSwatches
-            && Color.fromCSSColor(color)?.isOpaque
+            && !(Color.fromCSSColor(color)?.isTransparent ?? true)
             && !this.swatches.includes(color)
         ) {
             this.swatches.push(color)

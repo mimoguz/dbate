@@ -49,10 +49,7 @@ export class Color {
     }
 
     read(src: Uint8ClampedArray, offset: number) {
-        this.bytes[0] = src[offset]
-        this.bytes[1] = src[offset + 1]
-        this.bytes[2] = src[offset + 2]
-        this.bytes[3] = src[offset + 3]
+        this.bytes.set(src.subarray(offset, offset + 4))
     }
 
     write(dest: Uint8ClampedArray, offset: number) {

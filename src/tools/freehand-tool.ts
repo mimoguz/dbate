@@ -72,7 +72,31 @@ export class FreehandTool extends ToolBase {
 }
 
 const fillStroke = (bmp: BitmapImage, stroke: Array<Rect>, color: Color, mix: boolean = true) => {
-    for (const rect of stroke) bmp.fill(rect, color, mix)
+    if (color.isOpaque) {
+        for (const rect of stroke) bmp.fill(rect, color, mix)
+        return
+    }
+    if (color.isTransparent) {
+        for (const rect of stroke) bmp.fill(rect, color, false)
+        return
+    }
+    const points = new Set<string>()
+    for (const rect of stroke) {
+        const right = rect.x + rect.w
+        const bottom = rect.y + rect.h
+        for (let y = rect.y; y < bottom; y++) {
+            if (y >= bmp.height) break
+            for (let x = rect.x; x < right; x++) {
+                if (x >= bmp.width) break
+                if (bmp.contains(x, y)) points.add(JSON.stringify({ x, y }))
+            }
+        }
+    }
+    const method = (mix ? bmp.mix : bmp.set).bind(bmp)
+    for (const pt of points.values()) {
+        const { x, y }: Point = JSON.parse(pt)
+        method(x, y, color)
+    }
 }
 
 const getShift = (brushSize: number): number => Math.floor((brushSize - (brushSize % 2 === 0 ? 1 : 0)) / 2)

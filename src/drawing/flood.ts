@@ -21,16 +21,17 @@ const spread = (
 }
 
 const fill = (bmp: BitmapImage, start: Point, fillColor: Color): void => {
+    const color = fillColor.isTransparent ? Color.zero() : fillColor
     const sampleColor = bmp.get(start.x, start.y)
-    if (sampleColor.eq(fillColor)) return
+    if (sampleColor.eq(color)) return
     const stack: Array<Point> = []
-    spread(start, sampleColor, fillColor, bmp, stack)
+    spread(start, sampleColor, color, bmp, stack)
     while (stack.length > 0) {
         const pt = stack.pop()!
-        spread({ x: pt.x - 1, y: pt.y }, sampleColor, fillColor, bmp, stack) // Left
-        spread({ x: pt.x + 1, y: pt.y }, sampleColor, fillColor, bmp, stack) // Right
-        spread({ x: pt.x, y: pt.y - 1 }, sampleColor, fillColor, bmp, stack) // Up
-        spread({ x: pt.x, y: pt.y + 1 }, sampleColor, fillColor, bmp, stack) // Down
+        spread({ x: pt.x - 1, y: pt.y }, sampleColor, color, bmp, stack) // Left
+        spread({ x: pt.x + 1, y: pt.y }, sampleColor, color, bmp, stack) // Right
+        spread({ x: pt.x, y: pt.y - 1 }, sampleColor, color, bmp, stack) // Up
+        spread({ x: pt.x, y: pt.y + 1 }, sampleColor, color, bmp, stack) // Down
     }
 }
 

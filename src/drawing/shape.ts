@@ -2,6 +2,12 @@ import { Point } from "../common"
 import { BitmapImage } from "./bitmap-image"
 import { Color } from "./color"
 
+const getPlotter = (color: Color, bmp: BitmapImage) => (
+    color.isTransparent
+        ? (pt: Point) => bmp.set(pt.x, pt.y, Color.zero())
+        : (pt: Point) => bmp.mix(pt.x, pt.y, color)
+)
+
 const drawLine = (
     ctx: CanvasRenderingContext2D,
     start: Point,
@@ -13,7 +19,7 @@ const putLine = (
     color: Color,
     start: Point,
     end: Point
-) => line(start, end, (pt) => bmp.mix(pt.x, pt.y, color))
+) => line(start, end, getPlotter(color, bmp))
 
 const drawEllipse = (
     ctx: CanvasRenderingContext2D,
@@ -26,7 +32,7 @@ const putEllipse = (
     color: Color,
     start: Point,
     end: Point
-) => ellipse(start, end, (pt) => bmp.mix(pt.x, pt.y, color))
+) => ellipse(start, end, getPlotter(color, bmp))
 
 const drawRectangle = (
     ctx: CanvasRenderingContext2D,
@@ -39,7 +45,7 @@ const putRectangle = (
     color: Color,
     start: Point,
     end: Point
-) => rectangle(start, end, (pt) => bmp.mix(pt.x, pt.y, color))
+) => rectangle(start, end, getPlotter(color, bmp))
 
 const div = (a: number, b: number): number => Math.floor(a / b)
 

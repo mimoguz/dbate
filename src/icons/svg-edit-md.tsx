@@ -8,16 +8,10 @@ export function SvgEditMd({ width = 20, height = 20, color }: IconProps) {
             height={height}
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
+            fill={color ?? "currentColor"}
         >
-            <path
-                fill={color ?? "currentColor"}
-                d="M17 7v12H1V3h12l-1 1H2v14h14V8l1-1Zm-6.5.5 2.024 2.024L9.5 10.5l1-3ZM16 2l.5-.5c.552-.552 1.5-.5 2 0s.552 1.448 0 2L18 4l-2-2Z"
-            ></path>
-            <path
-                fill={color ?? "currentColor"}
-                fillOpacity="0.5"
-                d="M9 11v6H3v-6h6Zm4.538-2.522L11.5 6.5 15 3l2 2-3.462 3.478Z"
-            ></path>
+            <path d="m5.5 11.5 3 3L4 16l1.5-4.5Zm9-9 1.083-1.083a2.001 2.001 0 0 1 2.831.003l.171.172a1.999 1.999 0 0 1-.002 2.825L17.5 5.5l-3-3Zm-1-.5-1 1H3v14h14V7.5l1-1V18H2V2h11.5Z" />
+            <path fillOpacity="0.5" d="m6.5 10.5 3 3 7-7-3-3-7 7Z" />
         </svg>
     )
 }

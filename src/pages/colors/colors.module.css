@@ -1,0 +1,65 @@
+div.tableParent {
+    display: grid;
+    place-items: center;
+}
+
+table.colorTable {
+    max-width: 62em;
+    min-width: 32em;
+    width: 80%;
+    border-collapse: collapse;
+}
+
+table.colorTable th {
+    position: sticky;
+    top: 0;
+}
+
+table.colorTable th.defaultFill {
+    min-width: 7em;
+    width: 7em;
+}
+
+table.colorTable th.index {
+    min-width: 5em;
+    width: 5em;
+}
+
+table.colorTable th.name {
+    min-width: 10em;
+    max-width: 40em;
+}
+
+table.colorTable th.value {
+    min-width: 12em;
+    width: 12em;
+}
+
+table.colorTable th.action {
+    width: 0em;
+}
+
+table.colorTable th, table.colorTable td {
+    text-align: left;
+    padding: 0.25em;
+    border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+table.colorTable td div {
+    white-space: break-spaces; 
+}
+
+table.colorTable td div.group {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 0.5em;
+}
+
+table.colorTable tr.defaultFill {
+    font-weight: 600;
+    color: var(--mantine-primary-color-filled);
+}
+
+
+
+

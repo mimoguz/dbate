@@ -3,16 +3,19 @@ import { u8 } from "../common"
 
 export interface IndexedColor {
     readonly index: number
+    readonly name: string
     readonly value: number
 }
 
-export const indexedColor = (index: number, value: number | string): IndexedColor => ({
+export const indexedColor = (index: number, name: string, value: number | string): IndexedColor => ({
     index,
+    name,
     value: typeof value === "number" ? value : parseCSSValue(value)
 })
 
-export const toCSSValue = (color: IndexedColor): string => {
-    const hx = (shift: number): string => ((color.value >> shift) & 0xff).toString(16).padStart(2, "0")
+export const toCSSValue = (color: IndexedColor | number): string => {
+    const v = typeof color === "number" ? color : color.value
+    const hx = (shift: number): string => ((v >> shift) & 0xff).toString(16).padStart(2, "0")
     return `#${hx(24)}${hx(16)}${hx(8)}${hx(0)}`
 }
 

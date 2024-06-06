@@ -1,9 +1,8 @@
 import { action, makeAutoObservable } from "mobx"
 import React from "react"
-import { IndexedColor, indexedColor } from "../data"
+import { IndexedColor, indexedColor, toCSSValue } from "../drawing"
 import * as DB from "../database"
 import { constants } from "./constants"
-
 
 export class ColorStore {
     constructor(db: DB.Database) {
@@ -16,10 +15,24 @@ export class ColorStore {
     private timeout: NodeJS.Timeout | undefined
     private index: number = -1
 
+    defaultFill: number = 0
+
     colorTable: Array<IndexedColor> = []
 
     get canAdd() {
         return this.index < constants.maxColorIndex
+    }
+
+    setDefaultFill(value: number) {
+        if (value >= 0 && value <= this.index) this.defaultFill = value
+    }
+
+    get(index: number): number {
+        return this.colorTable[index].value
+    }
+
+    getHex(index: number): string {
+        return toCSSValue(this.colorTable[index])
     }
 
     add(value: string) {
@@ -28,21 +41,23 @@ export class ColorStore {
             console.error("Max index has been reached")
             return
         }
-        const color = indexedColor(this.index, value)
+        const color = indexedColor(this.index, "", value)
         this.colorTable.push(color)
         this.writeDeferred()
     }
 
-    update(index: number, value: string) {
+    update(index: number, params: { name?: string, value?: string | number }) {
         if (index < 0 || index >= this.colorTable.length) {
             throw new Error("ColorStore.update: Invalid index")
         }
-        this.colorTable[index] = indexedColor(index, value)
+        const old = this.colorTable[index]
+        const name = params.name ?? old.name
+        const value = params.value ?? old.value
+        this.colorTable[index] = indexedColor(index, name, value)
         this.writeDeferred()
     }
 
     load() {
-        // this.db.colors.clear()
         this.db.colors.toArray().then(action("fetchColors", colors => {
             this.colorTable = colors
             this.index = Math.max(-1, ...colors.map(color => color.index))
@@ -58,7 +73,7 @@ export class ColorStore {
     private async write() {
         await this.db.transaction("rw", this.db.colors, async () => {
             await this.db.colors.clear()
-            await this.db.colors.bulkAdd(this.colorTable.map(c => ({ index: c.index, value: c.value })))
+            await this.db.colors.bulkAdd(this.colorTable.map(c => ({ index: c.index, name: c.name, value: c.value })))
         })
     }
 }

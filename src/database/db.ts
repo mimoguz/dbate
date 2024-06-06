@@ -11,7 +11,7 @@ export class Database extends Dexie {
             swatches: "color",
             quickColors: "color",
             editorState: "id",
-            colors: "index, value"
+            colors: "index, name, value"
         });
     }
 
